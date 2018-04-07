@@ -1,0 +1,34 @@
+{
+  "Languages": [
+    {
+      "extension" : ".cpp",
+      "Bloc comment opening": "/*",
+      "Bloc comment closing": "*/",
+      "Single line comment": "//"
+    },
+    {
+      "extension": ".c",
+      "Bloc comment opening": "/*",
+      "Bloc comment closing": "*/",
+      "Single line comment": "//"
+    },
+    {
+      "extension": ".h",
+      "Bloc comment opening": "/*",
+      "Bloc comment closing": "*/",
+      "Single line comment": "//"
+    },
+    {
+      "extension": ".hpp",
+      "Bloc comment opening": "/*",
+      "Bloc comment closing": "*/",
+      "Single line comment": "//"
+    },
+    {
+      "extension": ".py",
+      "Bloc comment opening": "",
+      "Bloc comment closing": "",
+      "Single line comment": "#"
+    }
+  ]
+}
