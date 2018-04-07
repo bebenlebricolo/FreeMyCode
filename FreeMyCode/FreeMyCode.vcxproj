@@ -152,8 +152,6 @@
     <ClInclude Include="Command_Line_parser.h" />
     <ClInclude Include="ConfigTools.h" />
     <ClInclude Include="DirectoryAnalyser.h" />
-    <ClInclude Include="json\json-forwards.h" />
-    <ClInclude Include="json\json.h" />
     <ClInclude Include="LoggingTools.h" />
     <ClInclude Include="PathUtils.h" />
     <ClInclude Include="stdafx.h" />
@@ -163,8 +161,7 @@
     <ClCompile Include="Command_Line_parser.cpp" />
     <ClCompile Include="ConfigTools.cpp" />
     <ClCompile Include="DirectoryAnalyser.cpp" />
-    <ClCompile Include="FreeMyCode_cmd.cpp" />
-    <ClCompile Include="jsoncpp.cpp" />
+    <ClCompile Include="FreeMyCode.cpp" />
     <ClCompile Include="LoggingTools.cpp" />
     <ClCompile Include="PathUtils.cpp" />
     <ClCompile Include="stdafx.cpp">

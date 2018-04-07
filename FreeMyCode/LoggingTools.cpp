@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "LoggingTools.h"
 #include <string>
 #include <vector>
