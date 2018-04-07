@@ -29,6 +29,32 @@
       "Bloc comment opening": "",
       "Bloc comment closing": "",
       "Single line comment": "#"
+    },
+    {
+      "extension": ".cs",
+      "Bloc comment opening": "/*",
+      "Bloc comment closing": "*/",
+      "Single line comment": "//"
+    },
+    {
+      "extension": ".js",
+      "Bloc comment opening": "/*",
+      "Bloc comment closing": "*/",
+      "Single line comment": "//"
+    },
+    {
+      "extension": ".html",
+      "Bloc comment opening": "<!--",
+      "Bloc comment closing": "-->",
+    },
+    {
+      "extension": ".css",
+      "Bloc comment opening": "/*",
+      "Bloc comment closing": "*/"
+    },
+    {
+      "extension": ".vb",
+      "Single line comment": "\'"
     }
   ]
 }
