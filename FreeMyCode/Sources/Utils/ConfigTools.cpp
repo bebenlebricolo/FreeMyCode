@@ -20,6 +20,17 @@ Version	|	 Date	 |	Comments
 namespace fs = std::experimental::filesystem;
 using namespace std;
 
+static const char* CONF_NODE = "Configuration";
+static const char*  LANG_NODE = "Languages";
+static const char*  LANG_SL_COM = "Single line comment";
+static const char*  LANG_BL_COM_OP = "Bloc comment opening";
+static const char*  LANG_BL_COM_CL = "Bloc comment closing";
+static const char*  LANG_EXT_ARRAY = "Extension array";
+static const char*  LANG_EXT_NODE = "Extension";
+
+
+
+
 SupportedExtension::SupportedExtension(
 	std::string _name,
 	std::string line_com,
@@ -81,34 +92,68 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 	
 	// rapidjson documentation : http://rapidjson.org/md_doc_stream.html#FileStreams
 	// Reading / Parsing file streams
-	/*FILE * file = fopen(filepath.c_str(), "r");
-	char buffer[655336];
-	FileReadStream is(file, buffer, sizeof(buffer));*/
+
 	Document doc;
-	//doc.ParseStream<0, UTF8<>, FileReadStream>(is);
+
+	// Buffer variables
+	string cur_ext;
+	// Single line comment
+	string sl_com;
+	// Block comment start
+	string bl_com_st;
+	// Block comment end
+	string bl_com_end;
+	
+
 	doc.ParseStream(isw);
 	file_stream.close();
 
-	if (doc.HasMember("Languages")) {
-		for (SizeType i = 0; i < doc["Languages"].Size(); i++) {
-		/*	std::cout << doc["Languages"][i]["extension"].GetString() << std::endl;
-			std::cout << doc["Languages"][i]["Single line comment"].GetString() << std::endl;
-			std::cout << doc["Languages"][i]["Bloc comment opening"].GetString() << std::endl;
-			std::cout << doc["Languages"][i]["Bloc comment closing"].GetString() << std::endl;*/
-			SupportedExtension new_ext(
-				doc["Languages"][i]["extension"].GetString(),
-				doc["Languages"][i]["Single line comment"].GetString(),
-				doc["Languages"][i]["Bloc comment opening"].GetString(),
-				doc["Languages"][i]["Bloc comment closing"].GetString()		);
-			extension_vect.push_back(new_ext);
+	// If we found a Configuration (root) node
+	if (doc.HasMember(CONF_NODE)){
+		rapidjson::Value *config_node = &(doc[CONF_NODE]);
+
+		// If we found a Language node in the config file
+		if (config_node->HasMember(LANG_NODE)) {
+			rapidjson::Value *languages_node = &((*config_node)[LANG_NODE]);
+
+			// Iterate over found languages
+			for (SizeType i = 0; i < languages_node->Size(); i++) {
+				// If we found an extension array :
+				if ((*languages_node)[i].HasMember(LANG_EXT_ARRAY)) {
+					rapidjson::Value* Ext_array = &((*languages_node)[i][LANG_EXT_ARRAY]);
+			
+					if ((*languages_node)[i].HasMember(LANG_SL_COM)) sl_com = (*languages_node)[i][LANG_SL_COM].GetString();
+					if ((*languages_node)[i].HasMember(LANG_BL_COM_OP)) bl_com_st = (*languages_node)[i][LANG_BL_COM_OP].GetString();
+					if ((*languages_node)[i].HasMember(LANG_BL_COM_CL)) bl_com_end = (*languages_node)[i][LANG_BL_COM_CL].GetString();
+
+					// Iterate over extensions array
+					for (unsigned int ext = 0; ext < Ext_array->Size(); ext++) {
+						cur_ext = (*Ext_array)[ext].GetString();
+						SupportedExtension new_ext(cur_ext,sl_com,bl_com_st,bl_com_end);
+						extension_vect.push_back(new_ext);
+					}
+				}
+				// Else : we didn't find the "Extension array" node
+				else {
+					if ((*languages_node)[i].HasMember(LANG_EXT_NODE)) cur_ext = (*languages_node)[i][LANG_EXT_NODE].GetString();
+					if ((*languages_node)[i].HasMember(LANG_SL_COM)) sl_com = (*languages_node)[i][LANG_SL_COM].GetString();
+					if ((*languages_node)[i].HasMember(LANG_BL_COM_OP)) bl_com_st = (*languages_node)[i][LANG_BL_COM_OP].GetString();
+					if ((*languages_node)[i].HasMember(LANG_BL_COM_CL)) bl_com_end = (*languages_node)[i][LANG_BL_COM_CL].GetString();
+
+
+					SupportedExtension new_ext(cur_ext, sl_com, bl_com_st, bl_com_end);
+					extension_vect.push_back(new_ext);
+				}
+			}
+			// Parsing successfull
+			return true;
 		}
-		// Parsing successfull
-		return true;
+		else {
+			// Parsing unsuccessfull -> no "Language" node found
+			return false;
+		}
 	}
-	else {
-		// Parsing unsuccessfull -> no "Language" node found
-		return false;
-	}
+	
 }
 
 

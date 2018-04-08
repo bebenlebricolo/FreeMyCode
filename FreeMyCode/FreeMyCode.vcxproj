@@ -75,6 +75,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Build$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -100,12 +101,13 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)FreeMyCode\Sources;$(SolutionDir)FreeMyCode\Sources\Utils;$(SolutionDir)FreeMyCode\Sources\External libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,30 +151,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Command_Line_parser.h" />
-    <ClInclude Include="ConfigTools.h" />
-    <ClInclude Include="DirectoryAnalyser.h" />
-    <ClInclude Include="LoggingTools.h" />
-    <ClInclude Include="PathUtils.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
+    <None Include="Sources\Config.json" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Command_Line_parser.cpp" />
-    <ClCompile Include="ConfigTools.cpp" />
-    <ClCompile Include="DirectoryAnalyser.cpp" />
-    <ClCompile Include="FreeMyCode.cpp" />
-    <ClCompile Include="LoggingTools.cpp" />
-    <ClCompile Include="PathUtils.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="Sources\FreeMyCode.cpp" />
+    <ClCompile Include="Sources\stdafx.cpp" />
+    <ClCompile Include="Sources\Utils\Command_Line_parser.cpp" />
+    <ClCompile Include="Sources\Utils\ConfigTools.cpp" />
+    <ClCompile Include="Sources\Utils\DirectoryAnalyser.cpp" />
+    <ClCompile Include="Sources\Utils\LoggingTools.cpp" />
+    <ClCompile Include="Sources\Utils\PathUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Config.json" />
+    <ClInclude Include="Sources\stdafx.h" />
+    <ClInclude Include="Sources\targetver.h" />
+    <ClInclude Include="Sources\Utils\Command_Line_parser.h" />
+    <ClInclude Include="Sources\Utils\ConfigTools.h" />
+    <ClInclude Include="Sources\Utils\DirectoryAnalyser.h" />
+    <ClInclude Include="Sources\Utils\LoggingTools.h" />
+    <ClInclude Include="Sources\Utils\PathUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
