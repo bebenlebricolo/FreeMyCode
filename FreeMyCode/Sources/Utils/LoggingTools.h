@@ -5,12 +5,16 @@ Logging utilities. It comes with a FileHandler and a ConsoleHandler.
 Version	|	 Date	 |	Comments
 ----------------------------------------------------------------------------
 0.1     | 07/04/2018 | Implemented Logger, LoggerHandler (abstract) , FileHandler and ConsoleHandler classes
+0.2		| 14/04/2018 | Implemented LoggerSlot struct -> handles logger management inside owner classes
 */
 
+// MSVC compiler multiple inclusions guard
+#pragma once
+// Else for any other compiler 
 #ifndef LOGGINGTOOLS_HEADER
-#define LOGGINTOOLS_HEADER
+#define LOGGINGTOOLS_HEADER
 
-
+#include "stdafx.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -18,7 +22,7 @@ Version	|	 Date	 |	Comments
 
 namespace logger {
 
-	// Abstract class whose pattern is used to define any specifi Handler
+	// Abstract class whose pattern is used to define any specific Handler
 	class LoggerHandler {
 	public:
 		enum Severity { Log_Debug = 0, Log_Info=1, Log_Warning = 2, Log_Error = 3, Log_Fatal = 4 , Log_Init = 10};
@@ -30,6 +34,7 @@ namespace logger {
 		const bool is_activated(void);
 		void set_severity(const Severity level);
 		const Severity get_severity(void);
+
 		
 	protected:
 		Severity sev_level;
@@ -50,8 +55,11 @@ namespace logger {
 			std::string function = "",
 			std::string class_name = "");
 		bool display_date;
+		static Logger* log_object;
 
 	public:
+
+		short unsigned int owner_number = 0;
 		Logger(bool display_date = true);
 		~Logger();
 		const int add_handler(LoggerHandler *new_handler);
@@ -61,6 +69,8 @@ namespace logger {
 		bool is_date_displayed();
 		std::string get_current_date();
 		void log_init_message(const std::string &message = "");
+		bool has_no_owner();
+		static Logger* get_logger(bool display_date = true);
 		
 		// Dedicated functions to handle logging functionalities
 		void logError(
@@ -95,6 +105,8 @@ namespace logger {
 	};
 
 
+
+
 	// Writes data to a file
 	class FileHandler : public LoggerHandler{
 		std::string filepath;
@@ -116,6 +128,37 @@ namespace logger {
 		//void introspection();
 		void log_data(const std::string &message, Severity sev_level);
 
+	};
+
+	// Small slot which may be inherited from any class which needs to use it.
+	struct LoggerSlot {
+		LoggerSlot(Logger* log_ptr = NULL);
+		~LoggerSlot();
+		Logger * logsystem;
+		void add_logsys(Logger* new_logsys);
+		void remove_logsys();
+		/*
+		void(*logError)(std::string message,
+			unsigned int line,
+			std::string file,
+			std::string function,
+			std::string class_name);
+		void(*logWarning)(std::string message,
+			unsigned int line,
+			std::string file,
+			std::string function,
+			std::string class_name);
+		void(*logInfo)(std::string message,
+			unsigned int line,
+			std::string file,
+			std::string function,
+			std::string class_name);
+		void(*logFatal)(std::string message,
+			unsigned int line,
+			std::string file,
+			std::string function,
+			std::string class_name);
+			*/
 	};
 
 }

@@ -9,6 +9,7 @@ Version	|	 Date	 |	Comments
 						-> back to basics : iterating on strings!
 0.11	| 01/04/2018 |  Added regex support for find_extension method. Turn on REGEX_BASED define to get it to work
 						-> Note: regex based extension finder is slightly slower than the other one (turn off REGEX_BASED)
+0.12	| 15/04/2018 |  Added logging tools support (now logs something!)
 */
 
 #include "stdafx.h"
@@ -16,6 +17,7 @@ Version	|	 Date	 |	Comments
 #include <regex>
 #include <filesystem>
 #include "PathUtils.h"
+#include "LoggingTools.h"
 
 namespace fs = std::experimental::filesystem;
 namespace pu = pathutils;
@@ -30,6 +32,9 @@ struct NullPtrException : public runtime_error {
 	}
 };
 
+
+logger::Logger* DirectoryAnalyser::logsys = logger::Logger::get_logger();
+
 // Returns a vector of the file paths which contains potential code / text files.
 std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string &root_path, std::string targeted_extensions) {
 	
@@ -38,13 +43,13 @@ std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string 
 	// Uses a pointer in case of big file list -> only uses one memory location for the vector
 	std::vector<std::string>* output_vector = new vector<string>();
 	if (output_vector == NULL) {
-		//logger.error(DirectoryAnalyser::get_files_in_dir : Cannot allocate memory for new output_vector);
+		logsys->logError("Cannot allocate memory for new output_vector",__LINE__,__FILE__,__func__,"DirectoryAnalyser");
 		throw runtime_error("DirectoryAnalyser::get_files_in_dir : Cannot allocate memory for new output_vector");
 	}
 
 	vector<string> extensions_vec;
 	if (targeted_extensions != "") {
-		// logger.info("DirectoryAnalyser::get_files_in_dir : Targeted extensions : " + targeted_extensions);
+		logsys->logInfo("Targeted file extensions are : <" + targeted_extensions + "> ",__LINE__, __FILE__, __func__, "DirectoryAnalyser");
 		extensions_vec = split(targeted_extensions.c_str());
 	}
 	// Else return an empty vector
@@ -60,18 +65,19 @@ std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string 
 					current_ext = pu::get_extension(str); 
 				}
 				catch (const runtime_error& error){
-					cout << error.what() << endl;
+					logsys->logError(error.what(), __LINE__, __FILE__, __func__, "DirectoryAnalyser");
 					continue;
 				}
-				// TODO : log results ?
-				// cout << "Result = "<<  current_ext << endl;
+				logsys->logInfo("Currently evaluated extension : <" + current_ext + "> ", __LINE__, __FILE__, __func__, "DirectoryAnalyser");
 				if (found_ext(current_ext, extensions_vec)) {
 					file_counter++;
 					output_vector->push_back(p.path().generic_string());
 				}
 			}
 		}
-		std::cout << "Files count = " << file_counter << std::endl;
+		ostringstream message;;
+		message << "Supported files count = " << file_counter;
+		logsys->logInfo(message.str(), __LINE__, __FILE__, __func__, "DirectoryAnalyser");
 	}
 	return output_vector;
 }

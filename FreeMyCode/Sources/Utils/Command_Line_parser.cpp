@@ -13,8 +13,9 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 	0.14	| 19/03/2018 |  Implemented first support for help requests and usage requests (-h --help -U --Usage)
 							-> Note : Still some work to do for it to catch everything : directory(ok) license(ok) config(ok) logfile (ko)
 	0.15	| 20/03/2018 |  Fixed last bug and implemented CommandLineParser :: get_arg & get_flag
-	0.16	| 22/03/2018 | Added external initiaisation functionalities: it is now possible to init the parser from outside this file
-						    -> Simplifies usage and extends compatibility (all ParserResult are direct ParserResult objects, and not classes which inherits from it)
+	0.16	| 22/03/2018 |  Added external initiaisation functionalities: it is now possible to init the parser from outside this file
+						     -> Simplifies usage and extends compatibility (all ParserResult are direct ParserResult objects, and not classes which inherits from it)
+	0.20	| 14/04/2018 |  Added logging facilities
 */
 
 
@@ -25,7 +26,10 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 
 using namespace std;
 
-CommandLineParser::CommandLineParser() {
+CommandLineParser::CommandLineParser(logger::Logger* log_ptr) : logsys(log_ptr){
+	if (logsys == NULL) {
+		logsys = logger::Logger::get_logger();
+	}
 	Global_flags.available_flags.push_back(ParserFlags({"-h","--help"} ,"help flag : displays the help section" ,""));
 	Global_flags.available_flags.push_back(ParserFlags({ "-U","--Usage" },"Usage flag ; displays the usage section",""));
 	Global_flags.available_flags.push_back(ParserFlags({ "-sr" , "--show-results" }, "Show results flag : displays current state of flags and args", ""));
@@ -38,7 +42,9 @@ bool CommandLineParser::found_globals(int argc, char * argv[]) {
 		string flag = string(argv[i]);
 		// If it's a flag :
 		if (flag[0] == '-') {
+			logsys->logInfo("Found a flag <" + flag + "> ", __LINE__, __FILE__, __func__, "CommandLineParser");
 			if (Global_flags.contain_flag(flag)) {
+				logsys->logInfo("Flag <" + flag + "> is supported", __LINE__, __FILE__, __func__, "CommandLineParser");
 				Global_flags.set_flag(flag);
 				temp_result |= true;
 			}
@@ -46,7 +52,6 @@ bool CommandLineParser::found_globals(int argc, char * argv[]) {
 		}
 	}
 	return temp_result;
-
 }
 
 bool CommandLineParser::found_terminals() {
@@ -58,6 +63,7 @@ bool CommandLineParser::found_terminals() {
 void CommandLineParser::show_globals() {
 	// First check for Help requests
 	if (Global_flags.flag_state("--help")) {
+		logsys->logInfo("Flag < --help > found", __LINE__, __FILE__, __func__, "CommandLineParser");
 		for (unsigned int i = 0; i < Result.size(); i++) {
 			Result[i]->help_request();
 		}
@@ -65,6 +71,7 @@ void CommandLineParser::show_globals() {
 	}
 	// Then look for usages requests 
 	if (Global_flags.flag_state("--Usage")) {
+		logsys->logInfo("Flag < --Usage > found", __LINE__, __FILE__, __func__, "CommandLineParser");
 		for (unsigned int i = 0; i < Result.size(); i++) {
 			Result[i]->usage_request();
 		}
@@ -74,7 +81,7 @@ void CommandLineParser::show_globals() {
 
 CommandLineParser::~CommandLineParser() {
 	for (int i = 0; i < Result.size(); i++) {
-		free(Result[i]);
+		delete(Result[i]);
 	}
 }
 
@@ -102,8 +109,8 @@ void CommandLineParser::parse_arguments(int argc, char * argv[]) {
 		if (is_a_flag(parsed_arg)) {
 			if (!is_flag_valid(parsed_arg, &temp_PR)) {
 				// Go to next argument if the flag is not valid
-				// TODO implement logging functionality here
-				// logger.warning("CommandLineParser::parse_arguments: invalid flag %s" , parsed_arg);
+
+				logsys->logWarning("Invalid flag <" + parsed_arg + "> ", __LINE__, __FILE__, __func__, "CommandLineParser");
 				continue;
 			}
 			else
@@ -146,7 +153,6 @@ void CommandLineParser::parse_arguments(int argc, char * argv[]) {
 			if (current_target == NULL) {
 				// Yes
 				if (previous_arg != "") {
-					// TODO handle this sequence properly
 					current_target = Result[find_next_PR_index(target_index)];
 					push_arg(&current_target, previous_arg);
 				}

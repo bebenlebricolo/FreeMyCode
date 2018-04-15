@@ -1,6 +1,8 @@
 #pragma once
+#include "stdafx.h"
 #include <vector>
 #include <string>
+#include "LoggingTools.h"
 
 using namespace std;
 
@@ -70,6 +72,8 @@ class CommandLineParser {
 
 	ParserResult Global_flags;
 
+	logger::Logger* logsys;
+
 	bool is_a_flag(string parsed_arg);
 	bool is_flag_valid(string _parsed_arg, ParserResult** _temp_PR);
 	int find_next_PR_index(int _target_id);
@@ -79,7 +83,7 @@ class CommandLineParser {
 	bool found_terminals();
 	void show_globals();
 public:
-	CommandLineParser();
+	CommandLineParser(logger::Logger* log_ptr = NULL);
 	~CommandLineParser();
 	void parse_arguments(int argc, char * argv[]);
 	void show_results();

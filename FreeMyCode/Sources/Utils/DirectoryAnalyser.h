@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "LoggingTools.h"
 
 //#define REGEX_BASED
 
@@ -16,6 +17,7 @@
 
 
 class DirectoryAnalyser {
+	static logger::Logger* logsys;
 	static std::vector<std::string> isolate_file_ext(std::string extension_string);
 	static std::vector<std::string> split(const char * str, char c = ' ');
 	//static std::string find_extension(std::string filename);

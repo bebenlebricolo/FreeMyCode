@@ -1,3 +1,22 @@
+/*
+Here are defined the tools which are used in this project to log messages.
+They provide several handlers such as a File Handler (yourfile.log) and a Console Handler.
+The logger object is declared as static and its usage its pretty simple :
+1) First include the LoggingTools.h header
+2) Add a logger::Logger* pointer to your class / project
+3) Initialise it with the logger::Logger::get_logger() method. This will return a pointer to the global logger object (static)
+4) Add some Handlers to it!  mylogger->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity Log_Info));
+5) Use it like this : mylogger->logInfo(<my Message>, <Line number> , <File name>, <Function name>, <Class name>);
+	Note: I like to use the preprocessor tools to handle the __LINE__, __FILE__, __func__ stuff.
+----------------------------------------------------------------------------
+Version	|	 Date	 |	Comments
+----------------------------------------------------------------------------
+0.1     | 07/04/2018 |	First functional version of the LoggingTools. Does not handle the rolling file and max file size yet.
+0.2     | 15/04/2018 |  Declared the main logging system as STATIC so that only one logger is used in the project. 
+						It makes also development easier as the logger system only relies on ONE class (other ones only need to fetch the Logger class)
+*/
+
+
 #include "stdafx.h"
 #include "LoggingTools.h"
 #include <string>
@@ -28,7 +47,10 @@ Logger class definition
 **************************************************************************************
 */
 
-logger::Logger::Logger(bool show_date): display_date(show_date)
+// Logger pointer initialisation!
+logger::Logger* logger::Logger::log_object = NULL;
+
+logger::Logger::Logger(bool show_date) : display_date(show_date),owner_number(1)
 {
 	handlers.clear();
 }
@@ -49,6 +71,19 @@ bool logger::Logger::is_date_displayed()
 	return display_date;
 }
 
+bool logger::Logger::has_no_owner() {
+	if (owner_number == 0) return true;
+	else return false;
+}
+
+Logger * logger::Logger::get_logger(bool display_date)
+{
+	if (Logger::log_object == NULL) {
+		Logger::log_object = new Logger(display_date);
+	}
+	return Logger::log_object;
+}
+
 // Returns a formatted version of date based on std::time library (C++11)
 // https://stackoverflow.com/a/16358111/8716917
 std::string logger::Logger::get_current_date()
@@ -64,7 +99,7 @@ std::string logger::Logger::get_current_date()
 // Writes a simple new session message (init logger)
 void logger::Logger::log_init_message(const string &message)
 {
-	string init_message;
+	string init_message ;
 	if (message == "") {
 		const unsigned int separator_length = 15;
 		const char separator_char = '-';
@@ -74,6 +109,7 @@ void logger::Logger::log_init_message(const string &message)
 	}
 	else { init_message = message; }
 	
+	init_message = "[ " + init_message + " ]";
 	log_data(init_message, LoggerHandler::Severity::Log_Init);
 }
 
@@ -148,7 +184,7 @@ void Logger::log_data(string message, LoggerHandler::Severity level, unsigned in
 	}
 	ostringstream inspection_block;
 	if (file != "" || class_name != "" || function != "" || line != 0) {
-		inspection_block << "[ " << file << class_name << "::" << function << "()-ln:" << line << " ] = ";
+		inspection_block << "[ " << file <<(file != "" ? " : " : "") << class_name << (class_name!=""?"::":"") << function << "()-ln:" << line << " ] = ";
 	}
 
 	full_message_string << "[" << severity_string << " ]:" << inspection_block.str() << message;
@@ -258,9 +294,11 @@ FileHandler::~FileHandler() {
 }
 
 void FileHandler::log_data(const string &message, LoggerHandler::Severity level) {
-	if (level < sev_level) {
-		// Do nothing
-		return;
+	if (level != LoggerHandler::Severity::Log_Init) {
+		if (level < sev_level) {
+			// Do nothing
+			return;
+		}
 	}
 	// Else, log data!
 	if (logfile == NULL) {
@@ -288,4 +326,52 @@ void ConsoleHandler::log_data(const string &message, LoggerHandler::Severity lev
 		return;
 	}
 	cout << message << endl;
+}
+
+/*
+**************************************************************************************
+**************************************************************************************
+LoggerSlot class definition
+**************************************************************************************
+**************************************************************************************
+*/
+
+LoggerSlot::LoggerSlot(Logger* log_ptr){
+	if (log_ptr != NULL) {
+		logsystem = log_ptr;
+		logsystem->owner_number++;
+	}
+	else {
+		logsystem = new Logger(true);
+		logsystem->add_handler(new ConsoleHandler(ConsoleHandler::Severity::Log_Warning));
+	}
+	/*
+	logError = &(logsytem->logError);
+	logInfo = logsytem->logInfo;
+	logWarning = &logsytem->logWarning;
+	logFatal = &logsytem->logFatal;
+	*/
+}
+
+LoggerSlot::~LoggerSlot() {
+	if (logsystem != NULL) {
+		logsystem->owner_number--;
+		if (logsystem->has_no_owner()) {
+			delete(logsystem);
+		}
+	}
+}
+
+void LoggerSlot::add_logsys(Logger* log_ptr) {
+	if (log_ptr != NULL) {
+		logsystem = log_ptr;
+		logsystem->owner_number++;
+	}
+}
+
+void LoggerSlot::remove_logsys() {
+	if (logsystem != NULL) {
+		logsystem->owner_number--;
+		logsystem = NULL;
+	}
 }
