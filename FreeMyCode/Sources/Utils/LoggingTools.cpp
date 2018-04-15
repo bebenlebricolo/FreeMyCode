@@ -50,7 +50,7 @@ Logger class definition
 // Logger pointer initialisation!
 logger::Logger* logger::Logger::log_object = NULL;
 
-logger::Logger::Logger(bool show_date) : display_date(show_date),owner_number(1)
+logger::Logger::Logger(bool show_date) : display_date(show_date)
 {
 	handlers.clear();
 }
@@ -69,11 +69,6 @@ logger::Logger::~Logger()
 bool logger::Logger::is_date_displayed()
 {
 	return display_date;
-}
-
-bool logger::Logger::has_no_owner() {
-	if (owner_number == 0) return true;
-	else return false;
 }
 
 Logger * logger::Logger::get_logger(bool display_date)
@@ -326,52 +321,4 @@ void ConsoleHandler::log_data(const string &message, LoggerHandler::Severity lev
 		return;
 	}
 	cout << message << endl;
-}
-
-/*
-**************************************************************************************
-**************************************************************************************
-LoggerSlot class definition
-**************************************************************************************
-**************************************************************************************
-*/
-
-LoggerSlot::LoggerSlot(Logger* log_ptr){
-	if (log_ptr != NULL) {
-		logsystem = log_ptr;
-		logsystem->owner_number++;
-	}
-	else {
-		logsystem = new Logger(true);
-		logsystem->add_handler(new ConsoleHandler(ConsoleHandler::Severity::Log_Warning));
-	}
-	/*
-	logError = &(logsytem->logError);
-	logInfo = logsytem->logInfo;
-	logWarning = &logsytem->logWarning;
-	logFatal = &logsytem->logFatal;
-	*/
-}
-
-LoggerSlot::~LoggerSlot() {
-	if (logsystem != NULL) {
-		logsystem->owner_number--;
-		if (logsystem->has_no_owner()) {
-			delete(logsystem);
-		}
-	}
-}
-
-void LoggerSlot::add_logsys(Logger* log_ptr) {
-	if (log_ptr != NULL) {
-		logsystem = log_ptr;
-		logsystem->owner_number++;
-	}
-}
-
-void LoggerSlot::remove_logsys() {
-	if (logsystem != NULL) {
-		logsystem->owner_number--;
-		logsystem = NULL;
-	}
 }

@@ -58,8 +58,6 @@ namespace logger {
 		static Logger* log_object;
 
 	public:
-
-		short unsigned int owner_number = 0;
 		Logger(bool display_date = true);
 		~Logger();
 		const int add_handler(LoggerHandler *new_handler);
@@ -69,7 +67,6 @@ namespace logger {
 		bool is_date_displayed();
 		std::string get_current_date();
 		void log_init_message(const std::string &message = "");
-		bool has_no_owner();
 		static Logger* get_logger(bool display_date = true);
 		
 		// Dedicated functions to handle logging functionalities
@@ -100,7 +97,6 @@ namespace logger {
 			std::string file = "",
 			std::string function = "",
 			std::string class_name = "");
-		//void logException( e);
 
 	};
 
@@ -129,38 +125,6 @@ namespace logger {
 		void log_data(const std::string &message, Severity sev_level);
 
 	};
-
-	// Small slot which may be inherited from any class which needs to use it.
-	struct LoggerSlot {
-		LoggerSlot(Logger* log_ptr = NULL);
-		~LoggerSlot();
-		Logger * logsystem;
-		void add_logsys(Logger* new_logsys);
-		void remove_logsys();
-		/*
-		void(*logError)(std::string message,
-			unsigned int line,
-			std::string file,
-			std::string function,
-			std::string class_name);
-		void(*logWarning)(std::string message,
-			unsigned int line,
-			std::string file,
-			std::string function,
-			std::string class_name);
-		void(*logInfo)(std::string message,
-			unsigned int line,
-			std::string file,
-			std::string function,
-			std::string class_name);
-		void(*logFatal)(std::string message,
-			unsigned int line,
-			std::string file,
-			std::string function,
-			std::string class_name);
-			*/
-	};
-
 }
 
 #endif // !LOGGINGTOOLS_HEADER
