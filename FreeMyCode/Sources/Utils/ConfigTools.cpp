@@ -34,14 +34,38 @@ static const char*  LANG_EXT_NODE = "Extension";
 
 
 SupportedExtension::SupportedExtension(
-	std::string _name,
+	std::vector<std::string> _ext_list,
 	std::string line_com,
 	std::string bloc_start,
 	std::string bloc_end) :
-	extension(_name),
+	extension(_ext_list),
 	single_line_comment(line_com),
 	bloc_comment_start(bloc_start),
 	bloc_comment_end(bloc_end){}
+
+SupportedExtension::SupportedExtension(
+	std::string _single_ext,
+	std::string line_com,
+	std::string bloc_start,
+	std::string bloc_end) :
+	extension(),
+	single_line_comment(line_com),
+	bloc_comment_start(bloc_start),
+	bloc_comment_end(bloc_end) 
+{
+	extension.push_back(_single_ext);
+}
+
+// Look for a given extension in memory
+bool SupportedExtension::match_ext(std::string _ext)
+{
+	for (unsigned int i = 0; i < extension.size(); i++) {
+		if (_ext == extension[i])
+			return true;
+	}
+	return false;
+}
+
 
 
 /*------------------------------------------------------------------------
@@ -148,12 +172,14 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_OP)) bl_com_st = (*languages_node)[i][LANG_BL_COM_OP].GetString();
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_CL)) bl_com_end = (*languages_node)[i][LANG_BL_COM_CL].GetString();
 
+					std::vector<std::string> _ext_v;
 					// Iterate over extensions array
 					for (unsigned int ext = 0; ext < Ext_array->Size(); ext++) {
 						cur_ext = (*Ext_array)[ext].GetString();
-						SupportedExtension new_ext(cur_ext,sl_com,bl_com_st,bl_com_end);
-						extension_vect.push_back(new_ext);
+						_ext_v.push_back(cur_ext);
 					}
+						SupportedExtension new_ext(_ext_v,sl_com,bl_com_st,bl_com_end);
+						extension_vect.push_back(new_ext);
 				}
 				// Else : we didn't find the "Extension array" node
 				else {
@@ -162,10 +188,15 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_OP)) bl_com_st = (*languages_node)[i][LANG_BL_COM_OP].GetString();
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_CL)) bl_com_end = (*languages_node)[i][LANG_BL_COM_CL].GetString();
 
-
 					SupportedExtension new_ext(cur_ext, sl_com, bl_com_st, bl_com_end);
 					extension_vect.push_back(new_ext);
 				}
+				
+				// Reinitialising buffer strings before next loop
+				sl_com = "";
+				bl_com_end = "";
+				bl_com_st = "";
+				cur_ext = "";
 			}
 			log_ptr->logInfo("JSON file parsing successfull", __LINE__, __FILE__, __func__, "ConfObject");
 
@@ -189,9 +220,10 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 // If the passed extension matches at least one extension in the ConfObject, return true.
 bool ConfObject::is_extension_supported(string extension) {
 	for (auto& ext : extension_vect) {
-		if (ext.extension == extension) return true;
+		for (unsigned int i = 0; i < ext.extension.size(); i++) {
+			if (ext.extension[i] == extension) return true;
+		}
 		log_ptr->logInfo("Found supported extension <" + extension + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-
 	}
 	log_ptr->logWarning("Unsupported extension <" + extension + "> ", __LINE__, __FILE__, __func__, "ConfObject");
 
@@ -200,22 +232,42 @@ bool ConfObject::is_extension_supported(string extension) {
 
 const string ConfObject::get_ext_property(string targeted_ext, SupportedExtension::properties prop_type) {
 	for (auto& ext : extension_vect) {
-		if (ext.extension == targeted_ext) {
-			switch (prop_type) {
-			case SupportedExtension::properties::Bloc_End:
-				log_ptr->logInfo("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.bloc_comment_end + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-				return ext.bloc_comment_end;
-				break;
-			case SupportedExtension::properties::Bloc_Start:
-				log_ptr->logInfo("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.bloc_comment_start + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-				return ext.bloc_comment_start;
-				break;
-			case SupportedExtension::properties::Single_Comment:
-				log_ptr->logInfo("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.single_line_comment+ "> ", __LINE__, __FILE__, __func__, "ConfObject");
-				return ext.single_line_comment;
-				break;
-			default:
-				return targeted_ext;
+		for (unsigned int i = 0; i < ext.extension.size(); i++) {
+			if (ext.extension[i] == targeted_ext) {
+				switch (prop_type) {
+				case SupportedExtension::properties::Bloc_End:
+					if (ext.bloc_comment_start == "") {
+						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have bloc comment closing marker", __LINE__, __FILE__, __func__, "ConfObject");
+						return "";
+					}
+					else {
+						log_ptr->logInfo("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.bloc_comment_end + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.bloc_comment_end;
+					}
+					break;
+				case SupportedExtension::properties::Bloc_Start:
+					if (ext.bloc_comment_start == "") {
+						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have bloc comment opening marker", __LINE__, __FILE__, __func__, "ConfObject");
+						return "";
+					}
+					else {
+						log_ptr->logInfo("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.bloc_comment_start + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.bloc_comment_start;
+					}
+					break;
+				case SupportedExtension::properties::Single_Comment:
+					if (ext.single_line_comment == "") {
+						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have single line comment marker ", __LINE__, __FILE__, __func__, "ConfObject");
+						return "";
+					}
+					else {
+						log_ptr->logInfo("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.single_line_comment + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.single_line_comment;
+					}
+					break;
+				default:
+					return targeted_ext;
+				}
 			}
 		}
 	}
@@ -228,7 +280,9 @@ const std::string ConfObject::get_supported_ext_list()
 {
 	string output;
 	for (unsigned int i = 0; i < extension_vect.size(); i++) {
-		output += extension_vect[i].extension + " ";
+		for (unsigned int j = 0; j < extension_vect[i].extension.size(); j++) {
+			output += extension_vect[i].extension[j] + " ";
+		}
 	}
 	return output;
 }
@@ -252,14 +306,25 @@ const string ConfObject::get_single_line_com(string targeted_ext) {
 // Add an element to extension_vector of ConfObject.
 // If an extension overlaps a previously added one, then it will be overwritten by the new one
 void ConfObject::add_element(SupportedExtension new_language_spec) {
-	string new_ext = new_language_spec.extension;
+	//new_ext = new_language_spec.extension;
 	// look for previous extension with the same name and overwrite it with new data
 	for (auto& ext : extension_vect) {
-		if (ext.extension == new_ext) {
+		if (ext.extension == new_language_spec.extension) {
 			ext = new_language_spec;
 		}
 	}
 	log_ptr->logInfo("Add supported extension to vector", __LINE__, __FILE__, __func__, "ConfObject");
 	// No extension with the same name was found -> we can safely add a new one
 	extension_vect.push_back(new_language_spec);
+}
+
+// Returns a copy of a supported extension which contains a given _ext
+SupportedExtension ConfObject::find_language_spec(std::string _ext)
+{
+	for (unsigned int i = 0; i < extension_vect.size(); i++) {
+		if (extension_vect[i].match_ext(_ext)) {
+			return extension_vect[i];
+		}
+	}
+	return SupportedExtension("", "", "", "");
 }

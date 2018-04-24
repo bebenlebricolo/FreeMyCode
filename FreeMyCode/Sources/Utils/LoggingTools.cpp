@@ -288,6 +288,7 @@ FileHandler::~FileHandler() {
 	}
 }
 
+// Logs data into a file
 void FileHandler::log_data(const string &message, LoggerHandler::Severity level) {
 	if (level != LoggerHandler::Severity::Log_Init) {
 		if (level < sev_level) {
@@ -299,7 +300,12 @@ void FileHandler::log_data(const string &message, LoggerHandler::Severity level)
 	if (logfile == NULL) {
 		logfile = new ofstream(filepath, std::ios::out | std::ios::app);
 	}
-	logfile->open(filepath, std::ios::out | std::ios::app);
+
+	// Don't try to reopen it, otherwise the failbit will be set, and following message writing will fail
+	if (logfile->is_open() == false) {
+		logfile->open(filepath, std::ios::out | std::ios::app);
+	}
+	// Fails if failbit != 0 !!
 	*logfile << message << endl;
 	logfile->close();
 }

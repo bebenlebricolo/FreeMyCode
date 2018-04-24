@@ -2,11 +2,28 @@
    "Configuration":{
       "Tags":[
          {
-            "FreeMyCode version":"1.0",
-            "Author":"@author =",
-            "License":"@license =",
-            "FreeMyCode header opening":"@<FreeMyCode>",
-            "FreeMyCode header closing":"<FreeMyCode>@"
+          "FreeMyCode version":"@version :",
+          "Author": "@author :",
+          "Author list opening": "@authors : < ",
+          "Author list closing": " >authors@",
+          "Organisation types": [
+            "School",
+            "Company",
+            "Institution",
+            "Association",
+            "Independant"
+          ],
+          "Organisation name": "@<ORGANISATION> :",
+          "Organisation website": "@<ORGANISATION> website :",
+          "Project name": "@Project :",
+          "Project url": "@Project url :",
+          "Project repo": "@Project repo :",
+          "License": "@license :",
+          "License url": "@license url :",
+          "FreeMyCode header opening":"@<FreeMyCode>",
+          "FreeMyCode header closing": "<FreeMyCode>@",
+          "Date": "Date :",
+          "Custom": "@<CUSTOM> :"
          }
       ],
     "Languages": [
@@ -24,15 +41,19 @@
         "Single line comment": "//"
       },
       {
-        "Extension": ".py",
-        "Bloc comment opening": "",
-        "Bloc comment closing": "",
-        "Single line comment": "#"
+        "Extension array": [
+          ".py",
+          ".yaml"
+        ],
+          "Single line comment" : "#"
       },
       {
-        "Extension": ".html",
-        "Bloc comment opening": "<!--",
-        "Bloc comment closing": "-->"
+        "Extension array": [
+          ".html",
+          ".xml"
+        ],
+          "Bloc comment opening" : "<!--",
+          "Bloc comment closing":"-->"
       },
       {
         "Extension": ".css",

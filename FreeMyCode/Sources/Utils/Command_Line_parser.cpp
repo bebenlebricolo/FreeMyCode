@@ -153,8 +153,11 @@ void CommandLineParser::parse_arguments(int argc, char * argv[]) {
 			if (current_target == NULL) {
 				// Yes
 				if (previous_arg != "") {
-					current_target = Result[find_next_PR_index(target_index)];
-					push_arg(&current_target, previous_arg);
+					int next_PR = find_next_PR_index(target_index);
+					if (next_PR != -1) {
+						current_target = Result[next_PR];
+						push_arg(&current_target, previous_arg);
+					}
 				}
 				previous_arg = parsed_arg;
 			}
@@ -174,8 +177,11 @@ void CommandLineParser::parse_arguments(int argc, char * argv[]) {
 	// try to send it to the current target
 	if (previous_arg != "") {
 		if (current_target == NULL || current_target->is_full()) {
-			current_target = Result[find_next_PR_index(target_index)];
-			push_arg(&current_target, previous_arg);
+			int next_PR = find_next_PR_index(target_index);
+			if (next_PR != -1) {
+				current_target = Result[next_PR];
+				push_arg(&current_target, previous_arg);
+			}
 		}
 	}
 
@@ -226,7 +232,9 @@ int CommandLineParser::find_next_PR_index(int _target_id) {
 	for (int i = _target_id; i < Result.size(); i++) {
 		if (!Result[i]->is_full()) return i;
 	}
-	return _target_id;
+	// We haven't found any free result!
+	logsys->logError("Cannot find any ParserResult free! Program may not behave as expected! Aborting execution.", __LINE__, __FILE__, __func__, "CommandLineParser");
+	return -1;
 }
 
 
