@@ -16,6 +16,7 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 	0.16	| 22/03/2018 |  Added external initiaisation functionalities: it is now possible to init the parser from outside this file
 						     -> Simplifies usage and extends compatibility (all ParserResult are direct ParserResult objects, and not classes which inherits from it)
 	0.20	| 14/04/2018 |  Added logging facilities
+	0.21	| 30/04/2018 |  Fixed a bug occuring when too much arguments is passed to the parser. If so, all "overflowing inputs" are discarded
 */
 
 
@@ -44,7 +45,7 @@ bool CommandLineParser::found_globals(int argc, char * argv[]) {
 		if (flag[0] == '-') {
 			logsys->logInfo("Found a flag <" + flag + "> ", __LINE__, __FILE__, __func__, "CommandLineParser");
 			if (Global_flags.contain_flag(flag)) {
-				logsys->logInfo("Flag <" + flag + "> is supported", __LINE__, __FILE__, __func__, "CommandLineParser");
+				logsys->logInfo("Flag <" + flag + "> is a Global flag", __LINE__, __FILE__, __func__, "CommandLineParser");
 				Global_flags.set_flag(flag);
 				temp_result |= true;
 			}
@@ -72,6 +73,7 @@ void CommandLineParser::show_globals() {
 	// Then look for usages requests 
 	if (Global_flags.flag_state("--Usage")) {
 		logsys->logInfo("Flag < --Usage > found", __LINE__, __FILE__, __func__, "CommandLineParser");
+		cout << "Displaying Usage request : " << endl;
 		for (unsigned int i = 0; i < Result.size(); i++) {
 			Result[i]->usage_request();
 		}
@@ -85,12 +87,14 @@ CommandLineParser::~CommandLineParser() {
 	}
 }
 
-void CommandLineParser::parse_arguments(int argc, char * argv[]) {
+bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
 	// Look for global flags first
 	// If found, show messages and short-circuit the parsing
-	if (found_globals(argc,argv) && found_terminals()) {
+	if (found_globals(argc,argv)) {
 		show_globals();
-		return;
+	}
+	if (found_terminals()) {
+		return false;
 	}
 
 
@@ -158,6 +162,11 @@ void CommandLineParser::parse_arguments(int argc, char * argv[]) {
 						current_target = Result[next_PR];
 						push_arg(&current_target, previous_arg);
 					}
+					else {
+						Global_flags.set_flag("--Usage");
+						show_globals();
+						return false;
+					}
 				}
 				previous_arg = parsed_arg;
 			}
@@ -182,6 +191,11 @@ void CommandLineParser::parse_arguments(int argc, char * argv[]) {
 				current_target = Result[next_PR];
 				push_arg(&current_target, previous_arg);
 			}
+			else {
+				Global_flags.set_flag("--Usage");
+				show_globals();
+				return false;
+			}
 		}
 	}
 
@@ -189,6 +203,7 @@ void CommandLineParser::parse_arguments(int argc, char * argv[]) {
 	if (Global_flags.flag_state("--show-results")) {
 		show_results();
 	}
+	return true;
 }
 
 // Pushes the new argument to the targeted parser result and reinit the pointer to Null
@@ -216,9 +231,10 @@ bool CommandLineParser::is_a_flag(string _parsed_arg) {
 // Check if the flag does exist in the list of valid flags
 // if so return true
 bool CommandLineParser::is_flag_valid(string _parsed_arg, ParserResult** _temp_PR) {
+	if (Global_flags.contain_flag(_parsed_arg)) return true;
 	*_temp_PR = find_owner(_parsed_arg);
-	if (*_temp_PR == NULL) return false;
-	else return true;
+	if (*_temp_PR != NULL ) return true; 
+	else return false;
 }
 
 ParserResult* CommandLineParser::find_owner(string flag) {
@@ -234,6 +250,7 @@ int CommandLineParser::find_next_PR_index(int _target_id) {
 	}
 	// We haven't found any free result!
 	logsys->logError("Cannot find any ParserResult free! Program may not behave as expected! Aborting execution.", __LINE__, __FILE__, __func__, "CommandLineParser");
+	
 	return -1;
 }
 
@@ -310,7 +327,7 @@ void ParserFlags::introspective(){
 	cout << "*ParserFlags : " << endl;
 	cout << "	-> Aliases : ";
 	for (int alias_id = 0; alias_id < aliases.size(); alias_id++) {
-		cout << aliases[alias_id];
+		cout << aliases[alias_id] << " ";
 		if ((alias_id % 4) > 3) cout << endl << "                ";
 	}
 	cout << endl;
@@ -321,7 +338,7 @@ void ParserFlags::help_request() {
 	GlobalHook::help_request();
 	cout << "Aliases : ";
 	for (unsigned int a_id = 0; a_id < aliases.size(); a_id++) {
-		cout << aliases[a_id] << " ";
+		cout <<"    "<< aliases[a_id] << " ";
 	}
 	cout << endl;
 }
@@ -345,7 +362,7 @@ void GlobalHook::help_request() {
 }
 
 void GlobalHook::usage_request() {
-	cout << usage;
+	cout << usage << " ";
 }
 
 
@@ -412,17 +429,16 @@ bool ParserResult::is_full() { return full; }
 void ParserResult::help_request() {
 	GlobalHook::help_request();
 	for (unsigned int flag_id = 0; flag_id < available_flags.size(); flag_id++) {
+		cout << "    ";
 		available_flags[flag_id].help_request();
 	}
+	cout << endl;
 }
 
 // Prints on the console the usage of the ParserResult and its flags.
 // This method calls the method inherited and adds the Flag support functionality (propagate request downward)
 void ParserResult::usage_request() {
 	GlobalHook::usage_request();
-	for (unsigned int flag_id = 0; flag_id < available_flags.size(); flag_id++) {
-		available_flags[flag_id].usage_request();
-	}
 }
 
 // Returns the parsed argument of the ParserResult

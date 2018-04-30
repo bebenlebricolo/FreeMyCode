@@ -33,6 +33,25 @@ using namespace std::experimental::filesystem;
 using namespace rapidjson;
 using namespace std;
 
+static const char* TAGS_NODE = "Tags";
+static const char* NODES_ARRAY[] = {
+	"Author",
+	"License name",
+	"License url",
+	"Date",
+	"Organisation",
+	"Organisation name",
+	"Organisation website"
+};
+static int NODES_ARRAY_DIM = 7;
+
+static const char* LIST_NODES[] = {
+	"Author list",
+};
+static int LIST_NODES_SIZE = 1;
+
+
+
 /*
 **************************************************************************************
 **************************************************************************************
@@ -85,6 +104,7 @@ std::vector<std::string> LicenseWriter::write_license(void) {
 
 // Build formatted licenses list and store them in memory
 void LicenseWriter::build_formatted_license_list(std::vector<std::string>* file_list) {
+	second_in->parse_secondary_input_file();
 	for (unsigned int i = 0; i < file_list->size(); i++) {
 		bool match_pref_license_ext = false;
 		string cur_ext = pathutils::get_extension((*file_list)[i]);
@@ -267,4 +287,73 @@ void SecondaryInput::parse_secondary_input_file() {
 	file_stream.close();
 	log->logInfo("Opened json file, read data and load data in memory", __LINE__, __FILE__, __func__, "ConfObject");
 
+	if (doc.HasMember(TAGS_NODE)) {
+		// Enter the parsing function's body
+		rapidjson::Value *tags_node = &(doc[TAGS_NODE]);
+		log->logInfo("Found " + string(TAGS_NODE) + " node in SecondaryInput file", __LINE__, __FILE__, __func__, "SecondaryInput");
+
+		for (Value::ConstMemberIterator itr = tags_node->MemberBegin();
+			itr != tags_node->MemberEnd(); itr++) {
+			if (itr->value.IsArray()) {
+				string current_key = itr->name.GetString();
+				vector<string> array_values;
+				Tag* current_tag = NULL;
+				bool found_standard = false;
+				// Iterate over members of the array
+				for (SizeType j = 0; j < itr->value.Size(); j++) {
+					array_values.push_back(itr->value[j].GetString());
+				}
+				// Test if the key matches with any of the Standard array types
+				for (unsigned i = 0; i < LIST_NODES_SIZE; i++) {
+					if (LIST_NODES[i] == current_key) {
+						log->logInfo("Found \" " + current_key + " \" array in file " , __LINE__, __FILE__, __func__, "SecondaryInput");
+						current_tag = new Tag(itr->name.GetString(),array_values);
+						found_standard = true;
+						continue;
+					}
+				}
+				
+				// If test fails, this means we are facing a User-defined "Custom" Tag
+				if (found_standard == false) 
+				{
+					log->logWarning("Found \" " + current_key + " \" array which is not in file -> Considered as \"Custom\" Tag ", __LINE__, __FILE__, __func__, "SecondaryInput");
+					current_tag = new Tag(itr->name.GetString(), array_values, Tag::TagType::Custom);
+				}
+				// Finally populate the available_flags vector
+				available_tags.push_back(current_tag);
+				
+				if (parser->get_flag("--verbose")) {
+					for (unsigned printer = 0; printer < array_values.size(); printer++) {
+						log->logInfo("Found " + current_key + " : " + array_values[printer], __LINE__, __FILE__, __func__, "SecondaryInput");
+					}
+				}
+			}
+			else if(itr->value.IsString()) {
+				// Parse recursively and identify tags type
+				Tag* current_tag = NULL;
+				string current_key = itr->name.GetString();
+				log->logInfo("Currently evaluated Tag is \" " + current_key + " \"", __LINE__, __FILE__, __func__, "SecondaryInput");
+				vector<string> current_value = { itr->value.GetString() };
+				bool found_standard = false;
+				// Iterate over supported Nodes type
+				for (unsigned i = 0; i < NODES_ARRAY_DIM; i++) {
+					if (current_key == NODES_ARRAY[i]) {
+						log->logInfo("Found corresponding Tag : \" " + current_key + " \"", __LINE__, __FILE__, __func__, "SecondaryInput");
+						current_tag = new Tag(current_key, current_value);
+						found_standard = true;
+						continue;
+					}
+				}
+				if (found_standard == false) 
+				{
+					log->logWarning("Found \" " + current_key + " \" key which is not in file -> Considered as \"Custom\" Tag ", __LINE__, __FILE__, __func__, "SecondaryInput");
+					current_tag = new Tag(current_key, current_value, Tag::TagType::Custom);
+				}
+				available_tags.push_back(current_tag);
+				if (parser->get_flag("--verbose")) {
+					log->logInfo("Found " + current_key + " : " + current_value[0], __LINE__, __FILE__, __func__, "SecondaryInput");
+				}
+			}
+		}
+	}
 }

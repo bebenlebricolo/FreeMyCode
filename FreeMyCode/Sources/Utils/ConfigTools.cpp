@@ -19,6 +19,14 @@ Version	|	 Date	 |	Comments
 #include <streambuf>
 #include "LoggingTools.h"
 
+// Use Rapidjson external library 
+#include "rapidjson\filereadstream.h"
+#include "rapidjson\document.h"
+#include "rapidjson\istreamwrapper.h"
+
+
+using namespace rapidjson;
+
 namespace fs = std::experimental::filesystem;
 using namespace std;
 
@@ -83,41 +91,6 @@ ConfObject::~ConfObject() {
 }
 
 
-#ifdef USE_JSON_CPP
-// Attempt to use the JsonCpp external library
-bool ConfObject::parse_conf_file(std::string in_filepath) {
-	if (fs::exists(in_filepath)) {
-		// Open file as ifstream
-		std::ifstream in(in_filepath);
-		Json::Value root;
-		in >> root;
-
-		const Json::Value languages = root["Languages"];
-		for (unsigned i = 0; languages.size(); i++) {
-			const Json::Value extension = languages[i]["extension"];
-			const Json::Value bloc_com_start = languages[i]["Bloc comment opening"];
-			const Json::Value bloc_com_end = languages[i]["Bloc comment closing"];
-			const Json::Value line_com = languages[i]["Single line comment"];
-			extension_vect.push_back(
-				SupportedExtension(
-					extension.asString(),
-					line_com.asString(),
-					bloc_com_start.asString(),
-					bloc_com_end.asString()
-				));
-		}
-		in.close();
-		return true;
-	}
-}
-#else
-// Use Rapidjson instead
-#include "rapidjson\filereadstream.h"
-#include "rapidjson\document.h"
-#include "rapidjson\istreamwrapper.h"
-
-
-using namespace rapidjson;
 
 // Parses a file using the rapidjson library
 bool ConfObject::parse_conf_file(std::string filepath) {
@@ -213,8 +186,6 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 	
 }
 
-
-#endif
 
 // Simply look for a given extension in memory.
 // If the passed extension matches at least one extension in the ConfObject, return true.

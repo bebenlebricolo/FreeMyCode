@@ -85,7 +85,7 @@ class CommandLineParser {
 public:
 	CommandLineParser(logger::Logger* log_ptr = NULL);
 	~CommandLineParser();
-	void parse_arguments(int argc, char * argv[]);
+	bool parse_arguments(int argc, char * argv[]);
 	void show_results();
 	bool get_flag(string flag);
 	string get_arg(string name);

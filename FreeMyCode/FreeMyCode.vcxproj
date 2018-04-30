@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\Buildx64\Debug\Dummy_Directory\Secondary_input.json" />
     <None Include="Sources\Config.json" />
   </ItemGroup>
   <ItemGroup>
