@@ -2,7 +2,9 @@
 #include "stdafx.h"
 #include <vector>
 #include <string>
+#include <iostream>
 #include "LoggingTools.h"
+
 
 using namespace std;
 
@@ -12,7 +14,7 @@ struct GlobalHook {
 	string usage;
 	GlobalHook();
 	GlobalHook(string _description, string _usage);
-	void help_request();
+	void help_request(int indent_spaces = 4);
 	void usage_request();
 };
 
@@ -28,7 +30,7 @@ struct ParserFlags : public GlobalHook{
 	void init(vector<string> flags_aliases);
 	// position pos;
 	void introspective();
-	void help_request();
+	void help_request(int indent_spaces = 4);
 	bool is_terminal();
 
 private:
@@ -50,7 +52,7 @@ struct ParserResult : public GlobalHook{
 	void set_arg(string arg);
 	void introspective();
 
-	void help_request();
+	void help_request(int indent_spaces = 4);
 	void usage_request();
 	string get_arg();
 	bool match_name(string _name);
@@ -95,5 +97,7 @@ public:
 
 	ParserResult* find_owner(string flag);
 };
+
+
 
 

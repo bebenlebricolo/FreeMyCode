@@ -70,6 +70,13 @@ namespace logger {
 		static Logger* get_logger(bool display_date = true);
 		
 		// Dedicated functions to handle logging functionalities
+		void logDebug(
+			std::string message = "",
+			unsigned int line = 0,
+			std::string file = "",
+			std::string function = "",
+			std::string class_name = "");
+
 		void logError(
 			std::string message = "",
 			unsigned int line = 0 ,

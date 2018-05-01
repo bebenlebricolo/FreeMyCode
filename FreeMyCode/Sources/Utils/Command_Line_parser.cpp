@@ -27,12 +27,29 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 
 using namespace std;
 
+static void indent(int spaces = 0) {
+	string indent_line = "";
+	for (unsigned i = 0; i < spaces; i++) {
+		indent_line += " ";
+	}
+	std::cout << indent_line;
+}
+
+static void print_line(int indent_spaces = 4, int length = 40, const char print_character = '-') {
+	string line;
+	for (unsigned i = 0; i < length; i++) {
+		line += print_character;
+	}
+	indent(indent_spaces);
+	cout << line << endl;
+}
+
 CommandLineParser::CommandLineParser(logger::Logger* log_ptr) : logsys(log_ptr){
 	if (logsys == NULL) {
 		logsys = logger::Logger::get_logger();
 	}
-	Global_flags.available_flags.push_back(ParserFlags({"-h","--help"} ,"help flag : displays the help section" ,""));
-	Global_flags.available_flags.push_back(ParserFlags({ "-U","--Usage" },"Usage flag ; displays the usage section",""));
+	Global_flags.available_flags.push_back(ParserFlags({"-h","--help"} ,"help flag : displays the help section" ,"",true));
+	Global_flags.available_flags.push_back(ParserFlags({ "-U","--Usage" },"Usage flag ; displays the usage section","",true));
 	Global_flags.available_flags.push_back(ParserFlags({ "-sr" , "--show-results" }, "Show results flag : displays current state of flags and args", ""));
 }
 
@@ -43,9 +60,9 @@ bool CommandLineParser::found_globals(int argc, char * argv[]) {
 		string flag = string(argv[i]);
 		// If it's a flag :
 		if (flag[0] == '-') {
-			logsys->logInfo("Found a flag <" + flag + "> ", __LINE__, __FILE__, __func__, "CommandLineParser");
+			logsys->logDebug("Found a flag <" + flag + "> ", __LINE__, __FILE__, __func__, "CommandLineParser");
 			if (Global_flags.contain_flag(flag)) {
-				logsys->logInfo("Flag <" + flag + "> is a Global flag", __LINE__, __FILE__, __func__, "CommandLineParser");
+				logsys->logDebug("Flag <" + flag + "> is a Global flag", __LINE__, __FILE__, __func__, "CommandLineParser");
 				Global_flags.set_flag(flag);
 				temp_result |= true;
 			}
@@ -64,7 +81,9 @@ bool CommandLineParser::found_terminals() {
 void CommandLineParser::show_globals() {
 	// First check for Help requests
 	if (Global_flags.flag_state("--help")) {
-		logsys->logInfo("Flag < --help > found", __LINE__, __FILE__, __func__, "CommandLineParser");
+		logsys->logDebug("Flag < --help > found", __LINE__, __FILE__, __func__, "CommandLineParser");
+		string line = "##################################";
+		cout << endl << line << " <<-- Help section -->> " << line << endl;
 		for (unsigned int i = 0; i < Result.size(); i++) {
 			Result[i]->help_request();
 		}
@@ -72,11 +91,13 @@ void CommandLineParser::show_globals() {
 	}
 	// Then look for usages requests 
 	if (Global_flags.flag_state("--Usage")) {
-		logsys->logInfo("Flag < --Usage > found", __LINE__, __FILE__, __func__, "CommandLineParser");
-		cout << "Displaying Usage request : " << endl;
+		logsys->logDebug("Flag < --Usage > found", __LINE__, __FILE__, __func__, "CommandLineParser");
+		string line = "##################################";
+		cout << endl << line << " <<-- Usage section -->> " << line << endl << endl;
 		for (unsigned int i = 0; i < Result.size(); i++) {
 			Result[i]->usage_request();
 		}
+		cout << endl << endl;
 		return;
 	}
 }
@@ -334,13 +355,15 @@ void ParserFlags::introspective(){
 	cout << "	-> State : " << state << endl ;
 }
 
-void ParserFlags::help_request() {
-	GlobalHook::help_request();
-	cout << "Aliases : ";
+void ParserFlags::help_request(int indent_spaces) {
+	// indent 4 spaces
+	indent(indent_spaces);
+	cout << "Aliases : { ";
 	for (unsigned int a_id = 0; a_id < aliases.size(); a_id++) {
-		cout <<"    "<< aliases[a_id] << " ";
+		cout << aliases[a_id] << ((a_id != aliases.size() - 1)? " , " : "");
 	}
-	cout << endl;
+	cout <<" }" << endl;
+	GlobalHook::help_request(indent_spaces);
 }
 
 bool ParserFlags::is_terminal() {
@@ -357,8 +380,9 @@ GlobalHook::GlobalHook(string _description, string _usage) :
 	usage(_usage)
 {}
 
-void GlobalHook::help_request() {
-	cout << description << endl;
+void GlobalHook::help_request(int indent_spaces) {
+	indent(indent_spaces);
+	cout << "Description : " << description << endl;
 }
 
 void GlobalHook::usage_request() {
@@ -425,12 +449,19 @@ void ParserResult::set_arg(string argument) {
 // set in previous steps.
 bool ParserResult::is_full() { return full; }
 
+
 // Globals messages to be shown 
-void ParserResult::help_request() {
-	GlobalHook::help_request();
+void ParserResult::help_request(int indent_spaces) {
+	print_line(0, 120);
+	cout << "[ "<< name << " ] :" << endl;
+	GlobalHook::help_request(indent_spaces);
+	indent(indent_spaces);
+	indent_spaces += 4;
+	cout << "Available flags :" << endl;
 	for (unsigned int flag_id = 0; flag_id < available_flags.size(); flag_id++) {
-		cout << "    ";
-		available_flags[flag_id].help_request();
+		available_flags[flag_id].help_request(indent_spaces);
+		if(flag_id != available_flags.size() -1 ) print_line(indent_spaces, 10);
+		//cout << endl;
 	}
 	cout << endl;
 }

@@ -212,7 +212,7 @@ const string ConfObject::get_ext_property(string targeted_ext, SupportedExtensio
 						return "";
 					}
 					else {
-						log_ptr->logInfo("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.bloc_comment_end + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.bloc_comment_end + "> ", __LINE__, __FILE__, __func__, "ConfObject");
 						return ext.bloc_comment_end;
 					}
 					break;
@@ -222,7 +222,7 @@ const string ConfObject::get_ext_property(string targeted_ext, SupportedExtensio
 						return "";
 					}
 					else {
-						log_ptr->logInfo("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.bloc_comment_start + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.bloc_comment_start + "> ", __LINE__, __FILE__, __func__, "ConfObject");
 						return ext.bloc_comment_start;
 					}
 					break;
@@ -232,7 +232,7 @@ const string ConfObject::get_ext_property(string targeted_ext, SupportedExtensio
 						return "";
 					}
 					else {
-						log_ptr->logInfo("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.single_line_comment + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.single_line_comment + "> ", __LINE__, __FILE__, __func__, "ConfObject");
 						return ext.single_line_comment;
 					}
 					break;
@@ -284,7 +284,7 @@ void ConfObject::add_element(SupportedExtension new_language_spec) {
 			ext = new_language_spec;
 		}
 	}
-	log_ptr->logInfo("Add supported extension to vector", __LINE__, __FILE__, __func__, "ConfObject");
+	log_ptr->logDebug("Add supported extension to vector", __LINE__, __FILE__, __func__, "ConfObject");
 	// No extension with the same name was found -> we can safely add a new one
 	extension_vect.push_back(new_language_spec);
 }

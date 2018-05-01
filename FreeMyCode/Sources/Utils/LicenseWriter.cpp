@@ -151,7 +151,7 @@ void FormattedLicense::generate(string _ext, ConfObject& config, CommandLinePars
 	
 	vector<string> _ext_list_from_config = config.find_language_spec(_ext).extension;
 	if (_ext_list_from_config[0] != "") {
-		log->logInfo("Found multiple languages matching " + _ext + " extension",  __LINE__, __FILE__, __func__, "FormattedLicense");
+		log->logDebug("Found multiple languages matching " + _ext + " extension",  __LINE__, __FILE__, __func__, "FormattedLicense");
 		targeted_extensions = _ext_list_from_config;
 	}
 	else {
@@ -173,12 +173,12 @@ void FormattedLicense::generate(string _ext, ConfObject& config, CommandLinePars
 		&& (bloc_end != ""))
 	{
 		use_block_comment = true;
-		log->logInfo("Using block comments",  __LINE__, __FILE__, __func__, "FormattedLicense");
+		log->logDebug("Using block comments",  __LINE__, __FILE__, __func__, "FormattedLicense");
 	}
 	else if (single_com != "")
 	{
 		use_single_line_comment = true;
-		log->logInfo("Using single line comments",  __LINE__, __FILE__, __func__, "FormattedLicense");
+		log->logDebug("Using single line comments",  __LINE__, __FILE__, __func__, "FormattedLicense");
 	}
 
 	// By default : use block comments instead of single for readability
@@ -306,7 +306,7 @@ void SecondaryInput::parse_secondary_input_file() {
 				// Test if the key matches with any of the Standard array types
 				for (unsigned i = 0; i < LIST_NODES_SIZE; i++) {
 					if (LIST_NODES[i] == current_key) {
-						log->logInfo("Found \" " + current_key + " \" array in file " , __LINE__, __FILE__, __func__, "SecondaryInput");
+						log->logDebug("Found \" " + current_key + " \" array in file " , __LINE__, __FILE__, __func__, "SecondaryInput");
 						current_tag = new Tag(itr->name.GetString(),array_values);
 						found_standard = true;
 						continue;
@@ -332,13 +332,13 @@ void SecondaryInput::parse_secondary_input_file() {
 				// Parse recursively and identify tags type
 				Tag* current_tag = NULL;
 				string current_key = itr->name.GetString();
-				log->logInfo("Currently evaluated Tag is \" " + current_key + " \"", __LINE__, __FILE__, __func__, "SecondaryInput");
+				log->logDebug("Currently evaluated Tag is \" " + current_key + " \"", __LINE__, __FILE__, __func__, "SecondaryInput");
 				vector<string> current_value = { itr->value.GetString() };
 				bool found_standard = false;
 				// Iterate over supported Nodes type
 				for (unsigned i = 0; i < NODES_ARRAY_DIM; i++) {
 					if (current_key == NODES_ARRAY[i]) {
-						log->logInfo("Found corresponding Tag : \" " + current_key + " \"", __LINE__, __FILE__, __func__, "SecondaryInput");
+						log->logDebug("Found corresponding Tag : \" " + current_key + " \"", __LINE__, __FILE__, __func__, "SecondaryInput");
 						current_tag = new Tag(current_key, current_value);
 						found_standard = true;
 						continue;
@@ -351,7 +351,7 @@ void SecondaryInput::parse_secondary_input_file() {
 				}
 				available_tags.push_back(current_tag);
 				if (parser->get_flag("--verbose")) {
-					log->logInfo("Found " + current_key + " : " + current_value[0], __LINE__, __FILE__, __func__, "SecondaryInput");
+					log->logDebug("Found " + current_key + " : " + current_value[0], __LINE__, __FILE__, __func__, "SecondaryInput");
 				}
 			}
 		}
