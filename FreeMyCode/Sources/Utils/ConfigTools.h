@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include <vector>
+#include <string>
 #include "LoggingTools.h"
 
 struct SupportedExtension {
@@ -16,12 +17,18 @@ struct SupportedExtension {
 	bool match_ext(std::string _ext);
 };
 
+struct FormattingTag {
+	std::string name;
+	std::vector<std::string> values;
+	FormattingTag(std::string _name, std::vector<std::string> _values) :name(_name), values(_values) {}
+};
 
 class ConfObject {
 	std::vector<SupportedExtension> extension_vect;
 	// general template used to get a property inside config file
 	const std::string get_ext_property(std::string targeted_extension, SupportedExtension::properties prop_type);
 	logger::Logger* log_ptr;
+	std::vector<FormattingTag*> tags_vect;
 public:
 	const std::string get_supported_ext_list();
 	ConfObject(logger::Logger* new_logger = NULL);
@@ -38,6 +45,7 @@ public:
 	
 
 };
+
 
 
 #endif // !CONFIGTOOLS_HEADER

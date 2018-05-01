@@ -488,7 +488,7 @@ bool ParserResult::match_name(string _name) {
 // completing the run.
 bool ParserResult::has_terminal_flags() {
 	for (unsigned int i = 0; i < available_flags.size(); i++) {
-		if (available_flags[i].is_terminal()) return true;
+		if (available_flags[i].is_terminal() && available_flags[i].state == true) return true;
 	}
 	return false;
 }

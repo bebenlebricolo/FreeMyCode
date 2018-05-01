@@ -38,6 +38,8 @@ static const char*  LANG_BL_COM_CL = "Bloc comment closing";
 static const char*  LANG_EXT_ARRAY = "Extension array";
 static const char*  LANG_EXT_NODE = "Extension";
 
+static const char*  TAGS_NODE = "Tags";
+
 
 
 
@@ -88,6 +90,9 @@ ConfObject::ConfObject(logger::Logger* new_logger):log_ptr(new_logger) {
 
 // Now that we have a dedicated pointer to a logger, we need to properly delete it.
 ConfObject::~ConfObject() {
+	for (unsigned i = 0; i < tags_vect.size(); i++) {
+		delete(tags_vect[i]);
+	}
 }
 
 
@@ -174,16 +179,40 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 			log_ptr->logInfo("JSON file parsing successfull", __LINE__, __FILE__, __func__, "ConfObject");
 
 			// Parsing successfull
-			return true;
 		}
 		else {
 			log_ptr->logError("Cannot find <" + string(LANG_NODE) + "> Node in file", __LINE__, __FILE__, __func__, "ConfObject");
-
 			// Parsing unsuccessfull -> no "Language" node found
 			return false;
 		}
+
+		// If we found a Tag node with Tags informations
+		if (config_node->HasMember(TAGS_NODE)) {
+			log_ptr->logInfo("Entered the \" " + string(TAGS_NODE) + " \" node of config file", __LINE__, __FILE__, __func__, "ConfObject");
+			const Value& tags_node = (*config_node)[TAGS_NODE];
+			for (Value::ConstMemberIterator itr = tags_node.MemberBegin(); itr != tags_node.MemberEnd(); itr++) {
+				string current_key = itr->name.GetString();
+				log_ptr->logDebug("Found key : < " + current_key + " > in config file", __LINE__, __FILE__, __func__, "ConfObject");
+				vector<string> values;
+				if (itr->value.IsArray()) {
+					log_ptr->logDebug("This is an array : initiate recursive parsing ", __LINE__, __FILE__, __func__, "ConfObject");
+					for (unsigned i = 0; i < itr->value.Size(); i++) {
+						string current_value = itr->value[i].GetString();
+						values.push_back(current_value);
+						log_ptr->logDebug("Found value : < " + current_value + " > in config file", __LINE__, __FILE__, __func__, "ConfObject");
+					}
+				}
+				else {
+					log_ptr->logDebug("This is a single value tag", __LINE__, __FILE__, __func__, "ConfObject");
+					values.push_back(itr->value.GetString());
+				}
+				tags_vect.push_back(new FormattingTag(current_key, values));
+				log_ptr->logDebug("Update tags_vector with a new FormattingTag", __LINE__, __FILE__, __func__, "ConfObject");
+			}
+			log_ptr->logInfo("Successfully parsed the \" " + string(TAGS_NODE) + " \" node of config file", __LINE__, __FILE__, __func__, "ConfObject");
+		}
 	}
-	
+	return true;
 }
 
 

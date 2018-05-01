@@ -1,6 +1,6 @@
 {
    "Configuration":{
-      "Tags":[
+      "Tags":
          {
           "FreeMyCode version":"@version :",
           "Author": "@author :",
@@ -15,17 +15,16 @@
           ],
           "Organisation name": "@<ORGANISATION> :",
           "Organisation website": "@<ORGANISATION> website :",
-          "Project name": "@Project :",
-          "Project url": "@Project url :",
-          "Project repo": "@Project repo :",
+          "Project name": "@project :",
+          "Project url": "@project url :",
+          "Project repo": "@project repo :",
           "License": "@license :",
           "License url": "@license url :",
           "FreeMyCode header opening":"@<FreeMyCode>",
           "FreeMyCode header closing": "<FreeMyCode>@",
           "Date": "Date :",
           "Custom": "@<CUSTOM> :"
-         }
-      ],
+         },
     "Languages": [
       {
         "Extension array": [

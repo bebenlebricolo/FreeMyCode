@@ -52,6 +52,7 @@ class SecondaryInput {
 	CommandLineParser* parser;
 	logger::Logger* log;
 	std::vector<Tag*> available_tags;
+	ofstream get_tags_block();
 public:
 	SecondaryInput(ConfObject* _config, CommandLineParser* _parser, logger::Logger* _log = NULL);
 	~SecondaryInput();

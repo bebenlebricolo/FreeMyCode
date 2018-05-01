@@ -357,3 +357,12 @@ void SecondaryInput::parse_secondary_input_file() {
 		}
 	}
 }
+
+// Builds a text block containing all preformatted tags data
+ofstream SecondaryInput::get_tags_block() {
+	ofstream out;
+	for (unsigned int i = 0; i < available_tags.size(); i++) {
+
+	}
+	return out;
+}
