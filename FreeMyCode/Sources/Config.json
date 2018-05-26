@@ -1,30 +1,20 @@
 {
    "Configuration":{
-      "Tags":
-         {
-          "FreeMyCode version":"@version :",
-          "Author": "@author :",
-          "Author list opening": "@authors : < ",
-          "Author list closing": " >authors@",
-          "Organisation types": [
-            "School",
-            "Company",
-            "Institution",
-            "Association",
-            "Independant"
-          ],
-          "Organisation name": "@<ORGANISATION> :",
-          "Organisation website": "@<ORGANISATION> website :",
-          "Project name": "@project :",
-          "Project url": "@project url :",
-          "Project repo": "@project repo :",
-          "License": "@license :",
-          "License url": "@license url :",
-          "FreeMyCode header opening":"@<FreeMyCode>",
-          "FreeMyCode header closing": "<FreeMyCode>@",
-          "Date": "Date :",
-          "Custom": "@<CUSTOM> :"
-         },
+    "Tags": {
+      "List open": "[",
+      "List close": "]",
+      "Starting tag": "@",
+      "Node": "$node",
+      "Secondary types": [
+        "url",
+        "name",
+        "type",
+        "repo"
+      ],
+      "FreeMyCode version": "@version :",
+      "FreeMyCode header opening": "@<FreeMyCode>",
+      "FreeMyCode header closing": "<FreeMyCode>@"
+    },
     "Languages": [
       {
         "Extension array": [

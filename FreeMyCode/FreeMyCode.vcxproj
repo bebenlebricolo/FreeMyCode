@@ -153,6 +153,7 @@
   <ItemGroup>
     <None Include="..\Buildx64\Debug\Dummy_Directory\Secondary_input.json" />
     <None Include="Sources\Config.json" />
+    <None Include="Sources\Secondary_input.json" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\FreeMyCode.cpp" />
