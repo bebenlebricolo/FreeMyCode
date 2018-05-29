@@ -44,6 +44,7 @@ static const char* NODES_ARRAY[] = {
 	"Organisation website"
 };
 static int NODES_ARRAY_DIM = 7;
+static const char* VERSION_NODE = "FreeMyCode version";
 
 static const char* LIST_NODES[] = {
 	"Author list",
@@ -387,6 +388,27 @@ void SecondaryInput::parse_secondary_input_file() {
 	}
 }
 
+static TagObject* getFreeMyCodeTag(ConfObject* config) {
+	string name = "FreeMyCode";
+	TagObject* tag = new TagObject(name);
+	vector<string> *version = config->get_tag(VERSION_NODE);
+	if (version != nullptr) {
+		if (version->size() == 1) {
+			tag->keys.push_back(new TagLine(VERSION_NODE,(*version)[0].c_str()));
+		}
+		else
+		{
+			logger::Logger::get_logger()->logWarning("Version node in Config file has multiple values",__LINE__, __FILE__, __func__);
+		}
+	}
+	else
+	{
+		logger::Logger::get_logger()->logWarning("Config file has no < " + string(VERSION_NODE) + " > node", __LINE__, __FILE__, __func__);
+	}
+	return tag;
+}
+
+
 // Builds a text block containing all preformatted tags data
 ostringstream* SecondaryInput::getTagsFormattedBlock() {
 	ostringstream *out = new ostringstream();
@@ -394,18 +416,22 @@ ostringstream* SecondaryInput::getTagsFormattedBlock() {
 	Formatter _format;
 	_format.set_delimiter(':');
 	if (out != NULL)
-	{
-		bool verbose = parser->get_flag("--verbose");
-		if (verbose) cout << endl << "VERBOSE MODE - Printing result of Secondary Input parsing and Formatting:" << endl << endl; 
+	{	
+		TagObject *freeMyCode_Tag = getFreeMyCodeTag(config);
+		if (freeMyCode_Tag != nullptr) {
+			*out << freeMyCode_Tag->buildFormattedBlock(_format)->str();
+		}
+
 		for (unsigned int i = 0; i < available_tags.size(); i++) {
 			curTag = available_tags[i]->buildFormattedBlock(_format);
-			if (curTag != NULL)
-			{
+			if (curTag != NULL) {
 				*out << curTag->str();
-				if (verbose) cout << curTag->str();
 			}
 		}
-		if (verbose) cout << endl; 
+		if (parser->get_flag("--verbose")) {
+			cout << endl << "VERBOSE MODE - Printing result of Secondary Input parsing and Formatting:" << endl << endl;
+			cout << out->str() << endl;
+		}
 	}
 	return out;
 }
@@ -460,8 +486,8 @@ ProtoTags and derivatives definitions
 **************************************************************************************
 */
 
-ProtoTag::ProtoTag(string &_name) : name(_name)
-{}
+ProtoTag::ProtoTag(string &_name) : name(_name) {}
+ProtoTag::ProtoTag(const char* _name) : name(_name) {}
 
 string ProtoTag::printNameAndDelim(Formatter &_format)
 {
@@ -469,8 +495,8 @@ string ProtoTag::printNameAndDelim(Formatter &_format)
 	return out;
 }
 
-TagLine::TagLine(string &_name, string &_value) : ProtoTag(_name), value(_value)
-{}
+TagLine::TagLine(string &_name, string &_value) : ProtoTag(_name), value(_value) {}
+TagLine::TagLine(const char* _name , const char* _value) : ProtoTag(_name),value(_value) {}
 
 ostringstream* TagLine::buildFormattedBlock(Formatter &_format)
 {
@@ -514,7 +540,6 @@ ostringstream* TagArray::buildFormattedBlock(Formatter &_format)
 
 TagObject::TagObject(string &_name) : ProtoTag(_name)
 {}
-
 
 ostringstream* TagObject::buildFormattedBlock(Formatter &_format)
 {

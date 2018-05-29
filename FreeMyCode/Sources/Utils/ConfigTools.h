@@ -38,6 +38,7 @@ public:
 	const std::string get_bloc_comment_start(std::string targeted_extension);
 	const std::string get_bloc_comment_end(std::string targeted_extension);
 	const std::string get_single_line_com(std::string targeted_extension);
+	std::vector <std::string> *get_tag(std::string tag_name);
 
 	void add_element(SupportedExtension new_language_spec);
 	SupportedExtension find_language_spec(std::string _ext);

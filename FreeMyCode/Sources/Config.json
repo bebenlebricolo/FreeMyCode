@@ -2,7 +2,7 @@
    "Configuration":{
     "Tags": {
       "Delimiter" :  ":",
-      "FreeMyCode version": "@version :",
+      "FreeMyCode version": "0.1",
       "FreeMyCode header opening": "@<FreeMyCode>",
       "FreeMyCode header closing": "<FreeMyCode>@"
     },

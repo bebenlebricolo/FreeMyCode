@@ -303,6 +303,15 @@ const string ConfObject::get_single_line_com(string targeted_ext) {
 	return get_ext_property(targeted_ext, SupportedExtension::properties::Single_Comment);
 }
 
+vector<string>* ConfObject::get_tag(string tag_name) {
+	for (unsigned int itr = 0; itr < tags_vect.size(); itr++) {
+		if (tags_vect[itr]->name == tag_name) {
+			return &tags_vect[itr]->values;
+		}
+	}
+	return nullptr;
+}
+
 // Add an element to extension_vector of ConfObject.
 // If an extension overlaps a previously added one, then it will be overwritten by the new one
 void ConfObject::add_element(SupportedExtension new_language_spec) {

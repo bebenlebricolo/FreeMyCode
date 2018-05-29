@@ -80,12 +80,14 @@ public:
 struct ProtoTag {
 	std::string name;
 	ProtoTag(std::string &_name);
+	ProtoTag(const char* _name);
 	string printNameAndDelim(Formatter &_format);
 	virtual ostringstream* buildFormattedBlock(Formatter &_format) = 0;
 };
 struct TagLine : public ProtoTag{
 	std::string value;
 	TagLine(std::string &_name, std::string &_value);
+	TagLine(const char* _name,const char* _value);
 	ostringstream* buildFormattedBlock(Formatter &_format);
 };
 
