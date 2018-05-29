@@ -1,16 +1,7 @@
 {
    "Configuration":{
     "Tags": {
-      "List open": "[",
-      "List close": "]",
-      "Starting tag": "@",
-      "Node": "$node",
-      "Secondary types": [
-        "url",
-        "name",
-        "type",
-        "repo"
-      ],
+      "Delimiter" :  ":",
       "FreeMyCode version": "@version :",
       "FreeMyCode header opening": "@<FreeMyCode>",
       "FreeMyCode header closing": "<FreeMyCode>@"

@@ -42,31 +42,57 @@ struct FormattedLicense {
 };
 
 
-struct Tag {
-	std::string name;
-	std::vector<std::string> values;
-	// Multiples subTags are possible in this structure
-	std::vector<Tag*>* nested_Tags;
+// ############################
+// Formatting stuff
+// ############################
 
-	// This constructor COPIES the name and values vector
-	// Vectors shall stay small in this particular configuration.
-	Tag(std::string _name, std::vector<std::string> _values, std::vector<Tag*>* _nested = NULL);
-	~Tag();
+class Indent
+{
+private:
+	unsigned int indent;
+	static const unsigned int default_indent = 4;
+public:
+	unsigned int operator() () const;
+	// postfixes operators ! Needs an (int)
+	unsigned int& operator++ (int);
+	unsigned int& operator-- (int);
+	void reset();
+	Indent();
+	Indent(unsigned int &_init);
+	string buildString() const;
 };
 
+class Formatter
+{
+private :
+	char _delimiter;
+public:
+	char delimiter() const ;
+	void set_delimiter(char newDelim);
+	Indent indent;
+	Formatter();
+};
+
+// ############################
+// Secondary Input tags data structure
+// ############################
+
 struct ProtoTag {
-	//enum type {Key,Array,Object};
 	std::string name;
 	ProtoTag(std::string &_name);
+	string printNameAndDelim(Formatter &_format);
+	virtual ostringstream* buildFormattedBlock(Formatter &_format) = 0;
 };
 struct TagLine : public ProtoTag{
 	std::string value;
 	TagLine(std::string &_name, std::string &_value);
+	ostringstream* buildFormattedBlock(Formatter &_format);
 };
 
 struct TagArray : public ProtoTag{
 	std::vector<std::string> val;
 	TagArray(std::string &name, std::vector<std::string> &data);
+	ostringstream* buildFormattedBlock(Formatter &_format);
 };
 
 struct TagObject : public ProtoTag {
@@ -75,14 +101,19 @@ struct TagObject : public ProtoTag {
 	std::vector<TagObject*> obj;
 	TagObject(std::string &name);
 	~TagObject();
+	ostringstream* buildFormattedBlock(Formatter &_format);
 };
+
+// ############################
+// Secondary input class declaration
+// ############################
+
 
 class SecondaryInput {
 	ConfObject* config;
 	CommandLineParser* parser;
 	logger::Logger* log;
 	std::vector<ProtoTag*> available_tags;
-	ofstream get_tags_block();
 	TagLine* parseLine(rapidjson::Value::ConstMemberIterator &itr);
 	TagObject* parseObject(rapidjson::Value::ConstMemberIterator &itr);
 	TagArray* parseArray(rapidjson::Value::ConstMemberIterator& itr);
@@ -90,6 +121,7 @@ public:
 	SecondaryInput(ConfObject* _config, CommandLineParser* _parser, logger::Logger* _log = NULL);
 	~SecondaryInput();
 	void parse_secondary_input_file();
+	ostringstream* getTagsFormattedBlock();
 };
 
 
