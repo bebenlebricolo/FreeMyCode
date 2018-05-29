@@ -9,9 +9,10 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
    * Prevent re-licensing of a file
 - [ ] Prevent multiple license writing in a file
 - [ ] Implement GUI with Qt
-- [ ] Use tags to add specific content
+- [x] Use tags to add specific content
    * @author
    * @license-url
    * @freemycode-version
+- [ ] Finalise Secondary Input tags formatting
 - [ ] Exclude directories functionality (exclude path) 
    * This is to prevent re-licensing of external libs, for example
