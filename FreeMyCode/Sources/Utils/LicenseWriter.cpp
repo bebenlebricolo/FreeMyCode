@@ -28,6 +28,7 @@ Version	|	 Date	 |	Comments
 
 #include "PathUtils.h"
 #include "LoggingTools.h"
+#include <cstdio>
 
 using namespace std::experimental::filesystem;
 using namespace rapidjson;
@@ -90,24 +91,123 @@ LicenseWriter::~LicenseWriter() {
 }
 
 
-/*
-std::vector<std::string> LicenseWriter::write_license(void) {
-	std::vector<std::string>* file_list = DirectoryAnalyser::get_files_in_dir(parser->get_arg("Directory"), config->get_supported_ext_list());
-	
-	// Load license file in memory
-	ifstream license(parser->get_arg("License"));
-
-	for (unsigned int i = 0; i < file_list->size(); i++) {
-		if (found_prev_license((*file_list)[i])) {
-
+FormattedLicense* LicenseWriter::getLicenseByExt(std::string extension)
+{
+	for (unsigned int itr = 0; itr < form_lic_list.size(); itr++)
+	{
+		if (form_lic_list[itr]->match_extension(extension)) {
+			return form_lic_list[itr];
 		}
 	}
-}*/
+	return nullptr;
+}
+
+
+std::vector<std::string> LicenseWriter::write_license(void) {
+	std::vector<std::string>* file_list = DirectoryAnalyser::get_files_in_dir(parser->get_arg("Directory"), config->get_supported_ext_list());
+	// List of files which cannot be modified (for any reason)
+	std::vector<std::string> wrongFiles; 
+	FormattedLicense *targetedLicense = nullptr;
+
+	bool selectBoth = false;
+	string userInputBuffer;
+	// Check whether both positioning flag are set or not
+	if (parser->get_flag("--append") == true
+		&& parser->get_flag("--prepend") == true) {
+		log->logWarning("Both prepend and append flags are set", __LINE__, __FILE__, __func__, "LicenseWriter");
+		cout << "Should we write stuff at the beginning (append) AND end of the file (append) ? y/n : ";
+		cin >> userInputBuffer;
+		if (userInputBuffer == "y") selectBoth = true;
+		cout << "\nSelect Both = " << (selectBoth ? "true" : "false") << endl;
+		if (selectBoth == false){
+			cout << "Which positioning shall we use? A -> append , P -> prepend (A/P) : ";
+			do {
+				cin >> userInputBuffer;
+				if (userInputBuffer == "A"){
+					parser->overrideFlag("--prepend", false);
+					cout << "Append selected." << endl;
+					log->logInfo("Conflict resolved : append flag selected.", __LINE__, __FILE__, __func__, "LicenseWriter");
+					break;
+				}
+				else if (userInputBuffer == "P") {
+					parser->overrideFlag("--append", false);
+					cout << "Prepend selected." << endl;
+					log->logInfo("Conflict resolved : prepend flag selected.", __LINE__, __FILE__, __func__, "LicenseWriter");
+					break;
+				}
+			} while (true);
+		}
+	}
+
+
+	for (unsigned int i = 0; i < file_list->size(); i++) {
+		string currentFile = (*file_list)[i];
+		string currentExtension = pathutils::get_extension(currentFile);
+		targetedLicense = getLicenseByExt(currentExtension);
+		if (targetedLicense == nullptr) {
+			log->logWarning("Cannot find any previously built license for this extension < " + currentExtension + " >. Maybe try to rebuild the list?",
+				__LINE__, __FILE__, __func__, "LicenseWriter");
+			log->logError("Encountered error in file : " + pathutils::get_filename(currentFile),
+				__LINE__, __FILE__, __func__, "LicenseWriter");
+			wrongFiles.push_back(currentFile);
+			continue;
+		}
+		else {
+			log->logInfo("Found FormattedLicense for extension < " + currentExtension + " >.",
+				__LINE__, __FILE__, __func__, "LicenseWriter");
+			
+		
+			if (parser->get_flag("--append") == true) {
+				ofstream file;
+				file.open(currentFile, ios::out | ios::app);
+				file << targetedLicense->for_lic.str();
+				file.close();
+			}
+			if (parser->get_flag("--prepend") == true ) {
+				ifstream file;
+				ofstream tmpFile;
+				string tmpPath = currentFile + ".tmp";
+				string bufferString;
+				tmpFile.open(tmpPath, ios::out);
+				file.open(currentFile, ios::in);
+				tmpFile << targetedLicense->for_lic.str();
+				tmpFile << file.rdbuf();
+				file.close();
+				tmpFile.close();
+				remove(currentFile);
+				if (exists(currentFile) == true) {
+					log->logError("Cannot remove file : " + pathutils::get_filename(currentFile) + " from disk",
+						__LINE__, __FILE__, __func__, "LicenseWriter");
+					wrongFiles.push_back(currentFile);
+				}
+				else
+				{
+
+					if (rename(tmpPath.c_str(), currentFile.c_str()) != 0)
+					{
+						log->logError("Cannot rename file : " + pathutils::get_filename(currentFile),
+							__LINE__, __FILE__, __func__, "LicenseWriter");
+						wrongFiles.push_back(currentFile);
+					}
+					else
+					{
+						log->logInfo("Successfully modified file : " + pathutils::get_filename(currentFile),
+							__LINE__, __FILE__, __func__, "LicenseWriter");
+					}
+				}
+			}
+		}
+	}
+	return wrongFiles;
+}
 
 // Build formatted licenses list and store them in memory
 void LicenseWriter::build_formatted_license_list(std::vector<std::string>* file_list) {
-	second_in->parse_secondary_input_file();
-	ostringstream* tagsBlock = second_in->getTagsFormattedBlock();
+	ostringstream* tagsBlock = nullptr;
+	if (second_in != nullptr) {
+		second_in->parse_secondary_input_file();
+		 tagsBlock = second_in->getTagsFormattedBlock();
+	}
 	for (unsigned int i = 0; i < file_list->size(); i++) {
 		bool match_previous_ext = false;
 		string cur_ext = pathutils::get_extension((*file_list)[i]);

@@ -51,6 +51,7 @@ struct ParserResult : public GlobalHook{
 	bool is_full();
 	void set_arg(string arg);
 	void introspective();
+	void overrideFlag(string flagName, bool flagState);
 
 	void help_request(unsigned int indent_spaces = 4);
 	void usage_request();
@@ -91,6 +92,7 @@ public:
 	void show_results();
 	bool get_flag(string flag);
 	string get_arg(string name);
+	void overrideFlag(string flagName, bool flagState);
 	void add_container(std::vector<ParserResult*>* Result_vector);
 	void add_container(ParserResult* Result_object);
 

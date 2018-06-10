@@ -303,6 +303,14 @@ string CommandLineParser::get_arg(string name) {
 	return "";
 }
 
+void CommandLineParser::overrideFlag(string flagName, bool flagState) {
+	for (unsigned int R = 0; R < Result.size(); R++) {
+		if (Result[R]->contain_flag(flagName)) {
+			Result[R]->overrideFlag(flagName, flagState);
+		}
+	}
+}
+
 // Initializes the vector all at once. 
 // Note : if original Result vector is not empty, it will be overwritten by the new one.
 // -> If we replace a vector of pointers A by a vector B (with A != B) , then we might
@@ -409,6 +417,15 @@ void ParserResult::introspective() {
 	cout << "-> is Full? : " << (full ? "true" : "false") << endl;
 	for (int flag_index = 0; flag_index < available_flags.size(); flag_index++) {
 		available_flags[flag_index].introspective();
+	}
+}
+
+void ParserResult::overrideFlag(string flagName, bool flagState)
+{
+	for (unsigned int F = 0; F < available_flags.size(); F++) {
+		if (available_flags[F].match_flag(flagName)) {
+			available_flags[F].state = flagState;
+		}
 	}
 }
 
