@@ -13,6 +13,7 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
    * @author
    * @license-url
    * @freemycode-version
-- [ ] Finalise Secondary Input tags formatting
+- [x] Finalise Secondary Input tags formatting
+- [x] Supports FreeMyCode specific tags as well (FreeMyCode version)
 - [ ] Exclude directories functionality (exclude path) 
    * This is to prevent re-licensing of external libs, for example
