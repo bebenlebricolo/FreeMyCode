@@ -27,15 +27,15 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 
 using namespace std;
 
-static void indent(int spaces = 0) {
+static void indent(unsigned int spaces = 0) {
 	string indent_line = "";
-	for (unsigned i = 0; i < spaces; i++) {
+	for (unsigned int i = 0; i < spaces; i++) {
 		indent_line += " ";
 	}
 	std::cout << indent_line;
 }
 
-static void print_line(int indent_spaces = 4, int length = 40, const char print_character = '-') {
+static void print_line(unsigned int indent_spaces = 4, unsigned int length = 40, const char print_character = '-') {
 	string line;
 	for (unsigned i = 0; i < length; i++) {
 		line += print_character;
@@ -380,7 +380,7 @@ GlobalHook::GlobalHook(string _description, string _usage) :
 	usage(_usage)
 {}
 
-void GlobalHook::help_request(int indent_spaces) {
+void GlobalHook::help_request(unsigned int indent_spaces) {
 	indent(indent_spaces);
 	cout << "Description : " << description << endl;
 }
@@ -451,7 +451,7 @@ bool ParserResult::is_full() { return full; }
 
 
 // Globals messages to be shown 
-void ParserResult::help_request(int indent_spaces) {
+void ParserResult::help_request(unsigned int indent_spaces) {
 	print_line(0, 120);
 	cout << "[ "<< name << " ] :" << endl;
 	GlobalHook::help_request(indent_spaces);

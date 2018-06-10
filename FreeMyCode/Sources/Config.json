@@ -1,10 +1,16 @@
 {
    "Configuration":{
     "Tags": {
-      "Delimiter" :  ":",
-      "FreeMyCode version": "0.1",
-      "FreeMyCode header opening": "@<FreeMyCode>",
-      "FreeMyCode header closing": "<FreeMyCode>@"
+      "FreeMyCode tags": {
+        "Version": "0.1",
+        "Section open": "@<FreeMyCode>",
+        "Section close": "<FreeMyCode>@",
+        "Format tags": {
+          "Delimiter": ":",
+          "Indent": "4",
+          "Bullet point": "*"
+        }
+      }
     },
     "Languages": [
       {

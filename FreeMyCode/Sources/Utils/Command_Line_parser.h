@@ -14,7 +14,7 @@ struct GlobalHook {
 	string usage;
 	GlobalHook();
 	GlobalHook(string _description, string _usage);
-	void help_request(int indent_spaces = 4);
+	void help_request(unsigned int indent_spaces = 4);
 	void usage_request();
 };
 
@@ -52,7 +52,7 @@ struct ParserResult : public GlobalHook{
 	void set_arg(string arg);
 	void introspective();
 
-	void help_request(int indent_spaces = 4);
+	void help_request(unsigned int indent_spaces = 4);
 	void usage_request();
 	string get_arg();
 	bool match_name(string _name);

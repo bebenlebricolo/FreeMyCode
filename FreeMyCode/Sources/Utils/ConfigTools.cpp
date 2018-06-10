@@ -190,26 +190,38 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 		if (config_node->HasMember(TAGS_NODE)) {
 			log_ptr->logInfo("Entered the \" " + string(TAGS_NODE) + " \" node of config file", __LINE__, __FILE__, __func__, "ConfObject");
 			const Value& tags_node = (*config_node)[TAGS_NODE];
+			ProtoTag* newTag = nullptr;
+			bool foundError = false;
+
 			for (Value::ConstMemberIterator itr = tags_node.MemberBegin(); itr != tags_node.MemberEnd(); itr++) {
-				string current_key = itr->name.GetString();
-				log_ptr->logDebug("Found key : < " + current_key + " > in config file", __LINE__, __FILE__, __func__, "ConfObject");
-				vector<string> values;
-				if (itr->value.IsArray()) {
-					log_ptr->logDebug("This is an array : initiate recursive parsing ", __LINE__, __FILE__, __func__, "ConfObject");
-					for (unsigned i = 0; i < itr->value.Size(); i++) {
-						string current_value = itr->value[i].GetString();
-						values.push_back(current_value);
-						log_ptr->logDebug("Found value : < " + current_value + " > in config file", __LINE__, __FILE__, __func__, "ConfObject");
-					}
+				
+				// Parsing current node depending on found type
+				if (itr->value.IsString()){
+					newTag = FormattingTags::parseLine(itr);}
+				else if (itr->value.IsArray()){
+					newTag = FormattingTags::parseArray(itr);}
+				else if (itr->value.IsObject()){
+					newTag = FormattingTags::parseObject(itr);}
+
+				// NewTag is pushed to available tags list
+				if (newTag != nullptr) {
+					tags_vect.push_back(newTag); }
+				else
+				{
+					log_ptr->logWarning("Cannot parse current json node < " + string(itr->name.GetString()) + " >",
+						__LINE__, __FILE__, __func__, "ConfObject");
+					foundError = true;
 				}
-				else {
-					log_ptr->logDebug("This is a single value tag", __LINE__, __FILE__, __func__, "ConfObject");
-					values.push_back(itr->value.GetString());
-				}
-				tags_vect.push_back(new FormattingTag(current_key, values));
-				log_ptr->logDebug("Update tags_vector with a new FormattingTag", __LINE__, __FILE__, __func__, "ConfObject");
 			}
-			log_ptr->logInfo("Successfully parsed the \" " + string(TAGS_NODE) + " \" node of config file", __LINE__, __FILE__, __func__, "ConfObject");
+			if (foundError == false) {
+				log_ptr->logInfo("Successfully parsed the \" " + string(TAGS_NODE) + " \" node of config file",
+					__LINE__, __FILE__, __func__, "ConfObject");
+			}
+			else
+			{
+				log_ptr->logWarning("Config tags parsing encountered at least one error. Results might be partial.",
+					__LINE__, __FILE__, __func__, "ConfObject");
+			}
 		}
 	}
 	return true;
@@ -303,10 +315,10 @@ const string ConfObject::get_single_line_com(string targeted_ext) {
 	return get_ext_property(targeted_ext, SupportedExtension::properties::Single_Comment);
 }
 
-vector<string>* ConfObject::get_tag(string tag_name) {
+ProtoTag* ConfObject::get_tag(string tag_name) {
 	for (unsigned int itr = 0; itr < tags_vect.size(); itr++) {
 		if (tags_vect[itr]->name == tag_name) {
-			return &tags_vect[itr]->values;
+			return tags_vect[itr];
 		}
 	}
 	return nullptr;

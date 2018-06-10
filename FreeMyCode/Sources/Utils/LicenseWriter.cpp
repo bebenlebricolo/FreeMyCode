@@ -45,6 +45,7 @@ static const char* NODES_ARRAY[] = {
 };
 static int NODES_ARRAY_DIM = 7;
 static const char* VERSION_NODE = "FreeMyCode version";
+static const char* FREEMYCODE_TAGS = "FreeMyCode tags";
 
 static const char* LIST_NODES[] = {
 	"Author list",
@@ -108,24 +109,24 @@ void LicenseWriter::build_formatted_license_list(std::vector<std::string>* file_
 	second_in->parse_secondary_input_file();
 	ostringstream* tagsBlock = second_in->getTagsFormattedBlock();
 	for (unsigned int i = 0; i < file_list->size(); i++) {
-		bool match_pref_license_ext = false;
+		bool match_previous_ext = false;
 		string cur_ext = pathutils::get_extension((*file_list)[i]);
 		if (form_lic_list.size() == 0) {
 			FormattedLicense *f_lic = new FormattedLicense();
 			if (f_lic != NULL) {
-				f_lic->generate(cur_ext, *config, *parser);
+				f_lic->generate(cur_ext, *config, *parser , tagsBlock);
 				form_lic_list.push_back(f_lic);
 			}
 		}
 		// If we find at least one compatible formatted license (already built)
 		// Don't build another one (prevent building several identical licenses)
 		for (unsigned int j = 0; j < form_lic_list.size(); j++) {
-			match_pref_license_ext |= form_lic_list[j]->match_extension(cur_ext);
+			match_previous_ext |= form_lic_list[j]->match_extension(cur_ext);
 		}
-		if (match_pref_license_ext == false) {
+		if (match_previous_ext == false) {
 			FormattedLicense *f_lic = new FormattedLicense();
 			if (f_lic != NULL) {
-				f_lic->generate(cur_ext, *config, *parser);
+				f_lic->generate(cur_ext, *config, *parser, tagsBlock);
 				form_lic_list.push_back(f_lic);
 			}
 		}
@@ -142,7 +143,9 @@ FormattedLicense struct definition
 */
 
 
-void FormattedLicense::generate(string _ext, ConfObject& config, CommandLineParser& parser) {
+void FormattedLicense::generate(string _ext, ConfObject& config,
+	CommandLineParser& parser, ostringstream* tagsBlock ) 
+{
 	logger::Logger* log = logger::Logger::get_logger();
 	for_lic.seekp(0, ios::end);
 	if (0 != for_lic.tellp()) {
@@ -204,6 +207,22 @@ void FormattedLicense::generate(string _ext, ConfObject& config, CommandLinePars
 		for_lic << bloc_start << endl;
 	}
 
+	// Write Tags block before the license file
+	if (tagsBlock != nullptr) {
+		stringstream outputBlock (tagsBlock->str());
+		string FreeMyCode_SectionOpen = config.get_tag("FreeMyCode tags")->getProperty("Section open");
+		string FreeMyCode_SectionClose = config.get_tag("FreeMyCode tags")->getProperty("Section close");
+		string separator = "------------------";
+
+		for_lic << endl << (use_single_line_comment ? (single_com + " ") : "") << separator << endl;
+		for_lic << (use_single_line_comment ? (single_com + " ") : "") << FreeMyCode_SectionOpen << endl;
+		while (getline(outputBlock, buffer_string)) {
+			for_lic << (use_single_line_comment ? (single_com + " ") : "") << buffer_string << endl;
+		}
+		for_lic << (use_single_line_comment ? (single_com + " ") : "") << FreeMyCode_SectionClose << endl;
+		for_lic << (use_single_line_comment ? (single_com + " ") : "") << separator << endl << endl;
+
+	}
 	// Copy License file content to formatted one
 	while (getline(license_file, buffer_string)) {
 		for_lic << (use_single_line_comment ? (single_com + " ") : "") << buffer_string << endl;
@@ -264,88 +283,7 @@ SecondaryInput::~SecondaryInput() {
 	}
 }
 
-TagLine* SecondaryInput::parseLine(Value::ConstMemberIterator& itr)
-{
-	TagLine *newLine = NULL;
-	if (itr->value.IsString())
-	{
-		logger::Logger *log_ptr = logger::Logger::get_logger();
-		string name = itr->name.GetString();
-		string value = itr->value.GetString();
-		newLine = new TagLine(name, value);
-		log_ptr->logDebug("Parsed new TagLine object < " + name + " >", __LINE__, __FILE__, __func__, "SecondaryInput");
-	}
-	return newLine;
-}
 
-TagArray* SecondaryInput::parseArray(Value::ConstMemberIterator& itr) {
-	TagArray* current_tag = NULL;
-	if (itr->value.IsArray()) {
-		string current_key = itr->name.GetString();
-		vector<string> array_values;
-		// Iterate over members of the array
-		for (SizeType j = 0; j < itr->value.Size(); j++) {
-			array_values.push_back(itr->value[j].GetString());
-		}
-		current_tag = new TagArray(current_key, array_values);
-	}
-	return current_tag;
-}
-
-TagObject* SecondaryInput::parseObject(Value::ConstMemberIterator &itr)
-{
-	TagObject *obj = NULL;
-	if (itr->value.IsObject())
-	{
-		log->logInfo("Populating new TagObject node",
-			__LINE__, __FILE__, __func__, "SecondaryInput");
-		string objName = itr->name.GetString();
-		obj = new TagObject(objName);
-		if (obj != NULL)
-		{
-			string name = itr->name.GetString();
-			for (Value::ConstMemberIterator sub = itr->value.MemberBegin();
-				sub != itr->value.MemberEnd(); sub++)
-			{
-				if (sub->value.IsString())
-				{
-					TagLine *newLine = parseLine(sub);
-					if (newLine != NULL) obj->keys.push_back(newLine);
-					else log->logError("Allocation error : Cannot allocate memory for a TagLine object",
-											__LINE__, __FILE__, __func__, "SecondaryInput");
-					log->logDebug("Found new Line tag in secondary input file. Name : " + newLine->name + " ; Value : " + newLine->value , __LINE__, __FILE__, __func__);
-				}
-				else if (sub->value.IsArray())
-				{
-					TagArray *newArray = parseArray(sub);
-					if (newArray != NULL)
-					{
-						obj->arrays.push_back(newArray);
-						log->logDebug("Successfully parsed new TagArray < " + newArray->name + " >", __LINE__, __FILE__, __func__);
-					}
-					else log->logError("Allocation error : Returned array is NULL",
-						__LINE__, __FILE__, __func__, "SecondaryInput");
-				}
-				else if (sub->value.IsObject())
-				{
-					TagObject *newObject = parseObject(sub);
-					if (newObject != NULL)
-					{
-						obj->obj.push_back(newObject);
-						log->logDebug("Successfully parsed new TagObject < " + newObject->name + " >", __LINE__, __FILE__, __func__);
-					}
-					else log->logError("Allocation error : returned TagObject ptr is NULL",
-						__LINE__, __FILE__, __func__, "SecondaryInput");
-				}
-			}
-		}
-		else
-		{
-			log->logError("Allocation error : cannot allocate memory for new Object tag", __LINE__, __FILE__, __func__,"SecondaryInput");
-		}
-	}
-	return obj;
-}
 
 void SecondaryInput::parse_secondary_input_file() {
 	string filepath = parser->get_arg("Secondary Input");
@@ -388,44 +326,29 @@ void SecondaryInput::parse_secondary_input_file() {
 	}
 }
 
-static TagObject* getFreeMyCodeTag(ConfObject* config) {
-	string name = "FreeMyCode";
-	TagObject* tag = new TagObject(name);
-	vector<string> *version = config->get_tag(VERSION_NODE);
-	if (version != nullptr) {
-		if (version->size() == 1) {
-			tag->keys.push_back(new TagLine(VERSION_NODE,(*version)[0].c_str()));
-		}
-		else
-		{
-			logger::Logger::get_logger()->logWarning("Version node in Config file has multiple values",__LINE__, __FILE__, __func__);
-		}
-	}
-	else
-	{
-		logger::Logger::get_logger()->logWarning("Config file has no < " + string(VERSION_NODE) + " > node", __LINE__, __FILE__, __func__);
-	}
-	return tag;
-}
-
 
 // Builds a text block containing all preformatted tags data
 ostringstream* SecondaryInput::getTagsFormattedBlock() {
 	ostringstream *out = new ostringstream();
 	ostringstream *curTag = NULL;
 	Formatter _format;
-	_format.set_delimiter(':');
 	if (out != NULL)
 	{	
-		TagObject *freeMyCode_Tag = getFreeMyCodeTag(config);
+		string delimiter = "Delimiter";
+		TagObject *freeMyCode_Tag = static_cast<TagObject*>(config->get_tag(FREEMYCODE_TAGS));
 		if (freeMyCode_Tag != nullptr) {
-			*out << freeMyCode_Tag->buildFormattedBlock(_format)->str();
+			_format.set_delimiter(freeMyCode_Tag->getProperty(delimiter).c_str()[0]);
+			*out << "FreeMyCode version : " << freeMyCode_Tag->getProperty("Version") << endl;	 
+		}
+		else
+		{
+			_format.set_delimiter(':');
 		}
 
 		for (unsigned int i = 0; i < available_tags.size(); i++) {
 			curTag = available_tags[i]->buildFormattedBlock(_format);
 			if (curTag != NULL) {
-				*out << curTag->str();
+				*out << curTag->str() ;
 			}
 		}
 		if (parser->get_flag("--verbose")) {
@@ -437,171 +360,3 @@ ostringstream* SecondaryInput::getTagsFormattedBlock() {
 }
 
 
-
-/*
-**************************************************************************************
-**************************************************************************************
-Classes Formatter and Indent definitions
-**************************************************************************************
-**************************************************************************************
-*/
-
-Indent::Indent() : indent(default_indent){}
-Indent::Indent(unsigned int &_init) : indent(_init) {}
-
-unsigned int Indent::operator() () const { return indent; }
-unsigned int& Indent::operator++(int) {
-	indent += default_indent;
-	return indent;
-}
-
-unsigned int& Indent::operator--(int) {
-	if (indent >= default_indent) {
-		indent -= default_indent;
-	}
-	else indent = 0; 
-	return indent;
-}
-
-void Indent::reset() { indent = default_indent; }
-
-// Generates a string filled with whitespaces
-string Indent::buildString() const {
-	string out;
-	for (unsigned i = 0; i < indent; i++) {
-		out += ' ';
-	}
-	return out;
-}
-
-Formatter::Formatter() : indent() {}
-char Formatter::delimiter() const { return _delimiter; }
-void Formatter::set_delimiter(char newDelim) { _delimiter = newDelim; }
-
-/*
-**************************************************************************************
-**************************************************************************************
-ProtoTags and derivatives definitions
-**************************************************************************************
-**************************************************************************************
-*/
-
-ProtoTag::ProtoTag(string &_name) : name(_name) {}
-ProtoTag::ProtoTag(const char* _name) : name(_name) {}
-
-string ProtoTag::printNameAndDelim(Formatter &_format)
-{
-	string out = name + " " + _format.delimiter() + " ";
-	return out;
-}
-
-TagLine::TagLine(string &_name, string &_value) : ProtoTag(_name), value(_value) {}
-TagLine::TagLine(const char* _name , const char* _value) : ProtoTag(_name),value(_value) {}
-
-ostringstream* TagLine::buildFormattedBlock(Formatter &_format)
-{
-	ostringstream *out = new ostringstream();
-	*out << _format.indent.buildString() 
-		 << printNameAndDelim(_format) 
-		 << value
-		 << endl;
-	return out;
-}
-
-TagArray::TagArray(string &_name, vector<string> &data) : ProtoTag(_name), val(data)
-{}
-
-ostringstream* TagArray::buildFormattedBlock(Formatter &_format)
-{
-	// Copy incoming formatter object as we need to modify it.
-	Formatter format = _format;
-	ostringstream *out = new ostringstream();
-	if (out != NULL)
-	{
-		logger::Logger::get_logger()->logDebug("Building text block for TagArray object", __LINE__, __FILE__, __func__);
-		*out << format.indent.buildString()
-			<< printNameAndDelim(format)
-			<< endl;
-			
-
-		format.indent++;
-		for (unsigned int i = 0; i < val.size(); i++)
-		{
-			*out << format.indent.buildString()
-				<< val[i] << endl;
-		}
-	}
-	else
-	{
-		logger::Logger::get_logger()->logWarning("Allocation error : cannot allocate memory for TagArray text block", __LINE__, __FILE__, __func__);
-	}
-	return out;
-}
-
-TagObject::TagObject(string &_name) : ProtoTag(_name)
-{}
-
-ostringstream* TagObject::buildFormattedBlock(Formatter &_format)
-{
-	// Copy incoming formatter object as we need to modify it.
-	Formatter format = _format;
-	ostringstream *out = new ostringstream();
-	if (out != NULL)
-	{
-		unsigned int i = 0;
-		logger::Logger::get_logger()->logDebug("Building text block for TagObject object", __LINE__, __FILE__, __func__);
-		*out << format.indent.buildString()
-			<< printNameAndDelim(format)
-			<< endl;
-
-		format.indent++;
-		// Single Lines first
-		// TODO: keep input order?
-		ostringstream *newStream = NULL;
-		for (i = 0; i < keys.size(); i++) {
-			newStream = keys[i]->buildFormattedBlock(format);
-			if (newStream != NULL) {
-				*out << newStream->str();
-				delete newStream;
-			}
-		}
-
-		for (i = 0; i < arrays.size(); i++) {
-			newStream = arrays[i]->buildFormattedBlock(format);
-			if (newStream != NULL) {
-				*out << newStream->str() ;
-				delete newStream;
-			}
-		}
-
-		for (i = 0; i < obj.size(); i++) {
-			newStream = obj[i]->buildFormattedBlock(format);
-			if (newStream != NULL) {
-				*out << newStream->str();
-				delete newStream;
-			}
-		}
-	}
-	else
-	{
-		logger::Logger::get_logger()->logWarning("Allocation error : cannot allocate memory for TagArray text block", __LINE__, __FILE__, __func__);
-	}
-	return out;
-}
-
-TagObject::~TagObject()
-{
-	unsigned i = 0;
-	for (i = 0; i < keys.size(); i++)
-	{
-		delete keys[i];
-	}
-	for (i = 0; i < arrays.size(); i++)
-	{
-		delete arrays[i];
-	}
-	for (i = 0; i < obj.size(); i++)
-	{
-		delete obj[i];
-	}
-}

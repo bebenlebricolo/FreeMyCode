@@ -161,6 +161,7 @@
     <ClCompile Include="Sources\Utils\Command_Line_parser.cpp" />
     <ClCompile Include="Sources\Utils\ConfigTools.cpp" />
     <ClCompile Include="Sources\Utils\DirectoryAnalyser.cpp" />
+    <ClCompile Include="Sources\Utils\FormattingUtils.cpp" />
     <ClCompile Include="Sources\Utils\LicenseWriter.cpp" />
     <ClCompile Include="Sources\Utils\LoggingTools.cpp" />
     <ClCompile Include="Sources\Utils\PathUtils.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="Sources\Utils\Command_Line_parser.h" />
     <ClInclude Include="Sources\Utils\ConfigTools.h" />
     <ClInclude Include="Sources\Utils\DirectoryAnalyser.h" />
+    <ClInclude Include="Sources\Utils\FormattingUtils.h" />
     <ClInclude Include="Sources\Utils\LicenseWriter.h" />
     <ClInclude Include="Sources\Utils\LoggingTools.h" />
     <ClInclude Include="Sources\Utils\PathUtils.h" />

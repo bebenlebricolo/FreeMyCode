@@ -20,6 +20,7 @@ Version	|	 Date	 |	Comments
 #include <fstream>
 
 
+
 namespace logger {
 
 	// Abstract class whose pattern is used to define any specific Handler
@@ -105,6 +106,7 @@ namespace logger {
 			std::string function = "",
 			std::string class_name = "");
 
+
 	};
 
 
@@ -134,4 +136,36 @@ namespace logger {
 	};
 }
 
+/*
+void log_Wrapper(const char* msg,
+	logger::LoggerHandler::Severity level,
+	int line,
+	const char* file,
+	const char* function,
+	const char* className)
+{
+	logger::Logger* log_ptr = logger::Logger::get_logger();
+	switch (level)
+	{
+	case logger::LoggerHandler::Log_Debug :
+		log_ptr->logDebug(msg, line, file, function, className);
+		break;
+	case logger::LoggerHandler::Log_Warning:
+		log_ptr->logWarning(msg, line, file, function, className);
+		break;
+	case logger::LoggerHandler::Log_Info:
+		log_ptr->logInfo(msg, line, file, function, className);
+		break;
+	case logger::LoggerHandler::Log_Error:
+		log_ptr->logError(msg, line, file, function, className);
+		break;
+	case logger::LoggerHandler::Log_Fatal:
+		log_ptr->logFatal(msg, line, file, function, className);
+		break; break;
+	}
+}
+#define logDEBUG(msg, cls) \
+				log_Wrapper(msg , logger::LoggerHandler::Log_Debug, __LINE__, __FILE__ , __func__ , cls)
+
+*/
 #endif // !LOGGINGTOOLS_HEADER
