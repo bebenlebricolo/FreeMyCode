@@ -6,9 +6,9 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 - [x] Add the LicenseWriter component
    * Writes license file according to the parsed arguments
 - [ ] Unstabilities repair:
-     [ ] SecondaryInput not found -> protect against crashes
-     [ ] License file not found -> abort execution
-     ...
+     - [ ] SecondaryInput not found -> protect against crashes
+     - [ ] License file not found -> abort execution
+     - ...
 - [ ] Check for previous license files
    * Prevent re-licensing of a file
 - [ ] Prevent multiple license writing in a file
