@@ -14,9 +14,16 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 - [ ] Prevent multiple license writing in a file
 - [ ] Implement GUI with Qt
 - [x] Use tags to add specific content
-   * @author
-   * @license-url
-   * @freemycode-version
+   - ~~@author~~
+   - ~~@license-url~~
+   - ~~@freemycode-version~~
+   * **Every tag is parsed as "custom" tag and formatted with a YAML-like format**
+    ```
+    FreeMyCode :
+       Version : 0.1
+       Author : bebenlebricolo
+       Url : https://github.com/bebenlebricolo/FreeMyCode
+    ```
 - [x] Finalise Secondary Input tags formatting
 - [x] Supports FreeMyCode specific tags as well (FreeMyCode version)
 - [ ] Exclude directories functionality (exclude path) 
