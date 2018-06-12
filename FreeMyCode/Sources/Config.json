@@ -1,14 +1,17 @@
 {
    "Configuration":{
-      "Tags":[
-         {
-            "FreeMyCode version":"1.0",
-            "Author":"@author =",
-            "License":"@license =",
-            "FreeMyCode header opening":"@<FreeMyCode>",
-            "FreeMyCode header closing":"<FreeMyCode>@"
-         }
-      ],
+    "Tags": {
+      "FreeMyCode tags": {
+        "Version": "0.1",
+        "Section open": "@<FreeMyCode>",
+        "Section close": "<FreeMyCode>@",
+        "Format tags": {
+          "Delimiter": ":",
+          "Indent": "4",
+          "Bullet point": "*"
+        }
+      }
+    },
     "Languages": [
       {
         "Extension array": [
@@ -24,15 +27,19 @@
         "Single line comment": "//"
       },
       {
-        "Extension": ".py",
-        "Bloc comment opening": "",
-        "Bloc comment closing": "",
-        "Single line comment": "#"
+        "Extension array": [
+          ".py",
+          ".yaml"
+        ],
+          "Single line comment" : "#"
       },
       {
-        "Extension": ".html",
-        "Bloc comment opening": "<!--",
-        "Bloc comment closing": "-->"
+        "Extension array": [
+          ".html",
+          ".xml"
+        ],
+          "Bloc comment opening" : "<!--",
+          "Bloc comment closing":"-->"
       },
       {
         "Extension": ".css",

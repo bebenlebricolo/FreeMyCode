@@ -18,6 +18,12 @@
     <None Include="Sources\Config.json">
       <Filter>Fichiers de ressources</Filter>
     </None>
+    <None Include="..\Buildx64\Debug\Dummy_Directory\Secondary_input.json">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
+    <None Include="Sources\Secondary_input.json">
+      <Filter>Fichiers de ressources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\stdafx.cpp">
@@ -41,6 +47,12 @@
     <ClCompile Include="Sources\Utils\ConfigTools.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\Utils\LicenseWriter.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Utils\FormattingUtils.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sources\stdafx.h">
@@ -62,6 +74,12 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Sources\Utils\Command_Line_parser.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Utils\LicenseWriter.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Utils\FormattingUtils.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,23 +3,35 @@
 
 #include "stdafx.h"
 #include <vector>
+#include <string>
 #include "LoggingTools.h"
+#include "FormattingUtils.h"
+
+using namespace FormattingTags;
 
 struct SupportedExtension {
-	SupportedExtension(std::string _name, std::string line_com, std::string bloc_start, std::string bloc_end);
-	enum properties{ Extension, Single_Comment, Bloc_Start , Bloc_End};
-	std::string extension;
+	SupportedExtension(std::vector<std::string> _ext_list, std::string line_com, std::string bloc_start, std::string bloc_end);
+	SupportedExtension(std::string _single_ext, std::string line_com, std::string bloc_start, std::string bloc_end);
+	enum properties{ Single_Comment, Bloc_Start , Bloc_End};
+	std::vector<std::string> extension;
 	std::string single_line_comment;
 	std::string bloc_comment_start;
 	std::string bloc_comment_end;
+	bool match_ext(std::string _ext);
 };
 
+struct FormattingTag {
+	std::string name;
+	std::vector<std::string> values;
+	FormattingTag(std::string _name, std::vector<std::string> _values) :name(_name), values(_values) {}
+};
 
 class ConfObject {
 	std::vector<SupportedExtension> extension_vect;
 	// general template used to get a property inside config file
 	const std::string get_ext_property(std::string targeted_extension, SupportedExtension::properties prop_type);
 	logger::Logger* log_ptr;
+	std::vector<ProtoTag*> tags_vect;
 public:
 	const std::string get_supported_ext_list();
 	ConfObject(logger::Logger* new_logger = NULL);
@@ -29,12 +41,15 @@ public:
 	const std::string get_bloc_comment_start(std::string targeted_extension);
 	const std::string get_bloc_comment_end(std::string targeted_extension);
 	const std::string get_single_line_com(std::string targeted_extension);
+	FormattingTags::ProtoTag* get_tag(std::string tag_name);
 
 	void add_element(SupportedExtension new_language_spec);
+	SupportedExtension find_language_spec(std::string _ext);
 	//void write_conf_file(std::string out_filepath);
 	
 
 };
+
 
 
 #endif // !CONFIGTOOLS_HEADER

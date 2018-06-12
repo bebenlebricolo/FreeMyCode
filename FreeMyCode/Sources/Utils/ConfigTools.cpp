@@ -19,6 +19,14 @@ Version	|	 Date	 |	Comments
 #include <streambuf>
 #include "LoggingTools.h"
 
+// Use Rapidjson external library 
+#include "rapidjson\filereadstream.h"
+#include "rapidjson\document.h"
+#include "rapidjson\istreamwrapper.h"
+
+
+using namespace rapidjson;
+
 namespace fs = std::experimental::filesystem;
 using namespace std;
 
@@ -30,18 +38,44 @@ static const char*  LANG_BL_COM_CL = "Bloc comment closing";
 static const char*  LANG_EXT_ARRAY = "Extension array";
 static const char*  LANG_EXT_NODE = "Extension";
 
+static const char*  TAGS_NODE = "Tags";
+
 
 
 
 SupportedExtension::SupportedExtension(
-	std::string _name,
+	std::vector<std::string> _ext_list,
 	std::string line_com,
 	std::string bloc_start,
 	std::string bloc_end) :
-	extension(_name),
+	extension(_ext_list),
 	single_line_comment(line_com),
 	bloc_comment_start(bloc_start),
 	bloc_comment_end(bloc_end){}
+
+SupportedExtension::SupportedExtension(
+	std::string _single_ext,
+	std::string line_com,
+	std::string bloc_start,
+	std::string bloc_end) :
+	extension(),
+	single_line_comment(line_com),
+	bloc_comment_start(bloc_start),
+	bloc_comment_end(bloc_end) 
+{
+	extension.push_back(_single_ext);
+}
+
+// Look for a given extension in memory
+bool SupportedExtension::match_ext(std::string _ext)
+{
+	for (unsigned int i = 0; i < extension.size(); i++) {
+		if (_ext == extension[i])
+			return true;
+	}
+	return false;
+}
+
 
 
 /*------------------------------------------------------------------------
@@ -56,44 +90,12 @@ ConfObject::ConfObject(logger::Logger* new_logger):log_ptr(new_logger) {
 
 // Now that we have a dedicated pointer to a logger, we need to properly delete it.
 ConfObject::~ConfObject() {
-}
-
-
-#ifdef USE_JSON_CPP
-// Attempt to use the JsonCpp external library
-bool ConfObject::parse_conf_file(std::string in_filepath) {
-	if (fs::exists(in_filepath)) {
-		// Open file as ifstream
-		std::ifstream in(in_filepath);
-		Json::Value root;
-		in >> root;
-
-		const Json::Value languages = root["Languages"];
-		for (unsigned i = 0; languages.size(); i++) {
-			const Json::Value extension = languages[i]["extension"];
-			const Json::Value bloc_com_start = languages[i]["Bloc comment opening"];
-			const Json::Value bloc_com_end = languages[i]["Bloc comment closing"];
-			const Json::Value line_com = languages[i]["Single line comment"];
-			extension_vect.push_back(
-				SupportedExtension(
-					extension.asString(),
-					line_com.asString(),
-					bloc_com_start.asString(),
-					bloc_com_end.asString()
-				));
-		}
-		in.close();
-		return true;
+	for (unsigned i = 0; i < tags_vect.size(); i++) {
+		delete(tags_vect[i]);
 	}
 }
-#else
-// Use Rapidjson instead
-#include "rapidjson\filereadstream.h"
-#include "rapidjson\document.h"
-#include "rapidjson\istreamwrapper.h"
 
 
-using namespace rapidjson;
 
 // Parses a file using the rapidjson library
 bool ConfObject::parse_conf_file(std::string filepath) {
@@ -148,12 +150,14 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_OP)) bl_com_st = (*languages_node)[i][LANG_BL_COM_OP].GetString();
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_CL)) bl_com_end = (*languages_node)[i][LANG_BL_COM_CL].GetString();
 
+					std::vector<std::string> _ext_v;
 					// Iterate over extensions array
 					for (unsigned int ext = 0; ext < Ext_array->Size(); ext++) {
 						cur_ext = (*Ext_array)[ext].GetString();
-						SupportedExtension new_ext(cur_ext,sl_com,bl_com_st,bl_com_end);
-						extension_vect.push_back(new_ext);
+						_ext_v.push_back(cur_ext);
 					}
+						SupportedExtension new_ext(_ext_v,sl_com,bl_com_st,bl_com_end);
+						extension_vect.push_back(new_ext);
 				}
 				// Else : we didn't find the "Extension array" node
 				else {
@@ -162,36 +166,76 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_OP)) bl_com_st = (*languages_node)[i][LANG_BL_COM_OP].GetString();
 					if ((*languages_node)[i].HasMember(LANG_BL_COM_CL)) bl_com_end = (*languages_node)[i][LANG_BL_COM_CL].GetString();
 
-
 					SupportedExtension new_ext(cur_ext, sl_com, bl_com_st, bl_com_end);
 					extension_vect.push_back(new_ext);
 				}
+				
+				// Reinitialising buffer strings before next loop
+				sl_com = "";
+				bl_com_end = "";
+				bl_com_st = "";
+				cur_ext = "";
 			}
 			log_ptr->logInfo("JSON file parsing successfull", __LINE__, __FILE__, __func__, "ConfObject");
 
 			// Parsing successfull
-			return true;
 		}
 		else {
 			log_ptr->logError("Cannot find <" + string(LANG_NODE) + "> Node in file", __LINE__, __FILE__, __func__, "ConfObject");
-
 			// Parsing unsuccessfull -> no "Language" node found
 			return false;
 		}
+
+		// If we found a Tag node with Tags informations
+		if (config_node->HasMember(TAGS_NODE)) {
+			log_ptr->logInfo("Entered the \" " + string(TAGS_NODE) + " \" node of config file", __LINE__, __FILE__, __func__, "ConfObject");
+			const Value& tags_node = (*config_node)[TAGS_NODE];
+			ProtoTag* newTag = nullptr;
+			bool foundError = false;
+
+			for (Value::ConstMemberIterator itr = tags_node.MemberBegin(); itr != tags_node.MemberEnd(); itr++) {
+				
+				// Parsing current node depending on found type
+				if (itr->value.IsString()){
+					newTag = FormattingTags::parseLine(itr);}
+				else if (itr->value.IsArray()){
+					newTag = FormattingTags::parseArray(itr);}
+				else if (itr->value.IsObject()){
+					newTag = FormattingTags::parseObject(itr);}
+
+				// NewTag is pushed to available tags list
+				if (newTag != nullptr) {
+					tags_vect.push_back(newTag); }
+				else
+				{
+					log_ptr->logWarning("Cannot parse current json node < " + string(itr->name.GetString()) + " >",
+						__LINE__, __FILE__, __func__, "ConfObject");
+					foundError = true;
+				}
+			}
+			if (foundError == false) {
+				log_ptr->logInfo("Successfully parsed the \" " + string(TAGS_NODE) + " \" node of config file",
+					__LINE__, __FILE__, __func__, "ConfObject");
+			}
+			else
+			{
+				log_ptr->logWarning("Config tags parsing encountered at least one error. Results might be partial.",
+					__LINE__, __FILE__, __func__, "ConfObject");
+			}
+		}
 	}
-	
+	return true;
 }
 
-
-#endif
 
 // Simply look for a given extension in memory.
 // If the passed extension matches at least one extension in the ConfObject, return true.
 bool ConfObject::is_extension_supported(string extension) {
 	for (auto& ext : extension_vect) {
-		if (ext.extension == extension) return true;
+		for (unsigned int i = 0; i < ext.extension.size(); i++) {
+			if (ext.extension[i] == extension) return true;
+		}
 		log_ptr->logInfo("Found supported extension <" + extension + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-
 	}
 	log_ptr->logWarning("Unsupported extension <" + extension + "> ", __LINE__, __FILE__, __func__, "ConfObject");
 
@@ -200,22 +244,42 @@ bool ConfObject::is_extension_supported(string extension) {
 
 const string ConfObject::get_ext_property(string targeted_ext, SupportedExtension::properties prop_type) {
 	for (auto& ext : extension_vect) {
-		if (ext.extension == targeted_ext) {
-			switch (prop_type) {
-			case SupportedExtension::properties::Bloc_End:
-				log_ptr->logInfo("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.bloc_comment_end + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-				return ext.bloc_comment_end;
-				break;
-			case SupportedExtension::properties::Bloc_Start:
-				log_ptr->logInfo("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.bloc_comment_start + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-				return ext.bloc_comment_start;
-				break;
-			case SupportedExtension::properties::Single_Comment:
-				log_ptr->logInfo("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.single_line_comment+ "> ", __LINE__, __FILE__, __func__, "ConfObject");
-				return ext.single_line_comment;
-				break;
-			default:
-				return targeted_ext;
+		for (unsigned int i = 0; i < ext.extension.size(); i++) {
+			if (ext.extension[i] == targeted_ext) {
+				switch (prop_type) {
+				case SupportedExtension::properties::Bloc_End:
+					if (ext.bloc_comment_start == "") {
+						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have bloc comment closing marker", __LINE__, __FILE__, __func__, "ConfObject");
+						return "";
+					}
+					else {
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.bloc_comment_end + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.bloc_comment_end;
+					}
+					break;
+				case SupportedExtension::properties::Bloc_Start:
+					if (ext.bloc_comment_start == "") {
+						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have bloc comment opening marker", __LINE__, __FILE__, __func__, "ConfObject");
+						return "";
+					}
+					else {
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.bloc_comment_start + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.bloc_comment_start;
+					}
+					break;
+				case SupportedExtension::properties::Single_Comment:
+					if (ext.single_line_comment == "") {
+						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have single line comment marker ", __LINE__, __FILE__, __func__, "ConfObject");
+						return "";
+					}
+					else {
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.single_line_comment + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.single_line_comment;
+					}
+					break;
+				default:
+					return targeted_ext;
+				}
 			}
 		}
 	}
@@ -228,7 +292,9 @@ const std::string ConfObject::get_supported_ext_list()
 {
 	string output;
 	for (unsigned int i = 0; i < extension_vect.size(); i++) {
-		output += extension_vect[i].extension + " ";
+		for (unsigned int j = 0; j < extension_vect[i].extension.size(); j++) {
+			output += extension_vect[i].extension[j] + " ";
+		}
 	}
 	return output;
 }
@@ -249,17 +315,37 @@ const string ConfObject::get_single_line_com(string targeted_ext) {
 	return get_ext_property(targeted_ext, SupportedExtension::properties::Single_Comment);
 }
 
+ProtoTag* ConfObject::get_tag(string tag_name) {
+	for (unsigned int itr = 0; itr < tags_vect.size(); itr++) {
+		if (tags_vect[itr]->name == tag_name) {
+			return tags_vect[itr];
+		}
+	}
+	return nullptr;
+}
+
 // Add an element to extension_vector of ConfObject.
 // If an extension overlaps a previously added one, then it will be overwritten by the new one
 void ConfObject::add_element(SupportedExtension new_language_spec) {
-	string new_ext = new_language_spec.extension;
+	//new_ext = new_language_spec.extension;
 	// look for previous extension with the same name and overwrite it with new data
 	for (auto& ext : extension_vect) {
-		if (ext.extension == new_ext) {
+		if (ext.extension == new_language_spec.extension) {
 			ext = new_language_spec;
 		}
 	}
-	log_ptr->logInfo("Add supported extension to vector", __LINE__, __FILE__, __func__, "ConfObject");
+	log_ptr->logDebug("Add supported extension to vector", __LINE__, __FILE__, __func__, "ConfObject");
 	// No extension with the same name was found -> we can safely add a new one
 	extension_vect.push_back(new_language_spec);
+}
+
+// Returns a copy of a supported extension which contains a given _ext
+SupportedExtension ConfObject::find_language_spec(std::string _ext)
+{
+	for (unsigned int i = 0; i < extension_vect.size(); i++) {
+		if (extension_vect[i].match_ext(_ext)) {
+			return extension_vect[i];
+		}
+	}
+	return SupportedExtension("", "", "", "");
 }

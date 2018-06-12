@@ -169,6 +169,9 @@ void Logger::log_data(string message, LoggerHandler::Severity level, unsigned in
 	case logger::LoggerHandler::Log_Init:
 		severity_string = "INIT";
 		break;
+	case logger::LoggerHandler::Log_Debug:
+		severity_string = "DEBUG";
+		break;
 	default:
 		severity_string = "UNKNOWN";
 		break;
@@ -199,6 +202,10 @@ void Logger::log_data(string message, LoggerHandler::Severity level, unsigned in
 
 
 //const unsigned int Logger::get_handler_index()
+void Logger::logDebug(string message, unsigned int line, string file, string function, string class_name) {
+	log_data(message, LoggerHandler::Severity::Log_Debug, line, file, function, class_name);
+}
+
 void Logger::logInfo( string message, unsigned int line, string file, string function, string class_name) {
 	log_data(message, LoggerHandler::Severity::Log_Info, line, file, function, class_name);
 }
@@ -288,6 +295,7 @@ FileHandler::~FileHandler() {
 	}
 }
 
+// Logs data into a file
 void FileHandler::log_data(const string &message, LoggerHandler::Severity level) {
 	if (level != LoggerHandler::Severity::Log_Init) {
 		if (level < sev_level) {
@@ -299,7 +307,12 @@ void FileHandler::log_data(const string &message, LoggerHandler::Severity level)
 	if (logfile == NULL) {
 		logfile = new ofstream(filepath, std::ios::out | std::ios::app);
 	}
-	logfile->open(filepath, std::ios::out | std::ios::app);
+
+	// Don't try to reopen it, otherwise the failbit will be set, and following message writing will fail
+	if (logfile->is_open() == false) {
+		logfile->open(filepath, std::ios::out | std::ios::app);
+	}
+	// Fails if failbit != 0 !!
 	*logfile << message << endl;
 	logfile->close();
 }

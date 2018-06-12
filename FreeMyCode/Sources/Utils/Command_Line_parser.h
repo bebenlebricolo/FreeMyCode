@@ -2,7 +2,9 @@
 #include "stdafx.h"
 #include <vector>
 #include <string>
+#include <iostream>
 #include "LoggingTools.h"
+
 
 using namespace std;
 
@@ -12,7 +14,7 @@ struct GlobalHook {
 	string usage;
 	GlobalHook();
 	GlobalHook(string _description, string _usage);
-	void help_request();
+	void help_request(unsigned int indent_spaces = 4);
 	void usage_request();
 };
 
@@ -28,7 +30,7 @@ struct ParserFlags : public GlobalHook{
 	void init(vector<string> flags_aliases);
 	// position pos;
 	void introspective();
-	void help_request();
+	void help_request(int indent_spaces = 4);
 	bool is_terminal();
 
 private:
@@ -49,8 +51,9 @@ struct ParserResult : public GlobalHook{
 	bool is_full();
 	void set_arg(string arg);
 	void introspective();
+	void overrideFlag(string flagName, bool flagState);
 
-	void help_request();
+	void help_request(unsigned int indent_spaces = 4);
 	void usage_request();
 	string get_arg();
 	bool match_name(string _name);
@@ -85,15 +88,18 @@ class CommandLineParser {
 public:
 	CommandLineParser(logger::Logger* log_ptr = NULL);
 	~CommandLineParser();
-	void parse_arguments(int argc, char * argv[]);
+	bool parse_arguments(int argc, char * argv[]);
 	void show_results();
 	bool get_flag(string flag);
 	string get_arg(string name);
+	void overrideFlag(string flagName, bool flagState);
 	void add_container(std::vector<ParserResult*>* Result_vector);
 	void add_container(ParserResult* Result_object);
 
 
 	ParserResult* find_owner(string flag);
 };
+
+
 
 
