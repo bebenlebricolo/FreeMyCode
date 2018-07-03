@@ -27,10 +27,18 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
   
 ### Corrections and improvements : (TODO)
 - [ ] Unstabilities repair:
-     - [ ] SecondaryInput not found -> protect against crashes
-     - [ ] License file not found -> abort execution
-     - ...
-- [ ] Input simplification (make it easier to use !)
+     * SecondaryInput not found -> protect against crashes
+     * License file not found -> abort execution
+- [ ] Harmonize logger usage
+     * Upgrade logger as singleton
+     * Do not pass logger ptr as parameter anymore (unnecessary noise)
+ - [ ] Input simplification (make it easier to use !)
+ 
+### Cross platform adaptations
+- [ ] Provide gcc support
+     * Create MakeFiles
+- [ ] Port code to GNU/Linux systems
+ 
 ### Known issues : To be repaired
 - Crashes when SecondaryInput file is not found
 - Crashes when configuration file is not found
