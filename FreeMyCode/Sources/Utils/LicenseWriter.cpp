@@ -33,6 +33,7 @@ Version	|	 Date	 |	Comments
 using namespace std::experimental::filesystem;
 using namespace rapidjson;
 using namespace std;
+namespace fs = std::experimental::filesystem;
 
 static const char* TAGS_NODE = "Tags";
 static const char* NODES_ARRAY[] = {
@@ -168,32 +169,48 @@ std::vector<std::string> LicenseWriter::write_license(void) {
 				ofstream tmpFile;
 				string tmpPath = currentFile + ".tmp";
 				string bufferString;
+				
+				// Create a temporary file
 				tmpFile.open(tmpPath, ios::out);
+				// Load original file
 				file.open(currentFile, ios::in);
-				tmpFile << targetedLicense->for_lic.str();
+				// Write license to temporary
+				tmpFile << targetedLicense->for_lic.str() << endl;
+				// And do a strict copy from the original file
 				tmpFile << file.rdbuf();
 				file.close();
 				tmpFile.close();
-				remove(currentFile);
-				if (exists(currentFile) == true) {
-					log->logError("Cannot remove file : " + pathutils::get_filename(currentFile) + " from disk",
-						__LINE__, __FILE__, __func__, "LicenseWriter");
-					wrongFiles.push_back(currentFile);
-				}
-				else
+				if (file.is_open() == false)
 				{
-
-					if (rename(tmpPath.c_str(), currentFile.c_str()) != 0)
-					{
-						log->logError("Cannot rename file : " + pathutils::get_filename(currentFile),
+					// Remove original file
+					remove(currentFile);
+					if (exists(currentFile) == true) {
+						log->logError("Cannot remove file : " + pathutils::get_filename(currentFile) + " from disk",
 							__LINE__, __FILE__, __func__, "LicenseWriter");
 						wrongFiles.push_back(currentFile);
 					}
 					else
 					{
-						log->logInfo("Successfully modified file : " + pathutils::get_filename(currentFile),
-							__LINE__, __FILE__, __func__, "LicenseWriter");
+
+						if (rename(tmpPath.c_str(), currentFile.c_str()) != 0)
+						{
+							log->logError("Cannot rename file : " + pathutils::get_filename(currentFile),
+								__LINE__, __FILE__, __func__, "LicenseWriter");
+							wrongFiles.push_back(currentFile);
+						}
+						else
+						{
+							log->logInfo("Successfully modified file : " + pathutils::get_filename(currentFile),
+								__LINE__, __FILE__, __func__, "LicenseWriter");
+						}
 					}
+
+				}
+				else
+				{
+					log->logError("Cannot close file : " + pathutils::get_filename(currentFile),
+						__LINE__, __FILE__, __func__, "LicenseWriter");
+					wrongFiles.push_back(currentFile);
 				}
 			}
 		}
@@ -274,7 +291,6 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 	string bloc_end = config.get_bloc_comment_end(_ext);
 	string single_com = config.get_single_line_com(_ext);
 
-	license_file.open(parser.get_arg("License"));
 	if ((bloc_start != "") 
 		&& (bloc_end != ""))
 	{
@@ -323,9 +339,24 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 		for_lic << (use_single_line_comment ? (single_com + " ") : "") << separator << endl << endl;
 
 	}
+	
 	// Copy License file content to formatted one
-	while (getline(license_file, buffer_string)) {
-		for_lic << (use_single_line_comment ? (single_com + " ") : "") << buffer_string << endl;
+	// First check if path points to something
+	// Then check if file opening succeeded
+	if (exists(parser.get_arg("License"))) {
+		bool foundErrors = false;
+		license_file.open(parser.get_arg("License"));
+		if(license_file) {
+			while (getline(license_file, buffer_string)) {
+				for_lic << (use_single_line_comment ? (single_com + " ") : "") << buffer_string << endl;
+			}
+		}
+		else {
+			log->logError("Cannot open License file.", __LINE__, __FILE__, __func__, "LicenseWriter");
+		}
+	}
+	else {
+		log->logError("Path to License file is wrong. Please check your path",__LINE__,__FILE__,__func__,"LicenseWriter");
 	}
 	
 	// Add block comment closing tag
