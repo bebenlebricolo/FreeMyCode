@@ -34,7 +34,7 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
      * Do not pass logger ptr as parameter anymore (unnecessary noise)
  - [ ] Input simplification (make it easier to use !)
  
-### Cross platform adaptations
+## Cross platform adaptations
 - [ ] Provide gcc support
      * Create MakeFiles
 - [ ] Port code to GNU/Linux systems
