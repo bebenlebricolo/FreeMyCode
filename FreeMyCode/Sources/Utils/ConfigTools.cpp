@@ -99,6 +99,7 @@ ConfObject::~ConfObject() {
 
 // Parses a file using the rapidjson library
 bool ConfObject::parse_conf_file(std::string filepath) {
+	
 	if (!fs::exists(filepath)) {
 		log_ptr->logWarning("Filepath doesn't exist", __LINE__, __FILE__, __func__, "ConfObject");
 		// Nothing to be parsed
@@ -130,7 +131,7 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 	log_ptr->logInfo("Opened json file, read data and load data in memory", __LINE__, __FILE__, __func__, "ConfObject");
 
 	// If we found a Configuration (root) node
-	if (doc.HasMember(CONF_NODE)){
+	if (doc.HasMember(CONF_NODE)) {
 		rapidjson::Value *config_node = &(doc[CONF_NODE]);
 		log_ptr->logInfo("Found <" + string(CONF_NODE) + "> Node in file", __LINE__, __FILE__, __func__, "ConfObject");
 
@@ -156,8 +157,8 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 						cur_ext = (*Ext_array)[ext].GetString();
 						_ext_v.push_back(cur_ext);
 					}
-						SupportedExtension new_ext(_ext_v,sl_com,bl_com_st,bl_com_end);
-						extension_vect.push_back(new_ext);
+					SupportedExtension new_ext(_ext_v, sl_com, bl_com_st, bl_com_end);
+					extension_vect.push_back(new_ext);
 				}
 				// Else : we didn't find the "Extension array" node
 				else {
@@ -169,7 +170,7 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 					SupportedExtension new_ext(cur_ext, sl_com, bl_com_st, bl_com_end);
 					extension_vect.push_back(new_ext);
 				}
-				
+
 				// Reinitialising buffer strings before next loop
 				sl_com = "";
 				bl_com_end = "";
@@ -194,18 +195,22 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 			bool foundError = false;
 
 			for (Value::ConstMemberIterator itr = tags_node.MemberBegin(); itr != tags_node.MemberEnd(); itr++) {
-				
+
 				// Parsing current node depending on found type
-				if (itr->value.IsString()){
-					newTag = FormattingTags::parseLine(itr);}
-				else if (itr->value.IsArray()){
-					newTag = FormattingTags::parseArray(itr);}
-				else if (itr->value.IsObject()){
-					newTag = FormattingTags::parseObject(itr);}
+				if (itr->value.IsString()) {
+					newTag = FormattingTags::parseLine(itr);
+				}
+				else if (itr->value.IsArray()) {
+					newTag = FormattingTags::parseArray(itr);
+				}
+				else if (itr->value.IsObject()) {
+					newTag = FormattingTags::parseObject(itr);
+				}
 
 				// NewTag is pushed to available tags list
 				if (newTag != nullptr) {
-					tags_vect.push_back(newTag); }
+					tags_vect.push_back(newTag);
+				}
 				else
 				{
 					log_ptr->logWarning("Cannot parse current json node < " + string(itr->name.GetString()) + " >",
@@ -223,6 +228,9 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 					__LINE__, __FILE__, __func__, "ConfObject");
 			}
 		}
+	}
+	else {
+		return false;
 	}
 	return true;
 }
