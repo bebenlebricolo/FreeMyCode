@@ -2,6 +2,9 @@
 Licenser tool which batch-writes a piece of text inside all specific targeted files of a directory (filtered by their extension : e.g.- {.cpp , .c , .h , .hpp , .py...}
 
 # This tool is still a WORK IN PROGRESS
+
+## External libraries used :
+  - Rapidjson  : [Github repo](https://github.com/Tencent/rapidjson/)
 ### Functionalities to be implemented: (TODO)
 - [ ] Check for previous license files
    * Prevent re-licensing of a file
