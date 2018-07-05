@@ -29,9 +29,6 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
    * Writes license file according to the parsed arguments
   
 ### Corrections and improvements : (TODO)
-- [ ] Unstabilities repair:
-     * SecondaryInput not found -> protect against crashes
-     * License file not found -> abort execution
 - [ ] Harmonize logger usage
      * Upgrade logger as singleton
      * Do not pass logger ptr as parameter anymore (unnecessary noise)
