@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblibDirectoryAnalyser.a  CMakeFiles/libDirectoryAnalyser.dir/Sources/DirectoryAnalyser.cpp.o
+/usr/bin/ranlib liblibDirectoryAnalyser.a

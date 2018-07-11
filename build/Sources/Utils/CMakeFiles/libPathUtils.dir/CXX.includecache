@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../Sources/Utils/Includes/PathUtils.h
+stdafx.h
+../Sources/Utils/Includes/stdafx.h
+string
+-
+vector
+-
+fstream
+-
+regex
+-
+sstream
+-
+
+/home/groben/Dossier Perso/Github groben/FreeMyCode/Sources/Utils/Sources/PathUtils.cpp
+stdafx.h
+/home/groben/Dossier Perso/Github groben/FreeMyCode/Sources/Utils/Sources/stdafx.h
+PathUtils.h
+/home/groben/Dossier Perso/Github groben/FreeMyCode/Sources/Utils/Sources/PathUtils.h
+string
+-
+

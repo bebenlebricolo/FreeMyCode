@@ -1,0 +1,2 @@
+/usr/bin/ar qc liblibConfigTools.a  CMakeFiles/libConfigTools.dir/Sources/ConfigTools.cpp.o
+/usr/bin/ranlib liblibConfigTools.a

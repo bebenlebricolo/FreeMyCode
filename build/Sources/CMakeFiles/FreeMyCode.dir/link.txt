@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/FreeMyCode.dir/FreeMyCode.cpp.o  -o FreeMyCode Utils/liblibCmdLineParser.a Utils/liblibConfigTools.a Utils/liblibDirectoryAnalyser.a Utils/liblibFormatUtils.a Utils/liblibLogTools.a Utils/liblibPathUtils.a 
