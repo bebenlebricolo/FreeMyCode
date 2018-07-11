@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblibFormatUtils.a  CMakeFiles/libFormatUtils.dir/Sources/FormattingUtils.cpp.o
-/usr/bin/ranlib liblibFormatUtils.a

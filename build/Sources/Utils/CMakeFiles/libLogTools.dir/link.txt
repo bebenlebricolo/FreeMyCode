@@ -1,2 +1,0 @@
-/usr/bin/ar qc liblibLogTools.a  CMakeFiles/libLogTools.dir/Sources/LoggingTools.cpp.o
-/usr/bin/ranlib liblibLogTools.a
