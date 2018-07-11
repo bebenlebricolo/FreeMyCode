@@ -4,6 +4,12 @@ project(libUtils)
 
 set(SRC Sources)
 
+list(APPEND INCLUDE_DIRS 
+    Includes    
+    ${CMAKE_SOURCE_DIR}/Sources/PrecompiledHeaders    
+)
+
+
 add_library(libCmdLineParser STATIC
     ${SRC}/Command_Line_parser.cpp
 )
@@ -26,10 +32,14 @@ add_library(libLogTools STATIC
 
 add_library(libPathUtils STATIC
     ${SRC}/PathUtils.cpp
+    #${CMAKE_SOURCE_DIR}/PrecompiledHeaders/stdafx.h   
 )
 
-include_directories(
-    PUBLIC
-        Includes
-        ${CMAKE_SOURCE_DIR}/PrecompiledHeaders
-)
+target_include_directories( libCmdLineParser PUBLIC ${INCLUDE_DIRS})
+target_include_directories( libConfigTools PUBLIC ${INCLUDE_DIRS})
+target_include_directories( libDirectoryAnalyser PUBLIC ${INCLUDE_DIRS})
+target_include_directories( libFormatUtils PUBLIC ${INCLUDE_DIRS})
+target_include_directories( libLogTools PUBLIC ${INCLUDE_DIRS})
+target_include_directories( libPathUtils PUBLIC ${INCLUDE_DIRS})
+
+

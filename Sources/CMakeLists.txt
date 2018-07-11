@@ -25,3 +25,4 @@ target_link_libraries( FreeMyCode
     libPathUtils
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -g")
