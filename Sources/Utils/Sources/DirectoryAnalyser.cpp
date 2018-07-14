@@ -13,9 +13,8 @@ Version	|	 Date	 |	Comments
 */
 
 #include "stdafx.h"
-#include "DirectoryAnalyser.h"
 #include <regex>
-#include <filesystem>
+#include "DirectoryAnalyser.h"
 #include "PathUtils.h"
 #include "LoggingTools.h"
 

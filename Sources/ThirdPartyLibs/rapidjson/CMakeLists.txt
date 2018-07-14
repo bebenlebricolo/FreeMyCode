@@ -1,13 +1,23 @@
-## CMakeLists file used to compile rapidjson library as a static library (linked against by upper layers)
+##
 
-## Header-only library : 
-## http://mariobadr.com/creating-a-header-only-library-with-cmake.html
-project(rapidjson)
+project(libRapidjson)
 
-add_library(libRapidJson INTERFACE)
 
-target_include_directories( libRapidJson INTERFACE
+add_library(libRapidjson INTERFACE)
+
+
+if(LINUX)
+    set( OsSpecificHeaders )
+endif(LINUX)
+
+# Include specific files for windows
+if(WIN32)
+    set( OsSpecificHeaders msinttypes )
+endif(WIN32)
+    
+
+target_include_directories(libRapidjson INTERFACE 
     error
     internal
-    msinttypes
+    ${OsSpecificHeaders}
 )

@@ -12,17 +12,16 @@ Version	|	 Date	 |	Comments
 
 
 #include "stdafx.h"
-#include "ConfigTools.h"
-#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <streambuf>
+#include "ConfigTools.h"
 #include "LoggingTools.h"
 
 // Use Rapidjson external library 
-#include "rapidjson\filereadstream.h"
-#include "rapidjson\document.h"
-#include "rapidjson\istreamwrapper.h"
+#include "filereadstream.h"
+#include "document.h"
+#include "istreamwrapper.h"
 
 
 using namespace rapidjson;

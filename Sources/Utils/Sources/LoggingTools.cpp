@@ -12,7 +12,7 @@ The logger object is declared as static and its usage its pretty simple :
 Version	|	 Date	 |	Comments
 ----------------------------------------------------------------------------
 0.1     | 07/04/2018 |	First functional version of the LoggingTools. Does not handle the rolling file and max file size yet.
-0.2     | 15/04/2018 |  Declared the main logging system as STATIC so that only one logger is used in the project. 
+0.2     | 15/04/2018 |  Declared the main logging system as STATIC so that only one logger is used in the project.
 						It makes also development easier as the logger system only relies on ONE class (other ones only need to fetch the Logger class)
 */
 
@@ -22,7 +22,6 @@ Version	|	 Date	 |	Comments
 #include <string>
 #include <vector>
 #include <fstream>
-#include <filesystem>
 #include <regex>
 
 #include <iomanip>
@@ -103,7 +102,7 @@ void logger::Logger::log_init_message(const string &message)
 		for (unsigned int i = 0; i < separator_length; i++) { init_message += separator_char; }
 	}
 	else { init_message = message; }
-	
+
 	init_message = "[ " + init_message + " ]";
 	log_data(init_message, LoggerHandler::Severity::Log_Init);
 }
@@ -249,7 +248,7 @@ FileHandler class definition
 */
 
 FileHandler::FileHandler(string _filepath, LoggerHandler::Severity level,
-	const long max_file_size, bool rolling_file) : 
+	const long max_file_size, bool rolling_file) :
 	LoggerHandler(level) , 	filepath(_filepath),max_size(max_file_size),is_rolling_file(rolling_file)
 {
 	if (!fs::exists(filepath)) {

@@ -1,28 +1,33 @@
 ## CMakeLists file use to compile project sources
 
-project(FreeMyCode)
 
-add_executable(FreeMyCode 
+set(LINUX)
+
+add_subdirectory( ThirdPartyLibs )
+add_subdirectory( Utils )
+
+add_executable(FreeMyCode
     FreeMyCode.cpp
 )
 
-set(ExternalLibs_DIR ThirdPartyLibs)
-set(UTILS Utils)
-set(PCH PrecompiledHeaders)
-
-add_subdirectory( ${ExternalLibs_DIR}/rapidjson )
-add_subdirectory( ${UTILS} )
-add_subdirectory( ${PCH} )
-
+target_include_directories( FreeMyCode PUBLIC
+    PrecompiledHeaders
+    ThirdPartyLibs/rapidjson    
+    Utils/Includes
+)
 
 target_link_libraries( FreeMyCode
-    libRapidJson
     libCmdLineParser
     libConfigTools
     libDirectoryAnalyser
     libFormatUtils
     libLogTools
     libPathUtils
+    libLicenseWriter
+    stdc++fs
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -g")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -g -lstdc++fs")
+
+
+
