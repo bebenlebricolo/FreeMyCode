@@ -259,31 +259,40 @@ FileHandler::FileHandler(string _filepath, LoggerHandler::Severity level,
 	}
 	else {
 		// If file exists
-		if (!is_rolling_file){
-			// And if its size is above the autorized max_size
-			if (pu::filesize(filepath.c_str()) >= max_size) {
-				// Extract file path properties
-				string parent_dir_path = pu::get_parent_dir(filepath);
-				string filename = pu::get_filename(filepath);
-				string file_ext = pu::get_extension(filename);
-
-				// Increment the current file name (version)
-				filename = pu::remove_extension(pu::get_filename(filepath));
-				filename = pu::increment_version(filename);
-				filename += file_ext;
-				filepath = parent_dir_path + filename;
-
-				// Time to create the new file
-				logfile = new ofstream(filepath, std::ios::out);
-				logfile->close();
-			}
+		// And if its size is lower than the trigger, keep the same file and append to it
+		if (pu::filesize(filepath.c_str()) < max_size)
+		{
+			logfile = new ofstream(filepath, std::ios::ate);
+			logfile->close();
 		}
-		else {
-			// Is a rolling file
-			// And the file is oversized
-			if (pu::filesize(filepath.c_str()) >= max_size) {
-			 // TODO:: do some fancy stuff here
+		// Otherwise, logic depends on file's type
+		else
+		{
+			if (!is_rolling_file){
+				// And if its size is above the autorized max_size
+				if (pu::filesize(filepath.c_str()) >= max_size) {
+					// Extract file path properties
+					string parent_dir_path = pu::get_parent_dir(filepath);
+					string filename = pu::get_filename(filepath);
+					string file_ext = pu::get_extension(filename);
+
+					// Increment the current file name (version)
+					filename = pu::remove_extension(pu::get_filename(filepath));
+					filename = pu::increment_version(filename);
+					filename += file_ext;
+					filepath = parent_dir_path + filename;
+
+					// Time to create the new file
+					logfile = new ofstream(filepath, std::ios::out);
+					logfile->close();
+				}
 			}
+			else {
+				// Is a rolling file
+				// And the file is oversized
+				throw(new runtime_error("Oversized rolling file handling is not implemented yet!"));
+			}
+
 		}
 	}
 }

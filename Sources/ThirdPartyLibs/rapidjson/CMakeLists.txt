@@ -12,7 +12,7 @@ endif(LINUX)
 
 # Include specific files for windows
 if(WIN32)
-    set( OsSpecificHeaders msinttypes )
+   # set( OsSpecificHeaders msinttypes )
 endif(WIN32)
     
 
