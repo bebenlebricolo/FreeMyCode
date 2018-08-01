@@ -22,8 +22,8 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 
 #include "stdafx.h"
 #include <iostream>
-#include "Command_Line_parser.h"
 #include <vector>
+#include "Command_Line_parser.h"
 
 using namespace std;
 
@@ -109,6 +109,12 @@ CommandLineParser::~CommandLineParser() {
 }
 
 bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
+	if(argc < 2 )
+	{
+		logsys->logError("No arguments given. Aborting execution");
+		Global_flags.set_flag("--Usage");
+	}
+	
 	// Look for global flags first
 	// If found, show messages and short-circuit the parsing
 	if (found_globals(argc,argv)) {

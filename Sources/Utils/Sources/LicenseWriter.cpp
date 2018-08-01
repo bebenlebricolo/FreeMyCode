@@ -16,19 +16,19 @@ Version	|	 Date	 |	Comments
 */
 
 #include "stdafx.h"
-#include "LicenseWriter.h"
-#include "DirectoryAnalyser.h"
 #include <sstream>
 #include <fstream>
-#include <filesystem>
+#include <cstdio>
 
-#include "rapidjson\filereadstream.h"
-#include "rapidjson\document.h"
-#include "rapidjson\istreamwrapper.h"
-
+#include "LicenseWriter.h"
 #include "PathUtils.h"
 #include "LoggingTools.h"
-#include <cstdio>
+#include "DirectoryAnalyser.h"
+
+// rapidjson headers
+#include "filereadstream.h"
+#include "document.h"
+#include "istreamwrapper.h"
 
 using namespace std::experimental::filesystem;
 using namespace rapidjson;

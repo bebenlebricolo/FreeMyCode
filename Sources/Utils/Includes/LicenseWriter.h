@@ -3,16 +3,18 @@
 #define LICENSE_WRITER_HEADER
 
 #include "stdafx.h"
+#include <vector>
+#include <string>
+#include <sstream>
+
 #include "Command_Line_parser.h"
 #include "ConfigTools.h"
 #include "DirectoryAnalyser.h"
 #include "LoggingTools.h"
 #include "FormattingUtils.h"
-#include <vector>
-#include <string>
-#include <sstream>
-#include "rapidjson\rapidjson.h"
-#include "rapidjson\document.h"
+
+#include "rapidjson.h"
+#include "document.h"
 
 using namespace FormattingTags;
 
