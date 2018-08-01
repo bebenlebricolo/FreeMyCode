@@ -2,13 +2,13 @@
 
 set( COMPILE_TYPE "Debug")
 
-set( TARGETED_OS "WINDOWS" )
+set( TARGETED_OS ${CMAKE_SYSTEM_NAME} )
 
-if( ${TARGETED_OS} MATCHES "LINUX" )
+if( ${TARGETED_OS} MATCHES "Linux" )
 	set ( CCompiler "GCC" )
-elseif ( ${TARGETED_OS} MATCHES "WINDOWS")
+elseif ( ${TARGETED_OS} MATCHES "Windows")
 	set (CCompiler "MSVC")
-endif(${TARGETED_OS} MATCHES "LINUX")
+endif(${TARGETED_OS} MATCHES "Linux")
 
 
 ### GCC with Linux systems
