@@ -41,6 +41,6 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 - [x] Provide back support for Windows systems after code adaptations (CMake used)
  
 ### Known issues : To be repaired
-- ~~Crashes when SecondaryInput file is not found~~
-- ~~Crashes when configuration file is not found~~
+- ~~Crashes when SecondaryInput file is not found~~  - Done
+- ~~Crashes when configuration file is not found~~   - Done
 - Input is too complex
