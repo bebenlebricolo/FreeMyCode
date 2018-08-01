@@ -35,11 +35,12 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
  - [ ] Input simplification (make it easier to use !)
  
 ## Cross platform adaptations
-- [ ] Provide gcc support
+- [x] Provide gcc support
      * Create MakeFiles
-- [ ] Port code to GNU/Linux systems
+- [x] Port code to GNU/Linux systems
+- [x] Provide back support for Windows systems after code adaptations (CMake used)
  
 ### Known issues : To be repaired
-- Crashes when SecondaryInput file is not found
-- Crashes when configuration file is not found
+- ~~Crashes when SecondaryInput file is not found~~
+- ~~Crashes when configuration file is not found~~
 - Input is too complex
