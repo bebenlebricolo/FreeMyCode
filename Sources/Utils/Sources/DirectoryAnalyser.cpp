@@ -86,8 +86,7 @@ std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string 
 std::vector<std::string> DirectoryAnalyser::isolate_file_ext(std::string extension_string) {
 	// First atomise the string and extract substrings from it
 	vector<string> tokens = split(extension_string.c_str());
-	if (tokens.size() == 0) return tokens;
-	
+	return tokens;
 }
 
 /*
