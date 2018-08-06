@@ -106,6 +106,7 @@ FormattedLicense* LicenseWriter::getLicenseByExt(std::string extension)
 
 std::vector<std::string> LicenseWriter::write_license(void) {
 	std::vector<std::string>* file_list = DirectoryAnalyser::get_files_in_dir(parser->get_arg("Directory"), config->get_supported_ext_list());
+	// TODO : check fo previous licenses in every files before attempting to write in them.
 	// List of files which cannot be modified (for any reason)
 	std::vector<std::string> wrongFiles; 
 	FormattedLicense *targetedLicense = nullptr;

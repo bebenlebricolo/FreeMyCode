@@ -4,6 +4,9 @@ project(libUtils)
 
 set(SRC Sources)
 
+add_subdirectory( BinaryTesters )
+
+
 ## set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x -D__STDC_INT64__")
 set(GeneralInclusions PARENT_SCOPE)
 list(APPEND GeneralInclusions
@@ -97,4 +100,18 @@ target_link_libraries(libLicenseWriter
 )
 target_include_directories( libPathUtils PUBLIC
     ${GeneralInclusions}    
+)
+
+## libLicenseChecker
+add_library(libLicenseChecker STATIC
+	${SRC}/LicenseChecker.cpp
+)
+
+target_link_libraries(libLicenseChecker
+	libLogTools
+	libPathUtils
+)
+
+target_include_directories(libLicenseChecker PUBLIC
+	${GeneralInclusions}
 )

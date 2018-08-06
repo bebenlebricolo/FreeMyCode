@@ -89,53 +89,6 @@ std::vector<std::string> DirectoryAnalyser::isolate_file_ext(std::string extensi
 	return tokens;
 }
 
-/*
-#ifdef REGEX_BASED
-// Regex-based extension finder
-std::string DirectoryAnalyser::find_extension(std::string filename){
-	smatch result_array;
-	regex pattern("(?:.*)\\.(\\w+)$");
-	if (!regex_search(filename, result_array, pattern)) {
-		//throw runtime_error(("DirectoryAnalyser::find_extension: cannot retrieve extension from %s", filename));
-		//logger.warning("DirectoryAnalyser::find_extension: this file doesn't have any 
-		return "";
-	}
-	return "." + string(result_array[1]);
-}
-
-#else
-
-// Non-regex extension finder
-// Simply returns the current file extension
-std::string DirectoryAnalyser :: find_extension(std::string filename) {
-	int substring_length = 0;
-	unsigned i = filename.length();
-	while (filename[i] != '.' && i != 0) {
-		if (character_in_list(filename[i], "\\/ +-_@^%*#\"\'~")) {
-			// TODO : handle this with a 
-			throw runtime_error("DirectoryAnalyser::find_extension: non regex : extension of file " + filename + " has illegal characters");
-			return "";
-		}
-		substring_length++;
-		i--;
-	}
-	string output = filename.substr(filename.length() - substring_length, substring_length);
-	
-	// If substring is the same -> we simply have a file without extension
-	if (output == filename) return "";
-	return output;
-}
-*/
-/*
-// detects if a character matches one character in the given string
-bool::DirectoryAnalyser::character_in_list(char c, string list) {
-	for (unsigned i = 0; i < list.size(); i++) {
-		if (c == list[i]) return true;
-	}
-	return false;
-}*/
-//#endif
-
 
 // Finds if a given extension matches the supported extensions.
 bool DirectoryAnalyser::found_ext(std::string extension, std::vector <std::string> extension_vect) {

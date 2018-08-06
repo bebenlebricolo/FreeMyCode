@@ -10,8 +10,11 @@ elseif ( ${TARGETED_OS} MATCHES "Windows")
 	set (CCompiler "MSVC")
 endif(${TARGETED_OS} MATCHES "Linux")
 
+## ------------------------------------------
+## Platform-related
+## ------------------------------------------
 
-### GCC with Linux systems
+### GCC with GNU/Linux systems
 if( CCompiler MATCHES "GCC")
 	set (CXX_FLAGS "-std=c++17 -Wall -Wextra -lstdc++fs")
 	set (CXX_OPTIMISATIONS "-O1")
@@ -36,10 +39,11 @@ endif(CCompiler MATCHES "GCC")
 
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${CXX_OPTIMISATIONS} ${CXX_COMPILE_TYPE}")
 
-
+## Subdirectories -------------------------------------
 add_subdirectory( ThirdPartyLibs )
 add_subdirectory( Utils )
 
+## Executable -----------------------------------------
 add_executable(FreeMyCode
     FreeMyCode.cpp
 )
@@ -58,6 +62,7 @@ target_link_libraries( FreeMyCode
     libLogTools
     libPathUtils
     libLicenseWriter
+	libLicenseChecker
 	${FS_LIB}
 )
 
