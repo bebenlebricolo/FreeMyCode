@@ -102,6 +102,15 @@ target_include_directories( libPathUtils PUBLIC
     ${GeneralInclusions}    
 )
 
+## libParsingUtils ----------
+add_library(libParsingUtils STATIC
+    ${SRC}/ParsingUtils.cpp
+)
+
+target_include_directories( libParsingUtils PRIVATE
+   ${GeneralInclusions}
+)
+
 ## libLicenseChecker
 add_library(libLicenseChecker STATIC
 	${SRC}/LicenseChecker.cpp
@@ -110,8 +119,10 @@ add_library(libLicenseChecker STATIC
 target_link_libraries(libLicenseChecker
 	libLogTools
 	libPathUtils
+	libParsingUtils
 )
 
 target_include_directories(libLicenseChecker PUBLIC
 	${GeneralInclusions}
 )
+

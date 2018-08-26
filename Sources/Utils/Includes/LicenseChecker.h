@@ -30,6 +30,7 @@ public:
 	void generateSpectrumFiles(std::string outputPath);
 	void buildGenericLicenseSpectrum();
 	void printLicenses();
+	void printSpectrums();
 private:
 	std::vector<LicenseSpectrum*> recordedLicenses;
 };
@@ -37,7 +38,7 @@ private:
 struct LicenseSpectrum
 {
 	std::string licenseName;
-	std::list<std::pair<std::string, unsigned short int>> wordBasedDictionary;
+	std::vector<std::pair<std::string, unsigned short int>> wordBasedDictionary;
 	void printContent();
 };
 

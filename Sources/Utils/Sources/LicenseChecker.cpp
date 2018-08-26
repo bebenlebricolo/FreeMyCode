@@ -2,6 +2,7 @@
 #include "LicenseChecker.h"
 #include "LoggingTools.h"
 #include "PathUtils.h"
+#include "ParsingUtils.h"
 
 #include <fstream>
 #include <cstring>
@@ -17,6 +18,10 @@ static const char spectrumCommentDelimiter = '#';
 static const char* spectrumSpecificChars = "#:\n";
 static const unsigned int spectrumMaxSpecificCharsCount = 10;
 //static const char spectrumIgnoreChar = ' ';
+
+
+// Generate license spectrum from license files
+static const uint8_t maxLettersThreshold = 3;
 
 static const unsigned int maxWordSize = 50;
 
@@ -241,6 +246,93 @@ void LicenseChecker::printLicenses()
 	}
 }
 
+struct isEqual
+{
+	isEqual(string _s) : s(_s){}
+	bool operator()(const pair <string, unsigned short int> &element)
+	{
+		return element.first == s;
+	}
+	string s;
+};
+
+bool sortAlpha (const pair <string, unsigned short int> &a, const pair <string, unsigned short int> &b)
+{
+	return a.first < b.first;
+}
+
+
+void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesList)
+{
+	logger::Logger *log = logger::Logger::get_logger();
+	// open file
+	// list words which are bigger than 3 letters
+	for (unsigned int i = 0; i < filesList.size(); i++)
+	{
+		// opens the file
+		string filePath = filesList[i];
+		ifstream file;
+		if (fs::exists(filePath))
+		{
+			file.open(filesList[i]);
+		}
+		else
+		{
+			log->logWarning("file " + filePath + " doesn't exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
+			// Loop until next file in list
+			continue;
+		}
+		// If we get here, process file.
+		string line;
+		string licenseName = pu::remove_extension(pu::get_filename(filePath));
+		vector<string> wordsList;
+		while (getline(file, line))
+		{
+			vector<string> wordsFromLine;
+			tokenizeWords(line, wordsFromLine);
+			
+			// Filters out words which are smaller than the required threshold
+			for (unsigned int i = 0; i < wordsFromLine.size(); i++)
+			{
+				string word = wordsFromLine[i];
+				if (word.size() > maxLettersThreshold)
+				{
+					wordsList.push_back(word);
+				}
+			}
+		}
+		sort(wordsList.begin(), wordsList.end());
+		LicenseSpectrum *lic = new LicenseSpectrum;
+		lic->licenseName = licenseName;
+		vector<std::pair<std::string, unsigned short int>>::iterator it;
+		for (unsigned int i = 0; i < wordsList.size(); i++)
+		{
+			it = std::find_if(lic->wordBasedDictionary.begin(), lic->wordBasedDictionary.end(), isEqual(wordsList[i]));
+			if (it == lic->wordBasedDictionary.end())
+			{
+				lic->wordBasedDictionary.push_back( { wordsList[i] , 1 } );
+			}
+			else
+			{
+				// increment second element of the targeted pair
+				it->second++;
+			}
+		}
+
+		sort(lic->wordBasedDictionary.begin(), lic->wordBasedDictionary.end(), sortAlpha);
+		recordedLicenses.push_back(lic);
+		file.close();
+	}
+}
+
+
+void LicenseChecker::printSpectrums()
+{
+	for (unsigned int i = 0; i < recordedLicenses.size(); i++)
+	{
+		recordedLicenses[i]->printContent();
+	}
+}
 
 // #######################################
 // LicenseSpectrum class implementation
@@ -250,7 +342,7 @@ void LicenseChecker::printLicenses()
 void LicenseSpectrum::printContent()
 {
 	cout << "License name = " << licenseName << endl;
-	for (list<pair<string,unsigned short>>::const_iterator iterator = wordBasedDictionary.begin() , end = wordBasedDictionary.end(); iterator!= end ; ++iterator)
+	for (vector<pair<string,unsigned short>>::const_iterator iterator = wordBasedDictionary.begin() , end = wordBasedDictionary.end(); iterator!= end ; ++iterator)
 	{
 		cout << iterator->first << " : count = " << to_string(iterator->second) << endl;
 	}

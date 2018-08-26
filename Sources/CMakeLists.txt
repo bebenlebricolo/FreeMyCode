@@ -63,6 +63,7 @@ target_link_libraries( FreeMyCode
     libPathUtils
     libLicenseWriter
 	libLicenseChecker
+	libParsingUtils
 	${FS_LIB}
 )
 

@@ -5,12 +5,14 @@
 #include <filesystem>
 
 namespace fs = std::experimental::filesystem;
-static const char* valid_options = "-p -h -u";
+static const char* valid_options = "-p -b -h -u ";
 using namespace std;
 #define DEBUG
 
 static void printUsage();
 static void parsingTest(int argc, char** argv);
+static void spectrumBuilding(int argc, char** argv);
+static vector<string> filterInput(int argc, char** argv);
 
 void parse_option(int argc, char* argv[])
 {
@@ -21,6 +23,9 @@ void parse_option(int argc, char* argv[])
 		{
 		case 'p':
 			parsingTest(argc, argv);
+			break;
+		case 'b':
+			spectrumBuilding(argc, argv);
 			break;
 		case 'h':
 		case 'u':
@@ -60,10 +65,32 @@ int main(int argc, char* argv[])
 void printUsage()
 {
 	cout << "Usage : " << endl;
-	cout << " -p <file1> <file2>     :  Parse spectrum files and display results on standard output" << endl;
+	cout << " -p <file1> <file2> ...     :  Parse spectrum files and display results on std out" << endl;
+	cout << " ---------------------" << endl;
+	cout << " -b <file1> <file2> ...     :  Builds spectrum from regular text file and display results on std out" << endl;
 	cout << " ---------------------" << endl;
 	cout << " -u / -h                :  Displays this help " << endl << endl;
 
+}
+
+
+vector<string> filterInput(int argc, char** argv)
+{
+	logger::Logger *log = logger::Logger::get_logger();
+	vector<string> fileList;
+	bool foundErrors = false;
+	for (unsigned int i = 2; i < argc; i++)
+	{
+		string arg = argv[i];
+		if (!fs::exists(arg))
+		{
+			log->logWarning("argument \" " + arg + " \" is not rigth. Please check your input.");
+			foundErrors = true;
+			continue;
+		}
+		fileList.push_back(arg);
+	}
+	return fileList;
 }
 
 void parsingTest(int argc, char** argv)
@@ -76,22 +103,26 @@ void parsingTest(int argc, char** argv)
 	}
 	else
 	{
+		vector<string> fileList = filterInput(argc, argv);
 		LicenseChecker licenseChecker;
-		vector<string> fileList;
-		bool foundErrors = false;
-		for (unsigned int i = 2; i < argc; i++)
-		{
-			string arg = argv[i];
-			if (!fs::exists(arg))
-			{
-				log->logWarning("argument \" " + arg + " \" is not rigth. Please check your input.");
-				foundErrors = true;
-				continue;
-			}
-			fileList.push_back(arg);
-		}
-
 		licenseChecker.parseSpectrums(fileList);
 		licenseChecker.printLicenses();
+	}
+}
+
+void spectrumBuilding(int argc, char** argv)
+{
+	logger::Logger *log = logger::Logger::get_logger();
+	log->logInfo("Starting test tool for LicenseChecker library : parser unit.");
+	if (argc < 3)
+	{
+		log->logError("Please provide at least one file path.");
+	}
+	else
+	{
+		vector<string> fileList = filterInput(argc, argv);
+		LicenseChecker licenseChecker;
+		licenseChecker.buildLicensesSpectrum(fileList);
+		licenseChecker.printSpectrums();
 	}
 }
