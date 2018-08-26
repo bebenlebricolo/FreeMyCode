@@ -6,7 +6,7 @@
 
 using namespace std;
 
-static const char* illegalCharacters = " .-,;:!§*+=\"'()_|[]}{#~&²¨$£€%/\\'";
+static const char* illegalCharacters = " .-,;:!§*+=\"'()_|[]}{#~&²¨$£€%/\\'<>`";
 static const unsigned int maxIllegalChar = 50;
 
 static bool wayToSort(const string &a, const string &b) { return a < b; }
@@ -31,9 +31,12 @@ void tokenizeWords(std::string &line, std::vector<std::string> &outputVector)
 	for (unsigned int i = 0; i < line.length(); i++)
 	{
 		char currentChar = line[i];
-		if (isAnIllegalChar(currentChar) && word.length() > 0)
+		if (isAnIllegalChar(currentChar))
 		{
-			outputVector.push_back(word);
+			if (word.length() > 0)
+			{
+				outputVector.push_back(word);
+			}
 			word.clear();
 		}
 		else
