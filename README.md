@@ -8,6 +8,8 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 ### Functionalities to be implemented: (TODO)
 - [ ] Check for previous license files
    * Prevent re-licensing of a file
+   * Compute Licenses spectrums
+   * Embed all known licenses spectrums in one file (Licences.spec)
 - [ ] Prevent multiple license writing in a file
 - [ ] Implement GUI with Qt
 - [x] Use tags to add specific content
