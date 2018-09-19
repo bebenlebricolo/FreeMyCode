@@ -15,11 +15,13 @@
 #include <string>
 
 
-#define EXPERIMENTAL
-#ifdef EXPERIMENTAL
+//#define EXPERIMENTAL
+#ifdef EXPERIMENTAL_FS
     #include <experimental/filesystem>
+    #define FS_CPP std::experimental::filesystem
 #else
     #include <filesystem>
+    #define FS_CPP std::filesystem
 #endif // !EXPERIMENTAL
 #include <fstream>
 #include <iostream>

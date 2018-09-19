@@ -8,7 +8,7 @@ Version	|	 Date	 |	Comments
 0.2		| 27/03/2018 | Implemented DirectoryAnalyser tool
 0.25	| 01/04/2018 | Improved support of DirectoryAnalyser tool
 0.3     | 04/04/2018 | Implemented ConfigTools
-0.35	| 07/04/2018 | Implemented LogginTools	
+0.35	| 07/04/2018 | Implemented LogginTools
 0.36	| 15/04/2018 | Added logging facilities to ConfigTools, CommandLineParser and DirectoryAnalyser
 0.37	| 23/04/2018 | Added first support for LicenseWriter tool. Added special flags for LicenseWriter
 
@@ -24,7 +24,7 @@ Version	|	 Date	 |	Comments
 #include "LicenseWriter.h"
 
 using namespace std;
-using namespace std::experimental::filesystem;
+using namespace FS_CPP;
 
 void init_Parser(CommandLineParser *parser);
 
@@ -54,7 +54,7 @@ int main(int argc , char* argv[])
 	mylog->log_init_message();
 
 	ConfObject config(mylog);
-	
+
 	// Abort execution if we cannot find configuration file
 	if (config.parse_conf_file(parser.get_arg("Config")) == false) {
 		// Ends the programm

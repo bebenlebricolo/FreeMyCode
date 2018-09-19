@@ -23,7 +23,7 @@ const std::string pathutils::get_filename(std::string input_string) {
 	regex pattern("(?:.*)[\\/\\](.*)$");
 	if (!regex_search(input_string, result_array, pattern)) {
 		//throw runtime_error(("DirectoryAnalyser::find_extension: cannot retrieve extension from %s", filename));
-		//logger.warning("DirectoryAnalyser::find_extension: this file doesn't have any 
+		//logger.warning("DirectoryAnalyser::find_extension: this file doesn't have any
 		return "";
 	}
 	return string(result_array[1]);
@@ -52,7 +52,7 @@ const std::string pathutils::get_extension(std::string input) {
 	regex pattern("(?:.*)\\.(\\w+)$");
 	if (!regex_search(input, result_array, pattern)) {
 		//throw runtime_error(("DirectoryAnalyser::find_extension: cannot retrieve extension from %s", filename));
-		//logger.warning("DirectoryAnalyser::find_extension: this file doesn't have any 
+		//logger.warning("DirectoryAnalyser::find_extension: this file doesn't have any
 		return "";
 	}
 	return "." + string(result_array[1]);
@@ -90,10 +90,10 @@ const std::string pathutils::get_parent_dir(std::string filepath) {
 
 const std::string pathutils::get_file_version(std::string filename) {
 	smatch result_array;
-	regex pattern("(\d*)$");
+	regex pattern("(\\d*)$");
 	if (!regex_search(filename, result_array, pattern)) {
 		//throw runtime_error(("DirectoryAnalyser::find_extension: cannot retrieve extension from %s", filename));
-		//logger.warning("DirectoryAnalyser::find_extension: this file doesn't have any 
+		//logger.warning("DirectoryAnalyser::find_extension: this file doesn't have any
 		return "";
 	}
 	return string(result_array[1]);

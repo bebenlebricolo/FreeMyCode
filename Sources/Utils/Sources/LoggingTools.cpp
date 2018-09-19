@@ -31,11 +31,13 @@ Version	|	 Date	 |	Comments
 
 #include"PathUtils.h"
 
-#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
+#ifdef MSVC_COMPILER
+	#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
+#endif
 
 using namespace logger;
 using namespace std;
-namespace fs = std::experimental::filesystem;
+namespace fs = FS_CPP;
 namespace pu = pathutils;
 
 /*
@@ -108,7 +110,7 @@ void logger::Logger::log_init_message(const string &message)
 }
 
 // Adds a handler to the stack
-const int Logger::add_handler(LoggerHandler *new_handler) {
+int Logger::add_handler(LoggerHandler *new_handler) {
 	try {
 		// TODO : test if a similar handler exist (preventing writing in the same file twice -or more- )
 		handlers.push_back(new_handler);
@@ -230,12 +232,13 @@ LoggerHandler class definition
 **************************************************************************************
 */
 
-LoggerHandler::LoggerHandler(const LoggerHandler::Severity level):is_active(true),sev_level(level){}
+LoggerHandler::LoggerHandler(const LoggerHandler::Severity level):sev_level(level),is_active(true){}
+LoggerHandler::~LoggerHandler(){}
 
 void LoggerHandler::set_state(const bool state) { is_active = state; }
-const bool LoggerHandler::is_activated(void) { return is_active; }
+bool LoggerHandler::is_activated(void) const { return is_active; }
 void LoggerHandler::set_severity(const LoggerHandler::Severity level) { sev_level = level; }
-const LoggerHandler::Severity LoggerHandler::get_severity(void) { return sev_level; }
+LoggerHandler::Severity LoggerHandler::get_severity(void) const { return sev_level; }
 
 
 

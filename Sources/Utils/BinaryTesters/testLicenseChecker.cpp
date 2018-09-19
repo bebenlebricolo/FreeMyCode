@@ -4,7 +4,7 @@
 #include <iostream>
 #include <filesystem>
 
-namespace fs = std::experimental::filesystem;
+namespace fs = FS_CPP;
 static const char* valid_options = "-p -b -h -u ";
 using namespace std;
 #define DEBUG
@@ -52,10 +52,10 @@ int main(int argc, char* argv[])
 	{
 		log->logDebug("arg[" + to_string(i) + "] = " + string(argv[i]));
 	}
-#else 
+#else
 	log->add_handler(new logger::ConsoleHandler(logger::LoggerHandler::Severity::Log_Info));
 #endif
-	
+
 	parse_option(argc, argv);
 
 	cin.ignore();

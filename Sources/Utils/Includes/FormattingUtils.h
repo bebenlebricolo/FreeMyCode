@@ -57,6 +57,7 @@ namespace FormattingTags
 		TagType type;
 		ProtoTag(std::string &_name, TagType _type);
 		ProtoTag(const char* _name, TagType _type);
+		virtual ~ProtoTag();
 		string printNameAndDelim(Formatter &_format);
 		virtual ostringstream* buildFormattedBlock(Formatter &_format) = 0;
 		virtual std::string getProperty(std::string name) = 0;
@@ -65,6 +66,7 @@ namespace FormattingTags
 		std::string value;
 		TagLine(std::string &_name, std::string &_value);
 		TagLine(const char* _name, const char* _value);
+		virtual ~TagLine();
 		ostringstream* buildFormattedBlock(Formatter &_format);
 		std::string getProperty(std::string name);
 	};
@@ -72,6 +74,7 @@ namespace FormattingTags
 	struct TagArray : public ProtoTag {
 		std::vector<std::string> val;
 		TagArray(std::string &name, std::vector<std::string> &data);
+		virtual ~TagArray();
 		ostringstream* buildFormattedBlock(Formatter &_format);
 		std::string getProperty(std::string name);
 	};
@@ -81,7 +84,7 @@ namespace FormattingTags
 		std::vector<TagArray*> arrays;
 		std::vector<TagObject*> obj;
 		TagObject(std::string &name);
-		~TagObject();
+		virtual ~TagObject();
 		ostringstream* buildFormattedBlock(Formatter &_format);
 		std::string getProperty(std::string name);
 	};

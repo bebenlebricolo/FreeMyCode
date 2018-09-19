@@ -18,7 +18,7 @@ Version	|	 Date	 |	Comments
 #include "ConfigTools.h"
 #include "LoggingTools.h"
 
-// Use Rapidjson external library 
+// Use Rapidjson external library
 #include "filereadstream.h"
 #include "document.h"
 #include "istreamwrapper.h"
@@ -26,7 +26,7 @@ Version	|	 Date	 |	Comments
 
 using namespace rapidjson;
 
-namespace fs = std::experimental::filesystem;
+namespace fs = FS_CPP;
 using namespace std;
 
 static const char*  CONF_NODE = "Configuration";
@@ -60,7 +60,7 @@ SupportedExtension::SupportedExtension(
 	extension(),
 	single_line_comment(line_com),
 	bloc_comment_start(bloc_start),
-	bloc_comment_end(bloc_end) 
+	bloc_comment_end(bloc_end)
 {
 	extension.push_back(_single_ext);
 }
@@ -98,7 +98,7 @@ ConfObject::~ConfObject() {
 
 // Parses a file using the rapidjson library
 bool ConfObject::parse_conf_file(std::string filepath) {
-	
+
 	if (!fs::exists(filepath)) {
 		log_ptr->logWarning("Filepath doesn't exist", __LINE__, __FILE__, __func__, "ConfObject");
 		// Nothing to be parsed
@@ -109,7 +109,7 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 	// http://rapidjson.org/md_doc_stream.html#FileStreams
 	ifstream file_stream(filepath);
 	IStreamWrapper isw(file_stream);
-	
+
 	// rapidjson documentation : http://rapidjson.org/md_doc_stream.html#FileStreams
 	// Reading / Parsing file streams
 
@@ -123,7 +123,7 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 	string bl_com_st;
 	// Block comment end
 	string bl_com_end;
-	
+
 
 	doc.ParseStream(isw);
 	file_stream.close();
@@ -308,7 +308,7 @@ const std::string ConfObject::get_supported_ext_list()
 
 
 // Returns the bloc comment starting tag (= opening tag)
-const string ConfObject::get_bloc_comment_start(string targeted_ext) { 
+const string ConfObject::get_bloc_comment_start(string targeted_ext) {
 	return get_ext_property(targeted_ext, SupportedExtension::properties::Bloc_Start);
 }
 

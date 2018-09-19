@@ -7,8 +7,9 @@
 #include <fstream>
 #include <cstring>
 
-namespace fs = std::experimental::filesystem;
+namespace fs = FS_CPP;
 namespace pu = pathutils;
+using namespace std;
 
 static const char* genericLicenseName = "Generic";
 static const char* spectrumNameToken = "Name";
@@ -28,6 +29,12 @@ static const unsigned int maxWordSize = 50;
 static void trimWhiteSpaces(string &word);
 static bool hasOneCharacter(char letter,const char* testChars);
 
+
+// Parses spectrum Files and for each line, discriminates the left member (called token by now) of the right member
+// E.g : foo : 53
+//        ^     ^
+//        |   right member (number of word occurences)
+//    left member, alias "token" (word)
 void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 {
 	logger::Logger* log = logger::Logger::get_logger();
@@ -51,8 +58,7 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 				log->logWarning("Spectrum file " + filename + " is already opened!", __LINE__, __FILE__, __func__, "LicenseChecker");
 				spectrumFile.close();
 			}
-			
-			spectrumFile.open(currentFile, ios::beg | ios::in);
+			spectrumFile.open(currentFile, ios::in);
 			LicenseSpectrum *curLicense = new LicenseSpectrum();
 			unsigned int lineNumber = 0;
 			bool caughtError = false;
@@ -126,7 +132,7 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 
 				if (caughtError == false)
 				{
-					// Check for License Header 
+					// Check for License Header
 					// Name : GNU GPL V3
 					// token : rigthMember
 					if (token == spectrumNameToken)
@@ -154,7 +160,7 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 
 		}
 	}
-	
+
 
 }
 
@@ -167,7 +173,6 @@ void trimWhiteSpaces(string &word)
 	bool detectedWord = false;
 	unsigned int wordStartBoundary = 0;
 	unsigned int wordEndBoundary = 0;
-	bool foundIllegalChar = false;
 
 	for (unsigned int i = 0; i < word.size(); i++)
 	{
@@ -290,9 +295,9 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
 		{
 			vector<string> wordsFromLine;
 			tokenizeWords(line, wordsFromLine);
-			
+
 			// Filters out words which are smaller than the required threshold
-			for (unsigned int i = 0; i < wordsFromLine.size(); i++)
+			for (unsigned int j = 0; j < wordsFromLine.size(); j++)
 			{
 				string word = wordsFromLine[i];
 				if (word.size() > maxLettersThreshold)
@@ -305,7 +310,7 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
 		LicenseSpectrum *lic = new LicenseSpectrum;
 		lic->licenseName = licenseName;
 		vector<std::pair<std::string, unsigned short int>>::iterator it;
-		for (unsigned int i = 0; i < wordsList.size(); i++)
+		for (unsigned int j = 0; j < wordsList.size(); j++)
 		{
 			it = std::find_if(lic->wordBasedDictionary.begin(), lic->wordBasedDictionary.end(), isEqual(wordsList[i]));
 			if (it == lic->wordBasedDictionary.end())

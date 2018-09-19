@@ -53,7 +53,7 @@ CommandLineParser::CommandLineParser(logger::Logger* log_ptr) : logsys(log_ptr){
 	Global_flags.available_flags.push_back(ParserFlags({ "-sr" , "--show-results" }, "Show results flag : displays current state of flags and args", ""));
 }
 
-// Parse the given arguments and 
+// Parse the given arguments and
 bool CommandLineParser::found_globals(int argc, char * argv[]) {
 	bool temp_result = false;
 	for (int i = 0; i < argc; i++) {
@@ -89,7 +89,7 @@ void CommandLineParser::show_globals() {
 		}
 		return ;
 	}
-	// Then look for usages requests 
+	// Then look for usages requests
 	if (Global_flags.flag_state("--Usage")) {
 		logsys->logDebug("Flag < --Usage > found", __LINE__, __FILE__, __func__, "CommandLineParser");
 		string line = "##################################";
@@ -103,7 +103,7 @@ void CommandLineParser::show_globals() {
 }
 
 CommandLineParser::~CommandLineParser() {
-	for (int i = 0; i < Result.size(); i++) {
+	for (unsigned int i = 0; i < Result.size(); i++) {
 		delete(Result[i]);
 	}
 }
@@ -114,7 +114,7 @@ bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
 		logsys->logError("No arguments given. Aborting execution");
 		Global_flags.set_flag("--Usage");
 	}
-	
+
 	// Look for global flags first
 	// If found, show messages and short-circuit the parsing
 	if (found_globals(argc,argv)) {
@@ -154,7 +154,7 @@ bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
 					if (current_target == NULL || current_target->is_full()) {
 						current_target = temp_PR;
 
-						// If previous_arg is not null and current target is not full -> the last regular arg had no target when parsed! 
+						// If previous_arg is not null and current target is not full -> the last regular arg had no target when parsed!
 						// Then assign the previous arg to the new current_target.
 						if (previous_arg != "" && !current_target->is_full()) {
 							push_arg(&current_target, previous_arg);
@@ -241,7 +241,7 @@ void CommandLineParser::push_arg(ParserResult** target, string argument) {
 	all_args += argument + " ";
 }
 
-// Pushes the new flag to the targeted parser result. Does not reinit to Null since 
+// Pushes the new flag to the targeted parser result. Does not reinit to Null since
 // the target is temporary
 void CommandLineParser::push_flag(ParserResult** target, string flag) {
 	(*target)->set_flag(flag);
@@ -260,24 +260,24 @@ bool CommandLineParser::is_a_flag(string _parsed_arg) {
 bool CommandLineParser::is_flag_valid(string _parsed_arg, ParserResult** _temp_PR) {
 	if (Global_flags.contain_flag(_parsed_arg)) return true;
 	*_temp_PR = find_owner(_parsed_arg);
-	if (*_temp_PR != NULL ) return true; 
+	if (*_temp_PR != NULL ) return true;
 	else return false;
 }
 
 ParserResult* CommandLineParser::find_owner(string flag) {
-	for (int index = 0; index < Result.size(); index++) {
+	for (unsigned int index = 0; index < Result.size(); index++) {
 		if (Result[index]->contain_flag(flag)) return Result[index];
 	}
 	return NULL;
 }
 
 int CommandLineParser::find_next_PR_index(int _target_id) {
-	for (int i = _target_id; i < Result.size(); i++) {
+	for (unsigned int i = _target_id; i < Result.size(); i++) {
 		if (!Result[i]->is_full()) return i;
 	}
 	// We haven't found any free result!
 	logsys->logError("Cannot find any ParserResult free! Program may not behave as expected! Aborting execution.", __LINE__, __FILE__, __func__, "CommandLineParser");
-	
+
 	return -1;
 }
 
@@ -285,7 +285,7 @@ int CommandLineParser::find_next_PR_index(int _target_id) {
 void CommandLineParser::show_results() {
 	cout << "\nInternal states of flags and args:" << endl ;
 	cout << "---------------------------------------------" << endl;
-	for (int target_index = 0; target_index < Result.size(); target_index++) {
+	for (unsigned int target_index = 0; target_index < Result.size(); target_index++) {
 		Result[target_index]->introspective();
 	}
 }
@@ -317,7 +317,7 @@ void CommandLineParser::overrideFlag(string flagName, bool flagState) {
 	}
 }
 
-// Initializes the vector all at once. 
+// Initializes the vector all at once.
 // Note : if original Result vector is not empty, it will be overwritten by the new one.
 // -> If we replace a vector of pointers A by a vector B (with A != B) , then we might
 // end with some objects still living in memory -> memory leaks!
@@ -337,22 +337,22 @@ void CommandLineParser::add_container(ParserResult* Result_object) {
 
 // ParserFlags Object definition ########################################################
 // Initialize with a vector of strings with the flags (case sensitive)
-ParserFlags::ParserFlags(vector<string> flags_aliases, string _description, string _usage , bool isterminal) : 
+ParserFlags::ParserFlags(vector<string> flags_aliases, string _description, string _usage , bool isterminal) :
 	GlobalHook(_description, _usage) , state(false) , terminal_flag(isterminal){
 	init(flags_aliases);
 }
 
 void ParserFlags::init(vector<string> flags_aliases) {
-	for (int i = 0; i < flags_aliases.size(); i++) {
+	for (unsigned int i = 0; i < flags_aliases.size(); i++) {
 		aliases.push_back(flags_aliases[i]);
 	}
 }
 
 bool ParserFlags::match_flag(string flag, bool auto_set) {
-	for (int i = 0; i < aliases.size(); i++) {
-		if (aliases[i] == flag) { 
+	for (unsigned int i = 0; i < aliases.size(); i++) {
+		if (aliases[i] == flag) {
 			state = auto_set ? true : state;
-			return true; 
+			return true;
 		}
 	}
 	return false;
@@ -361,7 +361,7 @@ bool ParserFlags::match_flag(string flag, bool auto_set) {
 void ParserFlags::introspective(){
 	cout << "*ParserFlags : " << endl;
 	cout << "	-> Aliases : ";
-	for (int alias_id = 0; alias_id < aliases.size(); alias_id++) {
+	for (unsigned int alias_id = 0; alias_id < aliases.size(); alias_id++) {
 		cout << aliases[alias_id] << " ";
 		if ((alias_id % 4) > 3) cout << endl << "                ";
 	}
@@ -405,23 +405,23 @@ void GlobalHook::usage_request() {
 
 
 // ParserResult Object definition ##################################################
-ParserResult::ParserResult() : 
+ParserResult::ParserResult() :
 	GlobalHook("Standard ParserResult description" ,
 				"Standard ParserResult usage"), full(false)
 {}
 
 // Overloaded constructor with name, description and usages.
 ParserResult::ParserResult(string _name ,  string _description, string _usage) :
-	GlobalHook(_description , _usage), full(false) , name(_name){}
+	GlobalHook(_description , _usage), name(_name), full(false){}
 
 // Helps to identify if arguments have been parsed properly
 // Offers a simple way to debug stuff and see parsing problems.
 void ParserResult::introspective() {
-	
+
 	cout << "\nParserResult : raw_args = " << (raw_args != "" ? raw_args : "nothing parsed") << endl;
 	cout << "-> Parsed argument : " << arg << endl;
 	cout << "-> is Full? : " << (full ? "true" : "false") << endl;
-	for (int flag_index = 0; flag_index < available_flags.size(); flag_index++) {
+	for (unsigned int flag_index = 0; flag_index < available_flags.size(); flag_index++) {
 		available_flags[flag_index].introspective();
 	}
 }
@@ -438,7 +438,7 @@ void ParserResult::overrideFlag(string flagName, bool flagState)
 // Returns true if the given flag matches one of the internal flag of the class.
 bool ParserResult::contain_flag(string flag) {
 	bool result = false;
-	for (int i = 0; i < available_flags.size(); i++) {
+	for (unsigned int i = 0; i < available_flags.size(); i++) {
 		result |= available_flags[i].match_flag(flag);
 	}
 	return result;
@@ -456,7 +456,7 @@ bool ParserResult::flag_state(string flag) {
 // Activates flag and store result as is.
 // Activated flags may be used to know which ParserResult we are supposed to find next (or provide information about the previously parsed one)
 void ParserResult::set_flag(string flag) {
-	for (int i = 0; i < available_flags.size(); i++) {
+	for (unsigned int i = 0; i < available_flags.size(); i++) {
 		available_flags[i].match_flag(flag, true);
 	}
 }
@@ -473,7 +473,7 @@ void ParserResult::set_arg(string argument) {
 bool ParserResult::is_full() { return full; }
 
 
-// Globals messages to be shown 
+// Globals messages to be shown
 void ParserResult::help_request(unsigned int indent_spaces) {
 	print_line(0, 120);
 	cout << "[ "<< name << " ] :" << endl;

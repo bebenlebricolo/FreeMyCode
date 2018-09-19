@@ -1,11 +1,11 @@
 /*
-This file implements a rather simple solution to analyse a directory thanks to C++ 14 utilites, and mostly returns a vector 
+This file implements a rather simple solution to analyse a directory thanks to C++ 14 utilites, and mostly returns a vector
 containing all file paths which matches the passed extension vector.
 
 ----------------------------------------------------------------------------
 Version	|	 Date	 |	Comments
 ----------------------------------------------------------------------------
-0.1     | 27/03/2018 |	Files are beeign sorted depending on their file extension. Couldn't get it to work with regex 
+0.1     | 27/03/2018 |	Files are beeign sorted depending on their file extension. Couldn't get it to work with regex
 						-> back to basics : iterating on strings!
 0.11	| 01/04/2018 |  Added regex support for find_extension method. Turn on REGEX_BASED define to get it to work
 						-> Note: regex based extension finder is slightly slower than the other one (turn off REGEX_BASED)
@@ -18,7 +18,7 @@ Version	|	 Date	 |	Comments
 #include "PathUtils.h"
 #include "LoggingTools.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = FS_CPP;
 namespace pu = pathutils;
 
 using namespace std;
@@ -36,7 +36,7 @@ logger::Logger* DirectoryAnalyser::logsys = logger::Logger::get_logger();
 
 // Returns a vector of the file paths which contains potential code / text files.
 std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string &root_path, std::string targeted_extensions) {
-	
+
 	unsigned file_counter = 0;
 
 	// Uses a pointer in case of big file list -> only uses one memory location for the vector
@@ -60,8 +60,8 @@ std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string 
 			if (!fs::is_directory(p.path())) {
 				string str = p.path().filename().generic_string();
 				string current_ext;
-				try { 
-					current_ext = pu::get_extension(str); 
+				try {
+					current_ext = pu::get_extension(str);
 				}
 				catch (const runtime_error& error){
 					logsys->logError(error.what(), __LINE__, __FILE__, __func__, "DirectoryAnalyser");
@@ -82,7 +82,7 @@ std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string 
 }
 
 // Breaks a continuous extension string like ".log .h .hpp .c .cpp" into individual tokens:
-// .log ; .h ; .hpp ; .c ; .cpp 
+// .log ; .h ; .hpp ; .c ; .cpp
 std::vector<std::string> DirectoryAnalyser::isolate_file_ext(std::string extension_string) {
 	// First atomise the string and extract substrings from it
 	vector<string> tokens = split(extension_string.c_str());
