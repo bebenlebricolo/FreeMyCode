@@ -27,6 +27,25 @@ using namespace std;
 using namespace FS_CPP;
 
 void init_Parser(CommandLineParser *parser);
+static void printArgs(int argc, char** argv)
+{
+	cout << "\nFull command line is : \n" << endl;
+	for(int i = 0 ; i < argc ; i++)
+	{
+		cout << argv[i] << ' ' ;
+	}
+	cout << endl << endl;
+
+	// Prints all args sequentially
+	for (int i = 0; i < argc; i++)
+	{
+		cout << "Arg" << to_string(i) << " = " << argv[i] << endl;
+	}
+	cout << endl;
+}
+
+
+
 
 int main(int argc , char* argv[])
 {
@@ -36,10 +55,7 @@ int main(int argc , char* argv[])
 	CommandLineParser parser;
 	init_Parser(&parser);
 #ifdef DEBUG
-	for (auto i = 0; i < argc; i++)
-	{
-		cout << "Arg" << to_string(i) << " = " << argv[i] << endl;
-	}
+	printArgs(argc, argv);
 #endif
 
 	if (parser.parse_arguments(argc, argv) == false) {
