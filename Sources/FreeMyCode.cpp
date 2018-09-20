@@ -43,15 +43,10 @@ struct GenericParserResult {
     string config;
     string logoption;
     string  sec_inp;
+	GenericParserResult(string a, string b, string c, string d, string e):directory(a),license(b),config(c),logoption(d),sec_inp(e){}
 };
 
-GenericParserResult genPR = {
-    .directory =    PRList[0],
-    .license =      PRList[1],
-    .config =       PRList[2],
-    .logoption =    PRList[3],
-    .sec_inp =      PRList[4]
-};
+GenericParserResult genPR(PRList[0], PRList[1], PRList[2], PRList[3], PRList[4]);
 
 enum errorType {
     FATAL = -2,

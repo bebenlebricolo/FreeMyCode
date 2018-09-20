@@ -14,8 +14,10 @@
 #include <vector>
 #include <string>
 
-
+#ifdef _MSC_VER
 #define EXPERIMENTAL_FS
+#endif // _MSC_VER
+
 #ifdef EXPERIMENTAL_FS
     #include <experimental/filesystem>
     #define FS_CPP std::experimental::filesystem

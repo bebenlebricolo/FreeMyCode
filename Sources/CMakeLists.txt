@@ -33,9 +33,9 @@ if( CCompiler MATCHES "GCC")
 	set (DEFINES "-DGCC_COMPILER ")
 	if(${COMPILE_TYPE} MATCHES "Debug")
 		set (CXX_COMPILE_TYPE "-g -DDEBUG")
-	else(${COMPILE_TYPE} MATCHES "Debug")
+	else()
 		set (CXX_COMPILE_TYPE "")
-	endif(${COMPILE_TYPE} MATCHES "Debug")
+	endif()
 
 ### Microsoft Visual Studio Compiler
 elseif( ${CCompiler} MATCHES "MSVC")
@@ -45,12 +45,13 @@ elseif( ${CCompiler} MATCHES "MSVC")
 	set (DEFINES "/DMSVC_COMPILER /DEXPERIMENTAL_FS")
 	if(${COMPILE_TYPE} MATCHES "Debug")
 		set (CXX_COMPILE_TYPE "/Z7 /Zi /DDEBUG")
-	else(${COMPILE_TYPE} MATCHES "Debug")
+	else()
 		set (CXX_COMPILE_TYPE "")
-	endif(${COMPILE_TYPE} MATCHES "Debug")
+	endif()
+	add_definitions(-DEXPERIMENTAL_FS)
 endif(CCompiler MATCHES "GCC")
 
-set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${CXX_OPTIMISATIONS} ${CXX_COMPILE_TYPE} ${CXX_WARNINGS}")
+set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${CXX_OPTIMISATIONS} ${CXX_COMPILE_TYPE} ${CXX_WARNINGS} ${DEFINES}")
 
 ## Subdirectories -------------------------------------
 add_subdirectory( ThirdPartyLibs )

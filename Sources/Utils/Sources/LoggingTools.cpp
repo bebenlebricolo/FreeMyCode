@@ -33,6 +33,7 @@ Version	|	 Date	 |	Comments
 
 #ifdef MSVC_COMPILER
 	#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
+	#define FS_CPP std::experimental::filesystem
 #endif
 
 using namespace logger;
