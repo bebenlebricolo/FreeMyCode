@@ -24,108 +24,172 @@ Version	|	 Date	 |	Comments
 #include "LicenseWriter.h"
 
 using namespace std;
-using namespace FS_CPP;
+namespace fs = FS_CPP;
 
-void init_Parser(CommandLineParser *parser);
-static void printArgs(int argc, char** argv)
+static const uint8_t maxPRType = 5;
+
+string PRList[maxPRType] =
 {
-	cout << "\nFull command line is : \n" << endl;
-	for(int i = 0 ; i < argc ; i++)
-	{
-		cout << argv[i] << ' ' ;
-	}
-	cout << endl << endl;
+    "Directory",
+    "License",
+    "Config",
+    "Logoption",
+    "Secondary Input",
+};
 
-	// Prints all args sequentially
-	for (int i = 0; i < argc; i++)
-	{
-		cout << "Arg" << to_string(i) << " = " << argv[i] << endl;
-	}
-	cout << endl;
-}
+struct GenericParserResult {
+    string directory;
+    string license;
+    string config;
+    string logoption;
+    string  sec_inp;
+};
 
+GenericParserResult genPR = {
+    .directory = 	PRList[0],
+    .license = 		PRList[1],
+    .config = 		PRList[2],
+    .logoption = 	PRList[3],
+    .sec_inp = 		PRList[4]
+};
 
+enum errorType {
+    FATAL = -2,
+    NO_ERROR = 0,
+    BAD_ARGUMENTS,
+    NO_SUCH_FILE_OR_DIRECTORY,
+    NULL_POINTER
+};
 
+static void init_Parser(CommandLineParser *parser);
+static void printArgs(int argc, char** argv);
+static errorType check_args(CommandLineParser *parser);
 
 int main(int argc , char* argv[])
 {
-	logger::Logger* mylog = logger::Logger::get_logger();
-	mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
+    logger::Logger* mylog = logger::Logger::get_logger();
+    mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
 
-	CommandLineParser parser;
-	init_Parser(&parser);
+    CommandLineParser parser;
+    init_Parser(&parser);
 #ifdef DEBUG
-	printArgs(argc, argv);
+    printArgs(argc, argv);
 #endif
 
-	if (parser.parse_arguments(argc, argv) == false) {
-		// Ends the programm
-		cout << "Programm will quit. Press \" Enter \" to exit." << endl;
-		cin.ignore();
-		return -1;
-	}
+    if (parser.parse_arguments(argc, argv) == false) {
+        // Ends the programm
+        cout << "Programm will quit. Press \" Enter \" to exit." << endl;
+        cin.ignore();
+        return -1;
+    }
 
-	mylog->add_handler(new logger::FileHandler(parser.get_arg("Logoption"), logger::FileHandler::Severity::Log_Warning));
-	mylog->log_init_message();
+    mylog->add_handler(new logger::FileHandler(parser.get_arg("Logoption"), logger::FileHandler::Severity::Log_Warning));
+    mylog->log_init_message();
 
-	ConfObject config(mylog);
+    ConfObject config(mylog);
 
-	// Abort execution if we cannot find configuration file
-	if (config.parse_conf_file(parser.get_arg("Config")) == false) {
-		// Ends the programm
-		cout << "Programm will quit. Press \" Enter \" to exit." << endl;
-		cin.ignore();
-		return -1;
-	}
+    // Abort execution if we cannot find configuration file
+    if (config.parse_conf_file(parser.get_arg("Config")) == false) {
+        // Ends the programm
+        cout << "Programm will quit. Press \" Enter \" to exit." << endl;
+        cin.ignore();
+        return -1;
+    }
 
-	if (exists(parser.get_arg("Directory"))) {
-		vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser.get_arg("Directory"), config.get_supported_ext_list());
-		LicenseWriter writer(&parser,&config);
-		writer.build_formatted_license_list(files_in_dir);
-		vector<string> wrongFiles = writer.write_license();
+    if( check_args(&parser) == NO_ERROR )
+    {
+        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser.get_arg("Directory"), config.get_supported_ext_list());
+        LicenseWriter writer(&parser,&config);
+        writer.build_formatted_license_list(files_in_dir);
+        vector<string> wrongFiles = writer.write_license();
 
-		cin.ignore();
-		cout << "End of Program" << endl;
-		cin.ignore();
-		mylog->logInfo("Program is ending");
+        cin.ignore();
+        cout << "End of Program" << endl;
+        cin.ignore();
+        mylog->logInfo("Program is ending");
 
-		delete (files_in_dir);
+        delete (files_in_dir);
 
-	}
-	else
-	{
-		mylog->logFatal("Unable to open directory " + parser.get_arg("Directory") + " : directory does not exist");
-		return -2;
-	}
-	return 0;
+    }
+    else
+    {
+        mylog->logFatal("At least one of the input is wrong. Please check your inputs ; aborting execution.");
+        return -2;
+    }
+    return 0;
 }
 
-void init_Parser(CommandLineParser *parser) {
-	ParserResult* directory = new ParserResult("Directory", "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
-	ParserResult* license = new ParserResult("License", "License container : catches the License file path which will be added to the source files. Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
-	ParserResult* config = new ParserResult("Config", "Config container : catches the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
-	ParserResult* logoption = new ParserResult("Logoption", "LogOption container : catches the Log file output path. The log file holds informations about the application behavior", "[foreflag] <LogFile path> [Flags ...]");
-	ParserResult* secondary_input = new ParserResult("Secondary Input", "Secondary input container : catches the secondary input file path where user may define optional tags for license writting", "[foreflag] <Secondary Input file path>");
+static void init_Parser(CommandLineParser *parser) {
+    ParserResult* directory = new ParserResult(genPR.directory, "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
+    ParserResult* license = new ParserResult(genPR.license, "License container : catches the License file path which will be added to the source files. Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
+    ParserResult* config = new ParserResult(genPR.config, "Config container : catcparser->get_arg(genPR.directory)hes the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
+    ParserResult* logoption = new ParserResult(genPR.logoption, "LogOption container : catches the Log file output path. The log file holds informations about the application behavior", "[foreflag] <LogFile path> [Flags ...]");
+    ParserResult* secondary_input = new ParserResult(genPR.sec_inp, "Secondary input container : catches the secondary input file path where user may define optional tags for license writting", "[foreflag] <Secondary Input file path>");
 
-	directory->available_flags.push_back(ParserFlags(vector<string>({ "-A" , "--Analyse" }),
-		"Analyse flag : Tells the application to first analyse the directory and build a map of the directory for a faster run",
-		""));
-	license->available_flags.push_back(ParserFlags(vector<string>({ "-p", "--prepend" }),
-		"Prepend flag : write the passed text on top of the targeted file", "<License> --prepend"));
-	license->available_flags.push_back(ParserFlags(vector<string>({ "-a", "--append" }),
-		"Append flag : write the passed text at the end of the targeted file", "<License> --append"));
-	license->available_flags.push_back(ParserFlags(vector<string>({ "-lf","--log-formatted-license" }),
-		"Log formatted license flag : logs the content of each pre-formatted license","<License> -lf"));
-	license->available_flags.push_back(ParserFlags(vector<string>({ "-fsl","--force-single-line" }),
-		"Force single line flag : Forces the usage of single line comments if possible","<License> -fsl"));
-	config->available_flags.push_back(ParserFlags(vector<string>({ "-c", "--config" }),
-		"Config flag : allows the parser to know we are targeting a config flag (foreflag)", "-c <ConfigFile>"));
-	logoption->available_flags.push_back(ParserFlags(vector<string>({ "-L" , "--Log" }),
-		"Log flag : Tells the application to use a log file (foreflag)", "-L <LogFile>"));
-	logoption->available_flags.push_back(ParserFlags(vector<string>({ "-v" , "--verbose" }),
-		"Verbose flag : Tells the application to set the logger to verbose (info, warning and error logs will be written)", "<LogFile> -v"));
-	secondary_input->available_flags.push_back(ParserFlags(vector<string>({ "-Si","--Secondary-Input" }),
-		"Secondary Input flag : Adds a container for secondary input filepath","-Si <SecondaryInputFile>"));
+    directory->available_flags.push_back(ParserFlags(vector<string>({ "-A" , "--Analyse" }),
+        "Analyse flag : Tells the application to first analyse the directory and build a map of the directory for a faster run",
+        ""));
+    license->available_flags.push_back(ParserFlags(vector<string>({ "-p", "--prepend" }),
+        "Prepend flag : write the passed text on top of the targeted file", "<License> --prepend"));
+    license->available_flags.push_back(ParserFlags(vector<string>({ "-a", "--append" }),
+        "Append flag : write the passed text at the end of the targeted file", "<License> --append"));
+    license->available_flags.push_back(ParserFlags(vector<string>({ "-lf","--log-formatted-license" }),
+        "Log formatted license flag : logs the content of each pre-formatted license","<License> -lf"));
+    license->available_flags.push_back(ParserFlags(vector<string>({ "-fsl","--parser->get_arg(genPR.directory)force-single-line" }),
+        "Force single line flag : Forces the usage of single line comments if possible","<License> -fsl"));
+    config->available_flags.push_back(ParserFlags(vector<string>({ "-c", "--config" }),
+        "Config flag : allows the parser to know we are targeting a config flag (foreflag)", "-c <ConfigFile>"));
+    logoption->available_flags.push_back(ParserFlags(vector<string>({ "-L" , "--Log" }),
+        "Log flag : Tells the application to use a log file (foreflag)", "-L <LogFile>"));
+    logoption->available_flags.push_back(ParserFlags(vector<string>({ "-v" , "--verbose" }),
+        "Verbose flag : Tells the application to set the logger to verbose (info, warning and error logs will be written)", "<LogFile> -v"));
+    secondary_input->available_flags.push_back(ParserFlags(vector<string>({ "-Si","--Secondary-Input" }),
+        "Secondary Input flag : Adds a container for secondary input filepath","-Si <SecondaryInputFile>"));
 
-	parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input }));
+    parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input }));
+}
+
+static void printArgs(int argc, char** argv)
+{
+    cout << "\nFull command line \n" << endl;
+    for(int i = 0 ; i < argc ; i++)
+    {
+        cout << argv[i] << ' ' ;
+    }
+    cout << endl << endl;
+
+    // Prints all args sequentially
+    for (int i = 0; i < argc; i++)
+    {
+        cout << "Arg" << to_string(i) << " = " << argv[i] << endl;
+    }
+    cout << endl;
+}
+
+
+static errorType check_args(CommandLineParser *parser)
+{
+    errorType _rc = NO_ERROR;
+    string current_file;
+    logger::Logger *logger = logger::Logger::get_logger();
+    if(parser == nullptr)
+    {
+        return NULL_POINTER;
+    }
+
+    for(unsigned int i = 0 ;  i < maxPRType ; i ++)
+    {
+        current_file = parser->get_arg(PRList[i]);
+        if(fs::exists(current_file))
+        {
+            logger->logInfo("Found " + current_file + " !");
+        }
+        else
+        {
+            logger->logError("Cannot find " + current_file + ". No such file or directory here." );
+            _rc = NO_SUCH_FILE_OR_DIRECTORY;
+        }
+    }
+
+    return _rc;
 }
