@@ -1,7 +1,9 @@
 build/
-.vs/
-Tests\ utils/
-Scripts/Dummy_Directory/
+.vs*/
+
+Scripts/Dummy_Directory/*
+*/Dummy_Directory*
+
 *.make
 
 # Swap files (vim) 
