@@ -4,13 +4,14 @@ project(libTesters)
 
 set(GeneralInclusions PARENT_SCOPE)
 ## LicenseChecker binary tool
-add_executable(testLicenseChecker 
+add_executable(testLicenseChecker
 	testLicenseChecker.cpp
 )
 
 target_link_libraries ( testLicenseChecker
 	libLicenseChecker
 	libLogTools
+	${FS_LIB}
 )
 
 target_include_directories( testLicenseChecker PUBLIC

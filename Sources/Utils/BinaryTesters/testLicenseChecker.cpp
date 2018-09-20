@@ -7,7 +7,6 @@
 namespace fs = FS_CPP;
 static const char* valid_options = "-p -b -h -u ";
 using namespace std;
-#define DEBUG
 
 static void printUsage();
 static void parsingTest(int argc, char** argv);
@@ -48,7 +47,7 @@ int main(int argc, char* argv[])
 
 #ifdef DEBUG
 	log->add_handler(new logger::ConsoleHandler(logger::LoggerHandler::Severity::Log_Debug));
-	for (unsigned int i = 0; i < argc; i++)
+	for ( int i = 0; i < argc; i++)
 	{
 		log->logDebug("arg[" + to_string(i) + "] = " + string(argv[i]));
 	}
@@ -78,14 +77,12 @@ vector<string> filterInput(int argc, char** argv)
 {
 	logger::Logger *log = logger::Logger::get_logger();
 	vector<string> fileList;
-	bool foundErrors = false;
-	for (unsigned int i = 2; i < argc; i++)
+	for ( int i = 2; i < argc; i++)
 	{
 		string arg = argv[i];
 		if (!fs::exists(arg))
 		{
 			log->logWarning("argument \" " + arg + " \" is not rigth. Please check your input.");
-			foundErrors = true;
 			continue;
 		}
 		fileList.push_back(arg);

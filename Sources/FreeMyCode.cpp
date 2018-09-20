@@ -33,7 +33,6 @@ int main(int argc , char* argv[])
 	logger::Logger* mylog = logger::Logger::get_logger();
 	mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
 
-#define DEBUG
 	CommandLineParser parser;
 	init_Parser(&parser);
 #ifdef DEBUG
