@@ -1,6 +1,16 @@
 ## CMakeLists file use to compile project sources
 
-set( COMPILE_TYPE "Debug")
+project(FreeMyCodeProject)
+
+
+set( COMPILE_TYPE "Release")
+
+if( ${COMPILE_TYPE} MATCHES "Debug")
+	set(CMAKE_BUILD_TYPE Debug)
+else()
+	set(CMAKE_BUILD_TYPE Release)
+endif()
+
 
 set( TARGETED_OS ${CMAKE_SYSTEM_NAME} )
 

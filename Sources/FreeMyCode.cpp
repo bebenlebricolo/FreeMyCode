@@ -46,11 +46,11 @@ struct GenericParserResult {
 };
 
 GenericParserResult genPR = {
-    .directory = 	PRList[0],
-    .license = 		PRList[1],
-    .config = 		PRList[2],
-    .logoption = 	PRList[3],
-    .sec_inp = 		PRList[4]
+    .directory =    PRList[0],
+    .license =      PRList[1],
+    .config =       PRList[2],
+    .logoption =    PRList[3],
+    .sec_inp =      PRList[4]
 };
 
 enum errorType {

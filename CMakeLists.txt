@@ -1,10 +1,10 @@
 ##
+cmake_minimum_required(VERSION 3.1)
 
-cmake_minimum_required(VERSION 2.8)
-
-project(FreeMyCodeProject)
-
-set(CMAKE_BUILD_TYPE Release)
+## Forces CMAKE to output files to those directories
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(Sources)
 
