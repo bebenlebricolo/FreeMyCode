@@ -36,17 +36,6 @@ using namespace std;
 namespace fs = FS_CPP;
 
 static const char* TAGS_NODE = "Tags";
-static const char* NODES_ARRAY[] = {
-	"Author",
-	"License name",
-	"License url",
-	"Date",
-	"Organisation",
-	"Organisation name",
-	"Organisation website"
-};
-static int NODES_ARRAY_DIM = 7;
-static const char* VERSION_NODE = "FreeMyCode version";
 static const char* FREEMYCODE_TAGS = "FreeMyCode tags";
 
 

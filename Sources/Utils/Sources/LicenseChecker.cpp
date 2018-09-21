@@ -11,7 +11,7 @@ namespace fs = FS_CPP;
 namespace pu = pathutils;
 using namespace std;
 
-static const char* genericLicenseName = "Generic";
+//static const char* genericLicenseName = "Generic";
 static const char* spectrumNameToken = "Name";
 static const char spectrumDelimiter = ':';
 static const char spectrumLineDelimiter = '\n';
@@ -52,7 +52,6 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 			ifstream spectrumFile(currentFile);
 			string currentWord;
 			string lineBuffer;
-			unsigned int currentWordFrequency;
 			if (spectrumFile.is_open() == true)
 			{
 				log->logWarning("Spectrum file " + filename + " is already opened!", __LINE__, __FILE__, __func__, "LicenseChecker");
@@ -68,7 +67,6 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 			{
 				lineNumber++;
 				bool foundDelimiter = false;
-				bool foundComment = false;
 				string token;
 				string rightMember;
 				log->logDebug("Parsing line : \" " + lineBuffer + " \" ");
@@ -104,7 +102,6 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 							if (curLetter == spectrumCommentDelimiter)
 							{
 								log->logDebug("Found comment marker");
-								foundComment = true;
 								break;
 							}
 						}

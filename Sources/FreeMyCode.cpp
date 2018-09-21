@@ -57,8 +57,10 @@ enum errorType {
 };
 
 static void init_Parser(CommandLineParser *parser);
-static void printArgs(int argc, char** argv);
 static errorType check_args(CommandLineParser *parser);
+#ifdef DEBUG
+static void printArgs(int argc, char** argv);
+#endif
 
 int main(int argc , char* argv[])
 {
@@ -144,6 +146,7 @@ static void init_Parser(CommandLineParser *parser) {
     parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input }));
 }
 
+#ifdef DEBUG
 static void printArgs(int argc, char** argv)
 {
     cout << "\nFull command line \n" << endl;
@@ -160,6 +163,7 @@ static void printArgs(int argc, char** argv)
     }
     cout << endl;
 }
+#endif
 
 
 static errorType check_args(CommandLineParser *parser)
