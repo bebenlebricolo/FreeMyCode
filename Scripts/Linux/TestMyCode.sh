@@ -36,9 +36,14 @@ function logInfo()
 
 ScriptDir=$(dirname "$0")
 pushd $ScriptDir
-RootDir=$(cd ../../build/Sources ; pwd)
+RootDir=$(cd ../../build; pwd)
+
+BinDir="$RootDir/bin"
+BinaryTestersDir="$BinDir/LibTesters"
+LibDir="$RootDir/lib"
+
 Directory=$(cd ../Dummy_Directory ; pwd)
-FreeMyCode_executable="$RootDir/FreeMyCode"
+FreeMyCode_executable="$BinDir/FreeMyCode"
 License="$Directory/License.txt"
 Config="$Directory/Config.json"
 Logfile="$Directory/logfile.log"

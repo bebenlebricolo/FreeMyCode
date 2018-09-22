@@ -2,7 +2,6 @@
 #include "LicenseChecker.h"
 #include "LoggingTools.h"
 #include <iostream>
-#include <filesystem>
 
 namespace fs = FS_CPP;
 static const char* valid_options = "-p -b -h -u ";

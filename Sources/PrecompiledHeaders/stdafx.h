@@ -14,9 +14,21 @@
 #include <vector>
 #include <string>
 
-#ifdef _MSC_VER
-#define EXPERIMENTAL_FS
+// Handle Microsoft Visual Studio compiler
+#ifdef _MSC_VER 
+    #if _MSC_VER <= 1913
+        #define EXPERIMENTAL_FS
+    #endif
 #endif // _MSC_VER
+
+// Handle GNU GCC / G++ Compilers versions
+#ifdef __GNUC__
+    #if __GNUC__ < 8
+        #define EXPERIMENTAL_FS
+    #endif
+#endif
+
+
 
 #ifdef EXPERIMENTAL_FS
     #include <experimental/filesystem>
@@ -28,6 +40,3 @@
 #include <fstream>
 #include <iostream>
 
-
-
-// TODO: faites référence ici aux en-têtes supplémentaires nécessaires au programme
