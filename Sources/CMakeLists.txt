@@ -37,8 +37,6 @@ elseif( ${CCompiler} MATCHES "MSVC")
 	set (CXX_FLAGS "/std:c++17 /Wall /W2 /EHsc stdc++fs.lib")
 	set (CXX_OPTIMISATIONS "/O1")
 	set (FS_LIB "")
-	set (DEFINES "/DMSVC_COMPILER /DEXPERIMENTAL_FS")
-	add_definitions(-DEXPERIMENTAL_FS)
 endif(CCompiler MATCHES "GCC")
 
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${CXX_OPTIMISATIONS} ${CXX_COMPILE_TYPE} ${CXX_WARNINGS} ${DEFINES}")
