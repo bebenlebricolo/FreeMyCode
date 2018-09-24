@@ -9,8 +9,7 @@ minor = pythonVersion[1]
 reqMajor = 3
 reqMinor = 4
 
-
-
+# Handle Python versions
 if(major >= reqMajor):
     needNewVersion = False
     if(minor >= reqMinor):
@@ -23,11 +22,24 @@ else:
 if(needNewVersion):
     print('Your version of Python is too old',
           'Please update your version of Python before launching this script again')
-    exit -1
+    print('Python version should be > %d.%d '% (reqMajor, reqMinor) )
+    sys.exit(1)
 
 
 import os
+import platform
 from pathlib import Path
+
+platform = platform.system()
+
+if(platform == 'Linux' ):
+    FreeMyCode_exeName = 'FreeMyCode'
+elif(platform == 'Windows'):
+    FreeMyCode_exeName = 'FreeMyCode.exe'
+ 
+
+
+
 #### AVAILABLE FLAGS:
 #
 # DIRECTORY Specifics
@@ -51,6 +63,14 @@ from pathlib import Path
 
 DEBUG = 1
 
+
+# https://stackoverflow.com/questions/1724693/find-a-file-in-python
+def find(name, path):
+    for root, dirs, files in os.walk(str(path)):
+        if name in files:
+            return os.path.join(root, name)
+
+
 def logInfo(message) :
     # Debug stuff
     if(DEBUG == 1 ) :
@@ -63,12 +83,16 @@ def main() :
     scriptDir = os.path.dirname(os.path.realpath(__file__)) 
     baseDir = Path(scriptDir).parent.parent 
     buildDir = baseDir.joinpath ('build')
+    binDir = buildDir.joinpath('bin')
 
-    
+    freeMyCodeExecutable = find (FreeMyCode_exeName , binDir )
+
+
     logInfo("Starting script ")
     logInfo("ScriptDir = %s" % scriptDir )
     logInfo("baseDir = %s" % baseDir )
     logInfo("buildDir = %s" % buildDir )
+    logInfo("FreeMyCode executable  = %s" % freeMyCodeExecutable )
 
     print ("Current working directory is :", currentDir)
 
