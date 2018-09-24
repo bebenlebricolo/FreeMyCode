@@ -29,6 +29,7 @@ if(needNewVersion):
 import os
 import platform
 from pathlib import Path
+import subprocess
 
 platform = platform.system()
 
@@ -37,7 +38,6 @@ if(platform == 'Linux' ):
 elif(platform == 'Windows'):
     FreeMyCode_exeName = 'FreeMyCode.exe'
  
-
 
 
 #### AVAILABLE FLAGS:
@@ -65,10 +65,16 @@ DEBUG = 1
 
 
 # https://stackoverflow.com/questions/1724693/find-a-file-in-python
+# Outputs 'None' if given filename is not found
 def find(name, path):
-    for root, dirs, files in os.walk(str(path)):
-        if name in files:
-            return os.path.join(root, name)
+    path = str(path)
+    try:
+        for root, dirs, files in os.walk(path):
+            if name in files:
+                return os.path.join(root, name)
+    except:
+        print("Cannot get file for " , name)
+    
 
 
 def logInfo(message) :
@@ -81,23 +87,31 @@ def logInfo(message) :
 def main() :
     currentDir = os.getcwd()
     scriptDir = os.path.dirname(os.path.realpath(__file__)) 
+    # FreeMyCode base directory
     baseDir = Path(scriptDir).parent.parent 
     buildDir = baseDir.joinpath ('build')
     binDir = buildDir.joinpath('bin')
 
     freeMyCodeExecutable = find (FreeMyCode_exeName , binDir )
+    targetedDirectory = os.path.join(str(baseDir),'Scripts/Dummy_Directory')
+    configFile = find ('Config.json' , targetedDirectory)
+    secondaryInputFile = find( 'Secondary_input.json' , targetedDirectory)
+    licenseFile = find ('License.txt',targetedDirectory)
+    logFile = os.path.join(targetedDirectory, 'logfile.txt')
 
-
+    logInfo("Current working directory is : %s" % currentDir)
     logInfo("Starting script ")
     logInfo("ScriptDir = %s" % scriptDir )
     logInfo("baseDir = %s" % baseDir )
     logInfo("buildDir = %s" % buildDir )
     logInfo("FreeMyCode executable  = %s" % freeMyCodeExecutable )
+    logInfo("targetedDirectory  = %s" % targetedDirectory )
+    logInfo("configFile  = %s" % configFile )
+    logInfo("secondaryInputFile = %s" % secondaryInputFile )
+    logInfo("logFile = %s" % logFile )
 
-    print ("Current working directory is :", currentDir)
-
-
-
+    args = [freeMyCodeExecutable , targetedDirectory , "-A", licenseFile , "-a", "-lf", "-fsl" , "-c", configFile , "-L", logFile , "-v", "-sr", "-Si", secondaryInputFile]
+    subprocess.call(args)
     return 0
 
 

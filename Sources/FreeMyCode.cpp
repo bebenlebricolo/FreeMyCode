@@ -58,6 +58,8 @@ enum errorType {
 
 static void init_Parser(CommandLineParser *parser);
 static errorType check_args(CommandLineParser *parser);
+
+#define DEBUG
 #ifdef DEBUG
 static void printArgs(int argc, char** argv);
 #endif
@@ -182,6 +184,11 @@ static errorType check_args(CommandLineParser *parser)
         if(fs::exists(current_file))
         {
             logger->logInfo("Found " + current_file + " !");
+        }
+        else if (i == 3)
+        {
+            logger->logWarning("Logfile does not exist yet. Creation pending.");
+            // Does not matter for logfile -> will be created on the fly
         }
         else
         {
