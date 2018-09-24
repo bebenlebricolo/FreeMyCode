@@ -1,5 +1,4 @@
 #!/bin/bash
-#@echo off
 # FreeMyCode_cmd.exe directory -A License Config Logfile -sr
 # FreeMyCode_cmd.exe directory -A License -a -c Config -L Logfile -v 
 
