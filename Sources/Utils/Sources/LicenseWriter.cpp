@@ -1,5 +1,5 @@
 /*
-The LicenseWriter tool is designed to preformat licenses in memory. 
+The LicenseWriter tool is designed to preformat licenses in memory.
 It is supplied by instances of ConfObject, LoggingTools and CommandLineParser classes.
 It basically takes a raw text file containing the basic License (non formatted) and uses knowledge from
 the ConfObject instance to format a new version of the license in memory, according to the targeted file-type extension.
@@ -30,30 +30,13 @@ Version	|	 Date	 |	Comments
 #include "document.h"
 #include "istreamwrapper.h"
 
-using namespace std::experimental::filesystem;
+using namespace FS_CPP;
 using namespace rapidjson;
 using namespace std;
-namespace fs = std::experimental::filesystem;
+namespace fs = FS_CPP;
 
 static const char* TAGS_NODE = "Tags";
-static const char* NODES_ARRAY[] = {
-	"Author",
-	"License name",
-	"License url",
-	"Date",
-	"Organisation",
-	"Organisation name",
-	"Organisation website"
-};
-static int NODES_ARRAY_DIM = 7;
-static const char* VERSION_NODE = "FreeMyCode version";
 static const char* FREEMYCODE_TAGS = "FreeMyCode tags";
-
-static const char* LIST_NODES[] = {
-	"Author list",
-};
-static int LIST_NODES_SIZE = 1;
-
 
 
 /*
@@ -106,8 +89,9 @@ FormattedLicense* LicenseWriter::getLicenseByExt(std::string extension)
 
 std::vector<std::string> LicenseWriter::write_license(void) {
 	std::vector<std::string>* file_list = DirectoryAnalyser::get_files_in_dir(parser->get_arg("Directory"), config->get_supported_ext_list());
+	// TODO : check fo previous licenses in every files before attempting to write in them.
 	// List of files which cannot be modified (for any reason)
-	std::vector<std::string> wrongFiles; 
+	std::vector<std::string> wrongFiles;
 	FormattedLicense *targetedLicense = nullptr;
 
 	bool selectBoth = false;
@@ -156,8 +140,8 @@ std::vector<std::string> LicenseWriter::write_license(void) {
 		else {
 			log->logInfo("Found FormattedLicense for extension < " + currentExtension + " >.",
 				__LINE__, __FILE__, __func__, "LicenseWriter");
-			
-		
+
+
 			if (parser->get_flag("--append") == true) {
 				ofstream file;
 				file.open(currentFile, ios::out | ios::app);
@@ -169,7 +153,7 @@ std::vector<std::string> LicenseWriter::write_license(void) {
 				ofstream tmpFile;
 				string tmpPath = currentFile + ".tmp";
 				string bufferString;
-				
+
 				// Create a temporary file
 				tmpFile.open(tmpPath, ios::out);
 				// Load original file
@@ -261,7 +245,7 @@ FormattedLicense struct definition
 
 
 void FormattedLicense::generate(string _ext, ConfObject& config,
-	CommandLineParser& parser, ostringstream* tagsBlock ) 
+	CommandLineParser& parser, ostringstream* tagsBlock )
 {
 	logger::Logger* log = logger::Logger::get_logger();
 	for_lic.seekp(0, ios::end);
@@ -271,7 +255,7 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 		// Don't re-write it!
 		return;
 	}
-	
+
 	vector<string> _ext_list_from_config = config.find_language_spec(_ext).extension;
 	if (_ext_list_from_config[0] != "") {
 		log->logDebug("Found multiple languages matching " + _ext + " extension",  __LINE__, __FILE__, __func__, "FormattedLicense");
@@ -291,7 +275,7 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 	string bloc_end = config.get_bloc_comment_end(_ext);
 	string single_com = config.get_single_line_com(_ext);
 
-	if ((bloc_start != "") 
+	if ((bloc_start != "")
 		&& (bloc_end != ""))
 	{
 		use_block_comment = true;
@@ -311,7 +295,7 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 	// Otherwise, if we found a "force single line comment"
 	if (parser.get_flag("--force-single-line")) {
 		if (use_block_comment == true
-			&& single_com != "") 
+			&& single_com != "")
 		{
 			use_block_comment = false;
 			use_single_line_comment = true;
@@ -339,12 +323,11 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 		for_lic << (use_single_line_comment ? (single_com + " ") : "") << separator << endl << endl;
 
 	}
-	
+
 	// Copy License file content to formatted one
 	// First check if path points to something
 	// Then check if file opening succeeded
 	if (exists(parser.get_arg("License"))) {
-		bool foundErrors = false;
 		license_file.open(parser.get_arg("License"));
 		if(license_file) {
 			while (getline(license_file, buffer_string)) {
@@ -358,7 +341,7 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 	else {
 		log->logError("Path to License file is wrong. Please check your path",__LINE__,__FILE__,__func__,"LicenseWriter");
 	}
-	
+
 	// Add block comment closing tag
 	if (use_block_comment) {
 		for_lic << bloc_end << endl;
@@ -418,7 +401,7 @@ SecondaryInput::~SecondaryInput() {
 
 void SecondaryInput::parse_secondary_input_file() {
 	string filepath = parser->get_arg("Secondary Input");
-	
+
 	// Documentation : using file stream instead of C FILE pointers
 	// http://rapidjson.org/md_doc_stream.html#FileStreams
 	ifstream file_stream(filepath);
@@ -436,10 +419,10 @@ void SecondaryInput::parse_secondary_input_file() {
 		rapidjson::Value *tags_node = &(doc[TAGS_NODE]);
 		log->logInfo("Found " + string(TAGS_NODE) + " node in SecondaryInput file", __LINE__, __FILE__, __func__, "SecondaryInput");
 		for (Value::ConstMemberIterator itr = tags_node->MemberBegin();
-			itr != tags_node->MemberEnd(); itr++) 
+			itr != tags_node->MemberEnd(); itr++)
 		{
 			ProtoTag *newTag = NULL;
-			if (itr->value.IsString())		newTag = parseLine(itr); 
+			if (itr->value.IsString())		newTag = parseLine(itr);
 			else if (itr->value.IsArray())	newTag = parseArray(itr);
 			else if (itr->value.IsObject())	newTag = parseObject(itr);
 
@@ -464,12 +447,12 @@ ostringstream* SecondaryInput::getTagsFormattedBlock() {
 	ostringstream *curTag = NULL;
 	Formatter _format;
 	if (out != NULL)
-	{	
+	{
 		string delimiter = "Delimiter";
 		TagObject *freeMyCode_Tag = static_cast<TagObject*>(config->get_tag(FREEMYCODE_TAGS));
 		if (freeMyCode_Tag != nullptr) {
 			_format.set_delimiter(freeMyCode_Tag->getProperty(delimiter).c_str()[0]);
-			*out << "FreeMyCode version : " << freeMyCode_Tag->getProperty("Version") << endl;	 
+			*out << "FreeMyCode version : " << freeMyCode_Tag->getProperty("Version") << endl;
 		}
 		else
 		{

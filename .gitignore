@@ -1,6 +1,8 @@
 build/
-.vs/
-Tests\ utils/
+.vs*/
+
+Scripts/Dummy_Directory/*
+*/Dummy_Directory*
 
 *.make
 

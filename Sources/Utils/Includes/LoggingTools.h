@@ -10,7 +10,7 @@ Version	|	 Date	 |	Comments
 
 // MSVC compiler multiple inclusions guard
 #pragma once
-// Else for any other compiler 
+// Else for any other compiler
 #ifndef LOGGINGTOOLS_HEADER
 #define LOGGINGTOOLS_HEADER
 
@@ -25,23 +25,23 @@ namespace logger {
 
 	// Abstract class whose pattern is used to define any specific Handler
 	class LoggerHandler {
+
 	public:
 		enum Severity { Log_Debug = 0, Log_Info=1, Log_Warning = 2, Log_Error = 3, Log_Fatal = 4 , Log_Init = 10};
 		std::string name;
 
 		LoggerHandler(const Severity level);
+		virtual ~LoggerHandler();
 		virtual void log_data(const std::string &message, Severity sev_level) = 0;
 		void set_state(const bool state);
-		const bool is_activated(void);
+		bool is_activated(void) const;
 		void set_severity(const Severity level);
-		const Severity get_severity(void);
+		Severity get_severity(void) const;
 
-		
 	protected:
 		Severity sev_level;
-		// virtual void introspection() = 0;
 		bool is_active;
-		
+
 	};
 
 	class Logger {
@@ -61,7 +61,7 @@ namespace logger {
 	public:
 		Logger(bool display_date = true);
 		~Logger();
-		const int add_handler(LoggerHandler *new_handler);
+		int add_handler(LoggerHandler *new_handler);
 		void clear_handlers(void);
 		void set_handler_active_state(const unsigned int& index, bool active_state);
 		bool remove_handler(const unsigned int& index);
@@ -69,7 +69,7 @@ namespace logger {
 		std::string get_current_date();
 		void log_init_message(const std::string &message = "");
 		static Logger* get_logger(bool display_date = true);
-		
+
 		// Dedicated functions to handle logging functionalities
 		void logDebug(
 			std::string message = "",
@@ -100,7 +100,7 @@ namespace logger {
 			std::string class_name = "");
 
 		void logFatal(
-			std::string message = "", 
+			std::string message = "",
 			unsigned int line = 0,
 			std::string file = "",
 			std::string function = "",
@@ -124,7 +124,7 @@ namespace logger {
 		~FileHandler();
 		//void introspection();
 		void log_data(const std::string &message, Severity sev_level);
-		
+
 	};
 	// console handler
 	class ConsoleHandler : public LoggerHandler {

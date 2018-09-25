@@ -8,6 +8,8 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 ### Functionalities to be implemented: (TODO)
 - [ ] Check for previous license files
    * Prevent re-licensing of a file
+   * Compute Licenses spectrums
+   * Embed all known licenses spectrums in one file (Licences.spec)
 - [ ] Prevent multiple license writing in a file
 - [ ] Implement GUI with Qt
 - [x] Use tags to add specific content
@@ -33,12 +35,15 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
      * Upgrade logger as singleton
      * Do not pass logger ptr as parameter anymore (unnecessary noise)
  - [ ] Input simplification (make it easier to use !)
+     * [ ] Switch input scripts (.bat / .bash) to Python3
+          - More flexible and provides support for more complex input algorithms (path checks, automatically retrieves generic files such as config.json / Secondary Input.json & other
  
 ## Cross platform adaptations
 - [x] Provide gcc support
      * Create MakeFiles
 - [x] Port code to GNU/Linux systems
 - [x] Provide back support for Windows systems after code adaptations (CMake used)
+     * [x] Repair compilation issues such as filesystem specific handlings
  
 ### Known issues : To be repaired
 - ~~Crashes when SecondaryInput file is not found~~  - Done

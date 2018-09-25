@@ -55,6 +55,7 @@ ProtoTags and derivatives definitions
 **************************************************************************************
 */
 
+ProtoTag::~ProtoTag() {}
 ProtoTag::ProtoTag(string &_name, TagType _type) : name(_name), type(_type) {}
 ProtoTag::ProtoTag(const char* _name , TagType _type) : name(_name), type(_type) {}
 
@@ -66,6 +67,7 @@ string ProtoTag::printNameAndDelim(Formatter &_format)
 
 TagLine::TagLine(string &_name, string &_value) : ProtoTag(_name,Line), value(_value) {}
 TagLine::TagLine(const char* _name, const char* _value) : ProtoTag(_name,Line), value(_value) {}
+TagLine::~TagLine(){}
 
 ostringstream* TagLine::buildFormattedBlock(Formatter &_format)
 {
@@ -85,6 +87,7 @@ std::string TagLine::getProperty(std::string _name)
 
 TagArray::TagArray(string &_name, vector<string> &data) : ProtoTag(_name,Array), val(data)
 {}
+TagArray::~TagArray(){}
 
 ostringstream* TagArray::buildFormattedBlock(Formatter &_format)
 {
@@ -329,32 +332,3 @@ TagObject* FormattingTags::parseObject(Value::ConstMemberIterator &itr)
 	}
 	return obj;
 }
-
-/*
-std::string FormattingTags::extractProperty(ProtoTag* inputTag, std::string &name)
-{
-	if (inputTag != nullptr)
-	{
-		ProtoTag* out = nullptr;
-		switch (inputTag->type)
-		{
-		case FormattingTags::ProtoTag::TagType::Line:
-			if (inputTag->name == name)
-				return inputTag->getProperty(name);
-			break;
-		case  FormattingTags::ProtoTag::TagType::Array:
-
-		default:
-			break;
-		}
-		if (inputTag->type == )
-		{
-			if (inputTag->name == name)
-			{
-				return inputTag;
-			}
-		}
-
-	}
-}
-*/
