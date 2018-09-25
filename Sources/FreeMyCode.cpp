@@ -102,13 +102,11 @@ int main(int argc , char* argv[])
         writer.build_formatted_license_list(files_in_dir);
         vector<string> wrongFiles = writer.write_license();
 
-        cin.ignore();
-        cout << "End of Program" << endl;
+        cout << "End of Program. Press any key to exit" << endl;
         cin.ignore();
         mylog->logInfo("Program is ending");
 
         delete (files_in_dir);
-
     }
     else
     {
