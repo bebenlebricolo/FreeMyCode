@@ -11,6 +11,7 @@ add_executable(testLicenseChecker
 target_link_libraries ( testLicenseChecker
 	libLicenseChecker
 	libLogTools
+	libConfigTools
 	${FS_LIB}
 )
 

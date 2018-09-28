@@ -47,3 +47,18 @@ void tokenizeWords(std::string &line, std::vector<std::string> &outputVector)
     // Finally, sort the final list
     sort(outputVector.begin(), outputVector.end(), wayToSort);
 }
+
+// Finds a char in a reference list
+bool findCharInList(char in, const char* refString, size_t refSize)
+{
+    // Secure input
+    size_t tempSize = strnlen(refString, refSize + 1);
+    for (unsigned int i = 0; i < tempSize; i++)
+    {
+        if (in == refString[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}

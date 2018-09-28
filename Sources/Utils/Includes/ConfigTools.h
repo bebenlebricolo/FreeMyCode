@@ -9,6 +9,24 @@
 
 using namespace FormattingTags;
 
+// Simple comment markers pack
+struct CommentMarkers
+{
+    bool isPlainText;
+    std::string sgLine;
+    std::string bStart;
+    std::string bEnd;
+    void checkIfPlainText();
+    CommentMarkers();
+    CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end);
+
+    void reset();
+    uint8_t getMaxMarkerLength();
+    void vectorizeMembers(std::vector<pair<std::string, std::string>> *vec);
+
+};
+
+
 struct SupportedExtension {
 	SupportedExtension(std::vector<std::string> _ext_list, std::string line_com, std::string bloc_start, std::string bloc_end);
 	SupportedExtension(std::string _single_ext, std::string line_com, std::string bloc_start, std::string bloc_end);
@@ -32,6 +50,7 @@ class ConfObject {
 	const std::string get_ext_property(std::string targeted_extension, SupportedExtension::properties prop_type);
 	logger::Logger* log_ptr;
 	std::vector<ProtoTag*> tags_vect;
+    static ConfObject* _instance;
 public:
 	const std::string get_supported_ext_list();
 	ConfObject(logger::Logger* new_logger = NULL);
@@ -46,7 +65,9 @@ public:
 	void add_element(SupportedExtension new_language_spec);
 	SupportedExtension find_language_spec(std::string _ext);
 	//void write_conf_file(std::string out_filepath);
-	
+    static ConfObject* getConfig();
+    static void removeConfig();
+
 
 };
 
