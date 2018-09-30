@@ -1,5 +1,6 @@
 build/
 .vs*/
+.vscode/
 
 Scripts/Dummy_Directory/*
 */Dummy_Directory*

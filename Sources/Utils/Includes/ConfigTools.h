@@ -23,7 +23,7 @@ struct CommentMarkers
     void reset();
     uint8_t getMaxMarkerLength();
     void vectorizeMembers(std::vector<pair<std::string, std::string>> *vec);
-
+    bool checkForMissingCommentMarker(ostringstream *errorMessage);
 };
 
 

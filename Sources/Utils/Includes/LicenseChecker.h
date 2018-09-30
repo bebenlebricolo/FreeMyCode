@@ -74,11 +74,13 @@ struct LicenseInFileMatchResult
 // Helps to know how much markers were found in one line
 // -> Used to know if we are reading an opening / closing block comment, or a single line comment
 struct markersNumbers {
-    enum markerType {line, block , undetermined};
+    enum markerType {line, block , undetermined , uncommented};
     uint8_t singleLine;
     uint8_t blockOpen;
     uint8_t blockClose;
     bool foundMarker;
+
+    markersNumbers() : singleLine(0), blockOpen(0) , blockClose(0), foundMarker(false) {}
     void resolveMarker(uint8_t index)
     {
         switch (index)
@@ -102,7 +104,8 @@ struct markersNumbers {
     markerType getMarkerType()
     {
         if (singleLine != 0 ||
-            (blockOpen == blockClose))
+               ( (blockOpen == blockClose) &&
+                blockOpen != 0 ) )
         {
             return markerType::line;
         }
@@ -112,12 +115,24 @@ struct markersNumbers {
         {
             return markerType::block;
         }
+        else if (singleLine, blockClose, blockOpen == 0)
+        {
+            return markerType::uncommented;
+        }
         else
         {
             // singleLine != 0 
             // blockOpen != blockClose
             return markerType::undetermined;
         }
+    }
+
+    void reset()
+    {
+        singleLine = 0;
+        blockOpen = 0;
+        blockClose = 0;
+        foundMarker = false;
     }
 
 };

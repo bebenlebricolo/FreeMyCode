@@ -41,7 +41,7 @@ static const uint8_t minimumDegreeOfConfidenceRequired = 50;
 // Only look in the 100 first lines of each file
 static const uint8_t lineCounterLimit = 100;
 // Minimum comment block size ; comment block is dropped if its size is below this number
-static const uint8_t minimumCommentBlockLineSize = 5;
+static const uint8_t minimumCommentBlockLineSize = 0;
 // Usual characters used to print human readable separator lines
 static const char* separatorCharList = "-#_*/+~<>";
 // Minimum separator char count under which parser will not detect a separator line
@@ -394,6 +394,12 @@ std::vector<std::string>* LicenseChecker::checkForLicenses(std::vector<std::stri
         match->markers.bEnd = config->get_bloc_comment_end(fileExtension);
         match->markers.sgLine = config->get_single_line_com(fileExtension);
 
+        ostringstream errorMessage;
+        if (match->markers.checkForMissingCommentMarker(&errorMessage) == true)
+        {
+            log->logWarning("Current extension does not implement all comment marker types : " + errorMessage.str(), __LINE__, __FILE__, __func__, "LicenseChecker");
+        }
+
         match->markers.checkIfPlainText();
         
         // Case where no comment markers were found : might be plain text. 
@@ -454,6 +460,11 @@ static void stripCommentMarker(CommentMarkers *markers, string *bufferLine , mar
             string markerDescription = markersVect[m].second;
             size_t markerStartOffset = buffer.find(currentMarker);
 
+            if (currentMarker.size() == 0)
+            {
+                // skip marker -> this marker is not set!
+                continue;
+            }
             while (markerStartOffset != string::npos)
             {
                 // Increment marker discover number
@@ -496,6 +507,111 @@ static void printBlockCommentSections(vector<ostringstream*> *vec)
     }
 }
 
+static enum commentType { Line, Block, None };
+
+static struct CommentTypeHandlingStruct
+{
+    bool isSeparatorLine;
+    bool switchToNewBlockFlag;
+    bool pushNewData;
+    uint8_t commentBlockLineNb;
+    markersNumbers mNumb;
+    commentType activeCommentBlockType;
+    string *buffer;
+   
+    CommentTypeHandlingStruct():isSeparatorLine(false), switchToNewBlockFlag(false), pushNewData(false), commentBlockLineNb(0), activeCommentBlockType(commentType::None), buffer(nullptr){}
+};
+
+static void handleCommentType(CommentTypeHandlingStruct* input)
+{
+    lg::Logger *log = lg::getLogger();
+    // Handle comment block type and what to do next
+    if (input->mNumb.foundMarker || input->isSeparatorLine || input->activeCommentBlockType == commentType::Line)
+    {
+        if (input->isSeparatorLine == true)
+        {
+            if (input->commentBlockLineNb != 0)
+            {
+                // If last comment block is not empty, this means we are going to parse a new comment block
+                input->switchToNewBlockFlag = true;
+            }
+            // Else write data to active comment Block
+            else input->pushNewData = true;
+        }
+        else
+        {
+            switch (input->mNumb.getMarkerType())
+            {
+            case markersNumbers::markerType::line:
+                switch (input->activeCommentBlockType)
+                {
+                case commentType::Line:
+                case commentType::Block:
+                    input->pushNewData = true;
+                    break;
+                default:
+                    input->activeCommentBlockType = commentType::Line;
+                    break;
+                }
+                break;
+            case markersNumbers::markerType::block:
+                switch (input->activeCommentBlockType)
+                {
+                case commentType::Line:
+                    input->pushNewData = true;
+                    break;
+                case commentType::Block:
+                    input->activeCommentBlockType = commentType::None;
+                    if (input->commentBlockLineNb != 0)
+                    {
+                        // Found closing comment block marker
+                        input->switchToNewBlockFlag = true;
+                    }
+                    else input->pushNewData = true;
+                    break;
+                default:
+                    if (input->commentBlockLineNb == 0)
+                    {
+                        // Found Opening comment block
+                        input->activeCommentBlockType = commentType::Block;
+                        input->pushNewData = true;
+                    }
+                    else
+                    {
+                        //should not get here
+                    }
+                }
+                break;
+            case markersNumbers::markerType::uncommented:
+                switch (input->activeCommentBlockType)
+                {
+                case commentType::Block:
+                    input->pushNewData = true;
+                    break;
+                case commentType::Line:
+                    input->activeCommentBlockType = commentType::None;
+                    break;
+                default:
+                    break;
+                }
+                break;
+            default:
+                log->logError("Cannot resolve current line ! Block comment might be wrong. Line is : " + *(input->buffer), __LINE__, __FILE__, __func__, "LicenseChecker");
+                log->logWarning(" Default behavior is : do not fill comment block .", __LINE__, __FILE__, __func__, "LicenseChecker");
+                input->switchToNewBlockFlag = false;
+                break;
+            }
+        }
+    }
+    else
+    {
+        if (input->activeCommentBlockType != commentType::None)
+        {
+            input->pushNewData = true;
+        }
+    } // End of comment block type handling
+}
+
 void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
 {
     lg::Logger* log = lg::getLogger();
@@ -518,78 +634,54 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
     // Else, start parsing the file
 
     // Tells whether it's a single line comment block or a regular (multiline) comment block
-    bool currentBlock_isSingleLineBlock = false;
-
+    CommentTypeHandlingStruct handStr;
+    
     ostringstream* commentBlock = new ostringstream;
-    uint8_t commentBlockLineNb = 0;
     vector<ostringstream*> commentBlockCollection;
+
     for (uint8_t lineCounter = 0; (getline(currentFile, buffer) && lineCounter <= lineCounterLimit ); lineCounter++)
     {
-        bool switchToNewBlockFlag = false;
-        markersNumbers mNumb;
+        handStr.mNumb.reset();
+        handStr.switchToNewBlockFlag = false;
+        handStr.isSeparatorLine = false;
+        handStr.pushNewData = false;
+        handStr.buffer = &buffer;
         // List all comments and regroup them in block comments sections
         // After processing : second pass -> clearing block comments which are too small ( e.g. less than 5 lines )
         
-        stripCommentMarker(&(match->markers), &buffer , &mNumb);
+        stripCommentMarker(&(match->markers), &buffer , &(handStr.mNumb));
         trimWhiteSpaces(buffer);
-        if (buffer.size() != 0)
+        handStr.isSeparatorLine = isASeparator(&buffer);
+
+        handleCommentType(&handStr);
+
+        // Handle data
+        if (handStr.switchToNewBlockFlag == true)
         {
-            if (mNumb.foundMarker == true)
+            if (handStr.commentBlockLineNb < minimumCommentBlockLineSize)
             {
-                if (isASeparator(&buffer) == true)
-                {
-                    if (commentBlockLineNb != 0)
-                    {
-                        // If last comment block is not empty, this means we are going to parse a new comment block
-                        switchToNewBlockFlag = true;
-                    }
-                }
-                else
-                {
-                    switch (mNumb.getMarkerType())
-                    {
-                    case markersNumbers::markerType::line :
-                        switchToNewBlockFlag = currentBlock_isSingleLineBlock ? true : false;
-                        break;
-                    case markersNumbers::markerType::block:
-                        switchToNewBlockFlag = currentBlock_isSingleLineBlock ? false : true;
-                        break;
-                    default:
-                        log->logError("Cannot resolve current line ! Block comment might be wrong. Line is : " + buffer , __LINE__,__FILE__,__func__,"LicenseChecker");
-                        log->logWarning(" Default behavior is : fill comment block anyway .", __LINE__, __FILE__, __func__, "LicenseChecker");
-                        switchToNewBlockFlag = false;
-                        break;
-                    }
-                }
-
-
-                if (switchToNewBlockFlag == true)
-                {
-                    if (commentBlockLineNb < minimumCommentBlockLineSize)
-                    {
-                        log->logInfo("Dropping current comment block : block size is too small.", __LINE__, __FILE__, __func__, "LicenseChecker");
-                    }
-                    else
-                    {
-                        commentBlockCollection.push_back(commentBlock);
-                    }
-                    commentBlock = new ostringstream;
-                    commentBlockLineNb = 0;
-                }
-                else
-                {
-                    commentBlockLineNb++;
-                    *commentBlock << buffer << endl;
-                }
+                log->logInfo("Dropping current comment block : block size is too small.", __LINE__, __FILE__, __func__, "LicenseChecker");
+            }
+            else
+            {
+                commentBlockCollection.push_back(commentBlock);
+            }
+            commentBlock = new ostringstream;
+            handStr.commentBlockLineNb = 0;
+        }
+        else if (handStr.pushNewData == true)
+        {
+            if (handStr.isSeparatorLine == false && buffer.size() != 0)
+            {
+                handStr.commentBlockLineNb++;
+                *commentBlock << buffer << endl;
             }
         }
-        else // buffer size == 0 
-        {
-            // We just got a whiteline!
-            continue;
-        }   
-    }
-    if (commentBlockLineNb != 0)
+
+    } // End of for loop
+
+
+    if (handStr.commentBlockLineNb != 0)
     {
         commentBlockCollection.push_back(commentBlock);
     }

@@ -84,6 +84,23 @@ void CommentMarkers::vectorizeMembers(std::vector<pair<std::string, std::string>
     vec->push_back({ bEnd , "block comment end" });
 }
 
+bool CommentMarkers::checkForMissingCommentMarker(ostringstream *errorMessage)
+{
+    bool errorFound = false;
+    if (sgLine == "" )
+    {
+        (*errorMessage) << "Single line comment is empty !";
+        errorFound = true;
+    }
+    if (bStart == "" || bEnd == "")
+    {
+        (*errorMessage) << "Block comment marker are empty! ";
+        errorFound = true;
+    }
+
+    return errorFound;
+}
+
 
 
 SupportedExtension::SupportedExtension(
