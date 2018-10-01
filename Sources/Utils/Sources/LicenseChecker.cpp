@@ -308,47 +308,68 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
 			continue;
 		}
 		// If we get here, process file.
-		string line;
 		string licenseName = pu::remove_extension(pu::get_filename(filePath));
-		vector<string> wordsList;
-		while (getline(file, line))
-		{
-			vector<string> wordsFromLine;
-			tokenizeWords(line, wordsFromLine);
+        LicenseSpectrum *lic = new LicenseSpectrum;
+        lic->licenseName = licenseName;
+		
 
-			// Filters out words which are smaller than the required threshold
-			for (unsigned int j = 0; j < wordsFromLine.size(); j++)
-			{
-				string word = wordsFromLine[i];
-				if (word.size() > maxLettersThreshold)
-				{
-					wordsList.push_back(word);
-				}
-			}
-		}
-		sort(wordsList.begin(), wordsList.end());
-		LicenseSpectrum *lic = new LicenseSpectrum;
-		lic->licenseName = licenseName;
-		vector<std::pair<std::string, unsigned short int>>::iterator it;
-		for (unsigned int j = 0; j < wordsList.size(); j++)
-		{
-			it = std::find_if(lic->wordBasedDictionary.begin(), lic->wordBasedDictionary.end(), isEqual(wordsList[i]));
-			if (it == lic->wordBasedDictionary.end())
-			{
-				lic->wordBasedDictionary.push_back( { wordsList[i] , 1 } );
-			}
-			else
-			{
-				// increment second element of the targeted pair
-				it->second++;
-			}
-		}
+        // Build words list
+        string line;
+        vector<string> wordsList;
 
-		sort(lic->wordBasedDictionary.begin(), lic->wordBasedDictionary.end(), sortAlpha);
+        while (getline(file, line))
+        {
+            vector<string> wordsFromLine;
+            tokenizeWords(line, wordsFromLine);
+
+            // Filters out words which are smaller than the required threshold
+            for (unsigned int j = 0; j < wordsFromLine.size(); j++)
+            {
+                string word = wordsFromLine[j];
+                if (word.size() > maxLettersThreshold)
+                {
+                    wordsList.push_back(word);
+                }
+            }
+        }
+        sort(wordsList.begin(), wordsList.end());
+
+        buildBasicSpectrum(wordsList, lic);
+
 		recordedLicenses.push_back(lic);
 		file.close();
 	}
 }
+
+void LicenseChecker::buildBasicSpectrum(vector<string> &wordsList, Spectrum *spec)
+{
+    lg::Logger *log = lg::getLogger();
+
+    if (spec == nullptr)
+    {
+        log->logError("Input is nullptr. Aborting function", __LINE__, __FILE__, __func__, "LicenseChecker");
+        return;
+    }
+       
+    vector<std::pair<std::string, unsigned short int>>::iterator it;
+    for (unsigned int j = 0; j < wordsList.size(); j++)
+    {
+        it = std::find_if(spec->wordBasedDictionary.begin(), spec->wordBasedDictionary.end(), isEqual(wordsList[j]));
+        if (it == spec->wordBasedDictionary.end())
+        {
+            spec->wordBasedDictionary.push_back({ wordsList[j] , 1 });
+        }
+        else
+        {
+            // increment second element of the targeted pair
+            it->second++;
+        }
+    }
+
+    log->logInfo("Sorting Spectrum ... Spectrum building successfull", __LINE__, __FILE__, __func__, "LicenseChecker");
+    sort(spec->wordBasedDictionary.begin(), spec->wordBasedDictionary.end(), sortAlpha);
+}
+
 
 
 void LicenseChecker::printSpectrums()
@@ -507,7 +528,7 @@ static bool isASeparator(string *buffer)
     }
 }
 
-static void printBlockCommentSections(vector<ostringstream*> *vec)
+static void printBlockCommentSections(vector<stringstream*> *vec)
 {
     for (unsigned int i = 0; i < vec->size(); i++)
     {
@@ -630,8 +651,8 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
     // Tells whether it's a single line comment block or a regular (multiline) comment block
     CommentTypeHandlingStruct handStr;
 
-    ostringstream* commentBlock = new ostringstream;
-    vector<ostringstream*> commentBlockCollection;
+    stringstream* commentBlock = new stringstream;
+    vector<stringstream*> commentBlockCollection;
 
     for (uint8_t lineCounter = 0; (getline(currentFile, buffer) && lineCounter <= lineCounterLimit ); lineCounter++)
     {
@@ -660,7 +681,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
             {
                 commentBlockCollection.push_back(commentBlock);
             }
-            commentBlock = new ostringstream;
+            commentBlock = new stringstream;
             handStr.commentBlockLineNb = 0;
         }
         else if (handStr.pushNewData == true)
@@ -673,6 +694,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         }
 
     } // End of for loop
+    currentFile.close();
 
 
     if (handStr.commentBlockLineNb != 0)
@@ -681,11 +703,56 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
     }
     // Finished iterating over the 100 first file's lines
     printBlockCommentSections(&commentBlockCollection);
+
+    // Compare stored block comments with License Spectrums
+    vector<Spectrum *> specList;
+    for (unsigned int i = 0; i < commentBlockCollection.size(); i++)
+    {
+        Spectrum *spec = new Spectrum;
+        
+        // Build words list
+        string line;
+        vector<string> wordsList;
+
+        while (getline(*commentBlockCollection[i], line))
+        {
+            vector<string> wordsFromLine;
+            tokenizeWords(line, wordsFromLine);
+
+            // Filters out words which are smaller than the required threshold
+            for (unsigned int j = 0; j < wordsFromLine.size(); j++)
+            {
+                string word = wordsFromLine[j];
+                if (word.size() > maxLettersThreshold)
+                {
+                    wordsList.push_back(word);
+                }
+            }
+        }
+        sort(wordsList.begin(), wordsList.end());
+        // Build spectrum for this file
+
+        buildBasicSpectrum(wordsList,spec);
+        specList.push_back(spec);
+        
+        
+        //TODO remove these lines
+        cout << "comment block " << to_string(i) << " word based dictionary : \n";
+        spec->printContent();
+        cout << endl;
+    }
+
+
+
+    // Do not forget to delete all comment blocks after match
     for (unsigned int i = 0; i < commentBlockCollection.size(); i++)
     {
         delete commentBlockCollection[i];
     }
-    currentFile.close();
+    for(unsigned int i = 0 ; i < specList.size() ; i++)
+    {
+        delete specList[i];
+    }
 }
 
 void LicenseChecker::findInPlainTextFile(LicenseInFileMatchResult* match)
@@ -702,6 +769,54 @@ void LicenseChecker::findInPlainTextFile(LicenseInFileMatchResult* match)
 
 
 // #######################################
+// Spectrum struct implementation
+// #######################################
+void Spectrum::printContent()
+{
+    for (vector<pair<string, unsigned short>>::const_iterator iterator = wordBasedDictionary.begin(), end = wordBasedDictionary.end(); iterator != end; ++iterator)
+    {
+        cout << iterator->first << " : count = " << to_string(iterator->second) << endl;
+    }
+}
+
+uint8_t Spectrum::compareWithSpectrum(Spectrum *other)
+{
+    lg::Logger *log = lg::getLogger();
+    if (other == nullptr)
+    {
+        log->logError("Input is nullptr. Aborting comparison", __LINE__, __FILE__, __func__, "Spectrum");
+        return 0;
+    }
+    
+    uint8_t percentageResult = 0;
+    unsigned int matchedItemNb = 0;
+    unsigned int otherIndex = 0;
+    unsigned int index = 0;
+
+    for (index = 0; index < wordBasedDictionary.size(); index++)
+    {
+        if(find_if(other->wordBasedDictionary.begin() , other->wordBasedDictionary.end() ,isEqual(wordBasedDictionary[index].first)) != other->wordBasedDictionary.end())
+        {
+            // IncrementMatch number
+            matchedItemNb += wordBasedDictionary[index].second;
+        }
+    }
+
+    percentageResult = (matchedItemNb * 100) / other->getTotalWordsNb();
+    return percentageResult;
+}
+
+unsigned int Spectrum::getTotalWordsNb()
+{
+    unsigned int out = 0;
+    for (unsigned int i = 0; i < wordBasedDictionary.size(); i++)
+    {
+        out += wordBasedDictionary[i].second;
+    }
+    return out;
+}
+
+// #######################################
 // LicenseSpectrum class implementation
 // #######################################
 
@@ -709,8 +824,5 @@ void LicenseChecker::findInPlainTextFile(LicenseInFileMatchResult* match)
 void LicenseSpectrum::printContent()
 {
 	cout << "License name = " << licenseName << endl;
-	for (vector<pair<string,unsigned short>>::const_iterator iterator = wordBasedDictionary.begin() , end = wordBasedDictionary.end(); iterator!= end ; ++iterator)
-	{
-		cout << iterator->first << " : count = " << to_string(iterator->second) << endl;
-	}
+    Spectrum::printContent();
 }

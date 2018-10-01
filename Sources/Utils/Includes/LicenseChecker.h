@@ -15,11 +15,12 @@
 #include <list>
 #include <string>
 
-
+// Forward declarations
+struct Spectrum;
 struct LicenseSpectrum;
 struct LicenseInFileMatchResult;
 
-
+// Exchange class 
 struct LicensesLists
 {
     std::vector<std::string> fileList;
@@ -51,6 +52,7 @@ public:
 
 	void parseSpectrums(std::vector<std::string> &fileList);
 	void buildLicensesSpectrum(std::vector < std::string > &filesList);
+    void buildBasicSpectrum(vector<string> &wordsList, Spectrum *spec);
 	void generateSpectrumFiles(std::string outputPath);
 	void buildGenericLicenseSpectrum();
 
@@ -64,10 +66,18 @@ private:
     std::vector<LicenseInFileMatchResult *> alreadyLicensedFiles;
 };
 
-struct LicenseSpectrum
+struct Spectrum
+{
+    std::vector<std::pair<std::string, unsigned short int>> wordBasedDictionary;
+    void printContent();
+    uint8_t compareWithSpectrum(Spectrum *other);
+    unsigned int getTotalWordsNb();
+};
+
+
+struct LicenseSpectrum : public Spectrum
 {
 	std::string licenseName;
-	std::vector<std::pair<std::string, unsigned short int>> wordBasedDictionary;
 	void printContent();
 };
 
