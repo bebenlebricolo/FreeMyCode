@@ -41,7 +41,7 @@ static const uint8_t minimumDegreeOfConfidenceRequired = 50;
 // Only look in the 100 first lines of each file
 static const uint8_t lineCounterLimit = 100;
 // Minimum comment block size ; comment block is dropped if its size is below this number
-static const uint8_t minimumCommentBlockLineSize = 0;
+static const uint8_t minimumCommentBlockLineSize = 5;
 // Usual characters used to print human readable separator lines
 static const char* separatorCharList = "-#_*/+~<>";
 // Minimum separator char count under which parser will not detect a separator line
@@ -359,35 +359,41 @@ void LicenseChecker::printSpectrums()
 
 // Takes a raw file list (we don't know yet if they contains licenses or not)
 // And extracts informations about potential licenses text in the file's body
-std::vector<std::string>* LicenseChecker::checkForLicenses(std::vector<std::string> &fileList)
+bool LicenseChecker::checkForLicenses(LicensesLists* list)
 {
     // Utils declaration / initialisation
     ConfObject *config = ConfObject::getConfig();
     lg::Logger* log = lg::getLogger();
-    
+
     // File-related stuff
     string filePath;
     string fileExtension;
-    
+
     // Comment sections markers
     string block_comment_open;
     string block_comment_close;
     string single_line_comment;
 
-    vector<string> wrongFilesList;
 
-    for (unsigned int i = 0; i < fileList.size(); i++)
+    if(list == nullptr)
+    {
+        log->logError("Input pointer is null ", __LINE__, __FILE__, __func__, "LicenseChecker");
+        return false;
+    }
+
+
+    for (unsigned int i = 0; i < list->fileList.size(); i++)
     {
         LicenseInFileMatchResult* match = new LicenseInFileMatchResult();
         if (match == nullptr)
         {
             log->logError("Cannot allocate memory for LicenseInFileMatchResult. Aborting execution ", __LINE__, __FILE__, __func__, "LicenseChecker");
-            throw new exception("Cannot allocate memory");
+            return false;
         }
 
-        match->filePath = fileList[i];
+        match->filePath = list->fileList[i];
         fileExtension = pu::get_extension(match->filePath);
-        
+
         // Get all comment markers ;  We don't know yet the targeted file's encoding
         // So we need to target all kind of comments blocks
         match->markers.bStart = config->get_bloc_comment_start(fileExtension);
@@ -401,14 +407,14 @@ std::vector<std::string>* LicenseChecker::checkForLicenses(std::vector<std::stri
         }
 
         match->markers.checkIfPlainText();
-        
-        // Case where no comment markers were found : might be plain text. 
+
+        // Case where no comment markers were found : might be plain text.
         // Special treatment might be applied for this kind of file
         if (match->markers.isPlainText == true)
         {
             log->logWarning("Current file's extension did not give any comment markers. This file might be plain text. File = " + filePath, __LINE__, __FILE__, __func__, "LicenseChecker");
             log->logWarning("Default current behavior is to ignore such file and withdraw it from list.", __LINE__, __FILE__, __func__, "LicenseChecker");
-            wrongFilesList.push_back(filePath);
+            list->wrongFilesList.push_back(filePath);
             // TODO : find License texts within file with plain text research strategy ; look for special words such as "License", "Warranty", "Property", etc.
         }
         else
@@ -417,16 +423,17 @@ std::vector<std::string>* LicenseChecker::checkForLicenses(std::vector<std::stri
             if (match->degreeOfConfidence >= minimumDegreeOfConfidenceRequired)
             {
                 // Remove this license from the editing pipeline
-                alreadyLicensedFiles.push_back(match);
+                list->alreadyLicensedFiles.push_back(match->filePath);
             }
             else
             {
                 // Discard this License and keep it in the License editing pipeline
-                unlicensedFiles.push_back(match->filePath);
+                list->unlicensedFiles.push_back(match->filePath);
             }
         }
 
     }
+    return true;
 }
 
 // Little tool to reset Match result when error is detected
@@ -448,7 +455,6 @@ static void stripCommentMarker(CommentMarkers *markers, string *bufferLine , mar
     }
     else
     {
-        uint8_t maxCommentMarkerLength = markers->getMaxMarkerLength();
         string buffer = *bufferLine;
         vector<pair< string, string >> markersVect;
         markers->vectorizeMembers(&markersVect);
@@ -484,7 +490,7 @@ static bool isASeparator(string *buffer)
     for (unsigned int i = 0; (i < buffer->size() && charCount <= minimumSeparatorCount) ; i++)
     {
         if(findCharInList((*buffer)[i] , separatorCharList , strnlen(separatorCharList,20)) == true)
-        {  
+        {
             charCount++;
         }
     }
@@ -506,21 +512,6 @@ static void printBlockCommentSections(vector<ostringstream*> *vec)
         cout << (*vec)[i]->str() << endl << endl;
     }
 }
-
-static enum commentType { Line, Block, None };
-
-static struct CommentTypeHandlingStruct
-{
-    bool isSeparatorLine;
-    bool switchToNewBlockFlag;
-    bool pushNewData;
-    uint8_t commentBlockLineNb;
-    markersNumbers mNumb;
-    commentType activeCommentBlockType;
-    string *buffer;
-   
-    CommentTypeHandlingStruct():isSeparatorLine(false), switchToNewBlockFlag(false), pushNewData(false), commentBlockLineNb(0), activeCommentBlockType(commentType::None), buffer(nullptr){}
-};
 
 static void handleCommentType(CommentTypeHandlingStruct* input)
 {
@@ -620,7 +611,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         log->logError("Input parameter is null. Aborting function execution", __LINE__, __FILE__, __func__, "LicenseChecker");
         return;
     }
-    
+
     log->logInfo("Opening " + match->filePath + " file.", __LINE__, __FILE__, __func__, "LicenseChecker");
     string buffer;
     ifstream currentFile(match->filePath);
@@ -635,7 +626,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
 
     // Tells whether it's a single line comment block or a regular (multiline) comment block
     CommentTypeHandlingStruct handStr;
-    
+
     ostringstream* commentBlock = new ostringstream;
     vector<ostringstream*> commentBlockCollection;
 
@@ -648,7 +639,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         handStr.buffer = &buffer;
         // List all comments and regroup them in block comments sections
         // After processing : second pass -> clearing block comments which are too small ( e.g. less than 5 lines )
-        
+
         stripCommentMarker(&(match->markers), &buffer , &(handStr.mNumb));
         trimWhiteSpaces(buffer);
         handStr.isSeparatorLine = isASeparator(&buffer);

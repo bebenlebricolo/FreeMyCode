@@ -151,12 +151,16 @@ static void checkLicenseInFile(int argc, char** argv)
     }
     else
     {
+		LicensesLists list;
+
         vector<string> fileList = filterInput(argc, argv);
         ConfObject* config = ConfObject::getConfig();
         config->parse_conf_file(fileList[0]);
         LicenseChecker licenseChecker;
         fileList.erase(fileList.begin());
-        licenseChecker.checkForLicenses(fileList);
+		list.fileList = fileList;
+
+        licenseChecker.checkForLicenses(&list);
         ConfObject::removeConfig();
     }
 }

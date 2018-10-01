@@ -1,5 +1,5 @@
 #ifndef LICENSE_CHECKER_HEADER
-#define LICENSE_CHECKER_HEADER 
+#define LICENSE_CHECKER_HEADER
 
 // Precompiled header includes
 #include "stdafx.h"
@@ -19,32 +19,42 @@
 struct LicenseSpectrum;
 struct LicenseInFileMatchResult;
 
+
+struct LicensesLists
+{
+    std::vector<std::string> fileList;
+    std::vector<std::string> wrongFilesList;
+    std::vector<std::string> alreadyLicensedFiles;
+    std::vector<std::string> unlicensedFiles;
+    LicensesLists(){}
+};
+
 class LicenseChecker
 {
 public:
 	//LicenseChecker();
 	~LicenseChecker();
 
-    // ################ 
+    // ################
     // License checking related stuff
-    // ################ 
+    // ################
 
 	// returns a pointer to a list of already licenses files
 	// Removes already licenses files in input file list
-	std::vector<std::string> *checkForLicenses(std::vector<std::string> &fileList);
+	bool checkForLicenses(LicensesLists* list);
     void findInRegularFile(LicenseInFileMatchResult* match);
     void findInPlainTextFile(LicenseInFileMatchResult* match);
 
-    // ################ 
+    // ################
     // Spectrum-related stuff
-    // ################ 
+    // ################
 
 	void parseSpectrums(std::vector<std::string> &fileList);
 	void buildLicensesSpectrum(std::vector < std::string > &filesList);
 	void generateSpectrumFiles(std::string outputPath);
 	void buildGenericLicenseSpectrum();
 
-    // Utils / debug / test functionalities 
+    // Utils / debug / test functionalities
 	void printLicenses();
 	void printSpectrums();
 private:
@@ -115,13 +125,13 @@ struct markersNumbers {
         {
             return markerType::block;
         }
-        else if (singleLine, blockClose, blockOpen == 0)
+        else if (singleLine == 0 && blockClose ==0 && blockOpen == 0)
         {
             return markerType::uncommented;
         }
         else
         {
-            // singleLine != 0 
+            // singleLine != 0
             // blockOpen != blockClose
             return markerType::undetermined;
         }
@@ -135,6 +145,24 @@ struct markersNumbers {
         foundMarker = false;
     }
 
+};
+
+
+// Comment handlong stuff and structures
+
+enum commentType { Line, Block, None };
+
+struct CommentTypeHandlingStruct
+{
+    bool isSeparatorLine;
+    bool switchToNewBlockFlag;
+    bool pushNewData;
+    uint8_t commentBlockLineNb;
+    markersNumbers mNumb;
+    commentType activeCommentBlockType;
+    string *buffer;
+
+    CommentTypeHandlingStruct():isSeparatorLine(false), switchToNewBlockFlag(false), pushNewData(false), commentBlockLineNb(0), activeCommentBlockType(commentType::None), buffer(nullptr){}
 };
 
 

@@ -74,7 +74,9 @@ uint8_t CommentMarkers::getMaxMarkerLength()
 void CommentMarkers::reset()
 {
     isPlainText = false;
-    sgLine, bStart, bEnd = "";
+    sgLine = "";
+	bStart = "";
+	bEnd = "";
 }
 
 void CommentMarkers::vectorizeMembers(std::vector<pair<std::string, std::string>> *vec)
