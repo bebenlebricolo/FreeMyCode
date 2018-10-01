@@ -184,6 +184,7 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 // Trims whitespaces from both side of a given word
 // "   foobar   Foobar!foobaaaar..   " will become
 // -> "foobar   Foobar!foobaaaar.."
+// TODO Put all that stuff in ParsingUtils lib
 void trimWhiteSpaces(string &word)
 {
 	string buffer;
@@ -236,6 +237,7 @@ LicenseChecker::~LicenseChecker()
 	}
 }
 
+// TODO put all of this in ParsingUtils
 bool hasOneCharacter(char letter, const char* testChars)
 {
 	bool out = false;
@@ -268,6 +270,7 @@ void LicenseChecker::printLicenses()
 	}
 }
 
+// Sorting functor
 struct isEqual
 {
 	isEqual(string _s) : s(_s){}
@@ -682,6 +685,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
     {
         delete commentBlockCollection[i];
     }
+    currentFile.close();
 }
 
 void LicenseChecker::findInPlainTextFile(LicenseInFileMatchResult* match)
