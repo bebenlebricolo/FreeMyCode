@@ -311,7 +311,7 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
 		string licenseName = pu::remove_extension(pu::get_filename(filePath));
         LicenseSpectrum *lic = new LicenseSpectrum;
         lic->licenseName = licenseName;
-		
+
 
         // Build words list
         string line;
@@ -350,7 +350,7 @@ void LicenseChecker::buildBasicSpectrum(vector<string> &wordsList, Spectrum *spe
         log->logError("Input is nullptr. Aborting function", __LINE__, __FILE__, __func__, "LicenseChecker");
         return;
     }
-       
+
     vector<std::pair<std::string, unsigned short int>>::iterator it;
     for (unsigned int j = 0; j < wordsList.size(); j++)
     {
@@ -709,7 +709,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
     for (unsigned int i = 0; i < commentBlockCollection.size(); i++)
     {
         Spectrum *spec = new Spectrum;
-        
+
         // Build words list
         string line;
         vector<string> wordsList;
@@ -734,8 +734,8 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
 
         buildBasicSpectrum(wordsList,spec);
         specList.push_back(spec);
-        
-        
+
+
         //TODO remove these lines
         cout << "comment block " << to_string(i) << " word based dictionary : \n";
         spec->printContent();
@@ -787,10 +787,9 @@ uint8_t Spectrum::compareWithSpectrum(Spectrum *other)
         log->logError("Input is nullptr. Aborting comparison", __LINE__, __FILE__, __func__, "Spectrum");
         return 0;
     }
-    
+
     uint8_t percentageResult = 0;
     unsigned int matchedItemNb = 0;
-    unsigned int otherIndex = 0;
     unsigned int index = 0;
 
     for (index = 0; index < wordBasedDictionary.size(); index++)
