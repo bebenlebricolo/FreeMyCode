@@ -3,25 +3,12 @@
 
 #include <algorithm>
 #include <cstring>
+#include <locale>
 
 using namespace std;
 
-static const char* illegalCharacters = " .-,;:!^*+=\"'()_|[]}{#~&$€£%%/\\<>`";
 static const unsigned int maxIllegalChar = 50;
-
 static bool wayToSort(const string &a, const string &b) { return a < b; }
-
-static bool isAnIllegalChar(char in)
-{
-    for (unsigned int i = 0 ; i < maxIllegalChar; i++)
-    {
-        if (in == illegalCharacters[i])
-        {
-            return true;
-        }
-    }
-    return false;
-}
 
 
 void tokenizeWords(std::string &line, std::vector<std::string> &outputVector)
@@ -30,7 +17,8 @@ void tokenizeWords(std::string &line, std::vector<std::string> &outputVector)
     for (unsigned int i = 0; i < line.length(); i++)
     {
         char currentChar = line[i];
-        if (isAnIllegalChar(currentChar))
+        std::locale loc;
+        if (std::isalnum(currentChar, loc) == false)
         {
             if (word.length() > 0)
             {

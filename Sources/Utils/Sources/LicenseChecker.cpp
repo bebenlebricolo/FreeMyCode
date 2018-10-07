@@ -5,6 +5,7 @@
 #include "ParsingUtils.h"
 #include "ConfigTools.h"
 
+#include FS_INCLUDE
 #include <fstream>
 #include <cstring>
 
@@ -21,6 +22,7 @@ static const char spectrumCommentDelimiter = '#';
 static const char* spectrumSpecificChars = "#:\n";
 static const unsigned int spectrumMaxSpecificCharsCount = 10;
 //static const char spectrumIgnoreChar = ' ';
+static const char* spectrumFileExtension = ".spec";
 
 
 // Generate license spectrum from license files
@@ -290,8 +292,8 @@ bool sortAlpha (const pair <string, unsigned short int> &a, const pair <string, 
 void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesList)
 {
 	logger::Logger *log = logger::Logger::get_logger();
-	// open file
-	// list words which are bigger than 3 letters
+	
+    // list words which are bigger than letters count trigger (e.g. 3)
 	for (unsigned int i = 0; i < filesList.size(); i++)
 	{
 		// opens the file
@@ -341,6 +343,7 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
 	}
 }
 
+// Builds a Spectrum from a words based vector (containing every word of a given text section) and outputs a spectrum object.
 void LicenseChecker::buildBasicSpectrum(vector<string> &wordsList, Spectrum *spec)
 {
     lg::Logger *log = lg::getLogger();
@@ -371,6 +374,57 @@ void LicenseChecker::buildBasicSpectrum(vector<string> &wordsList, Spectrum *spe
 }
 
 
+// Writes all previously recorded Licenses Spectrum on disk into the targeted directory (outputPath)
+void LicenseChecker::writeSpectrumsOnDisk(std::string outputPath)
+{
+    lg::Logger *log = lg::getLogger();
+    bool createDirFlag = false;
+    // fs::perms userPermissions;
+    // string closestParentDir = pu::get_closest_exisiting_parent_dir(outputPath);
+    
+    // First check if output path directory exist
+    if (fs::exists(outputPath) == false)
+    {
+        log->logInfo("Directory " + outputPath + "does not exist yet. Creating one...", __LINE__, __FILE__, __func__, "LicenseChecker");
+        createDirFlag = true;
+    }
+    else if (fs::is_directory(outputPath) == false)
+    {
+        log->logError("Targeted output path for Licenses Spectrum is not a directory. Aborting execution. Given path is: " + outputPath , __LINE__, __FILE__, __func__, "LicenseChecker");
+        return;
+    }
+
+    if (createDirFlag == true)
+    {
+        fs::create_directories(outputPath);
+    }
+
+    for (unsigned int i = 0; i < recordedLicenses.size(); i++)
+    {
+        string fileName = recordedLicenses[i]->licenseName + spectrumFileExtension;
+        string filePath = pu::join(outputPath, fileName);
+        if (fs::exists(filePath) == true) 
+        {
+            log->logInfo("Targeted License spectrum file already exist. Skipping it. License spectrum name = " + fileName, __LINE__, __FILE__, __func__, "LicenseChecker");
+        }
+        else
+        {
+            ofstream file(filePath, ios::beg);
+            if (file.is_open())
+            {
+                file << spectrumCommentDelimiter << "License Spectrum file built upon license " << recordedLicenses[i]->licenseName << endl;
+                file << spectrumNameToken << spectrumDelimiter << recordedLicenses[i]->licenseName << endl;
+                for (unsigned int wordIndex = 0; wordIndex < recordedLicenses[i]->wordBasedDictionary.size(); wordIndex++)
+                {
+                    file << recordedLicenses[i]->wordBasedDictionary[wordIndex].first << spectrumDelimiter << recordedLicenses[i]->wordBasedDictionary[wordIndex].second << endl;
+                }
+            }
+            file.close();
+            log->logInfo("Successfully written license spectrum : " + fileName, __LINE__, __FILE__, __func__, "LicenseChecker");
+        }
+    }    
+}
+
 
 void LicenseChecker::printSpectrums()
 {
@@ -383,7 +437,7 @@ void LicenseChecker::printSpectrums()
 
 // Takes a raw file list (we don't know yet if they contains licenses or not)
 // And extracts informations about potential licenses text in the file's body
-bool LicenseChecker::checkForLicenses(LicensesLists* list)
+bool LicenseChecker::checkForLicenses(InOut_CheckLicenses* list)
 {
     // Utils declaration / initialisation
     ConfObject *config = ConfObject::getConfig();
@@ -537,6 +591,7 @@ static void printBlockCommentSections(vector<stringstream*> *vec)
     }
 }
 
+// Resolves what kind of comment we are currently parsing (block, single line, closing block, opening block, etc...)
 static void handleCommentType(CommentTypeHandlingStruct* input)
 {
     lg::Logger *log = lg::getLogger();
@@ -668,6 +723,7 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         trimWhiteSpaces(buffer);
         handStr.isSeparatorLine = isASeparator(&buffer);
 
+        // Determine which comment type we are facing
         handleCommentType(&handStr);
 
         // Handle data
@@ -679,6 +735,10 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
             }
             else
             {
+                if (handStr.commentBlockLineNb != 0)
+                {
+                    *commentBlock << buffer << endl;
+                }
                 commentBlockCollection.push_back(commentBlock);
             }
             commentBlock = new stringstream;
@@ -695,8 +755,6 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
 
     } // End of for loop
     currentFile.close();
-
-
     if (handStr.commentBlockLineNb != 0)
     {
         commentBlockCollection.push_back(commentBlock);
@@ -704,42 +762,26 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
     // Finished iterating over the 100 first file's lines
     printBlockCommentSections(&commentBlockCollection);
 
-    // Compare stored block comments with License Spectrums
+
+    // Build Spectrums for each found commented section
     vector<Spectrum *> specList;
     for (unsigned int i = 0; i < commentBlockCollection.size(); i++)
     {
         Spectrum *spec = new Spectrum;
 
-        // Build words list
-        string line;
-        vector<string> wordsList;
-
-        while (getline(*commentBlockCollection[i], line))
-        {
-            vector<string> wordsFromLine;
-            tokenizeWords(line, wordsFromLine);
-
-            // Filters out words which are smaller than the required threshold
-            for (unsigned int j = 0; j < wordsFromLine.size(); j++)
-            {
-                string word = wordsFromLine[j];
-                if (word.size() > maxLettersThreshold)
-                {
-                    wordsList.push_back(word);
-                }
-            }
-        }
-        sort(wordsList.begin(), wordsList.end());
-        // Build spectrum for this file
-
-        buildBasicSpectrum(wordsList,spec);
+        buildBasicSpectrum(commentBlockCollection[i],spec);
         specList.push_back(spec);
-
 
         //TODO remove these lines
         cout << "comment block " << to_string(i) << " word based dictionary : \n";
         spec->printContent();
         cout << endl;
+    }
+
+    // Compare with all available licenses onboard
+    for (unsigned int sp = 0; sp < specList.size(); sp++)
+    {
+        specList[sp]->compareWithSpectrumList(&recordedLicenses, match);
     }
 
 
@@ -753,6 +795,32 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
     {
         delete specList[i];
     }
+}
+
+
+void LicenseChecker::buildBasicSpectrum(stringstream *stream, Spectrum *spec)
+{
+    // Build words list
+    string line;
+    vector<string> wordsList;
+
+    while (getline(*stream, line))
+    {
+        vector<string> wordsFromLine;
+        tokenizeWords(line, wordsFromLine);
+
+        // Filters out words which are smaller than the required threshold
+        for (unsigned int j = 0; j < wordsFromLine.size(); j++)
+        {
+            string word = wordsFromLine[j];
+            if (word.size() > maxLettersThreshold)
+            {
+                wordsList.push_back(word);
+            }
+        }
+    }
+    sort(wordsList.begin(), wordsList.end());
+    buildBasicSpectrum(wordsList, spec);
 }
 
 void LicenseChecker::findInPlainTextFile(LicenseInFileMatchResult* match)
@@ -779,7 +847,7 @@ void Spectrum::printContent()
     }
 }
 
-uint8_t Spectrum::compareWithSpectrum(Spectrum *other)
+uint8_t Spectrum::compareWithSpectrum(LicenseSpectrum *other)
 {
     lg::Logger *log = lg::getLogger();
     if (other == nullptr)
@@ -805,6 +873,43 @@ uint8_t Spectrum::compareWithSpectrum(Spectrum *other)
     return percentageResult;
 }
 
+
+void Spectrum::compareWithSpectrumList(vector<LicenseSpectrum* > *other, LicenseInFileMatchResult *match)
+{
+    lg::Logger *log = lg::getLogger();
+    if (match == nullptr)
+    {
+        log->logError("Input is nullptr. Aborting comparison", __LINE__, __FILE__, __func__, "Spectrum");
+        return;
+    }
+
+    uint8_t maxMatch = 0;
+    uint8_t currentMatch = 0;
+    for (unsigned int sp = 0; sp < other->size(); sp++)
+    {
+        currentMatch = compareWithSpectrum((*other)[sp]);
+        if (currentMatch >= maxMatch)
+        {
+            maxMatch = currentMatch;
+            match->degreeOfConfidence = maxMatch;
+            match->licenseName = (*other)[sp]->licenseName;
+            if (match->degreeOfConfidence > minimumDegreeOfConfidenceRequired)
+            {
+                log->logInfo("Probably found license in file "+ pu::get_filename(match->filePath), __LINE__, __FILE__, __func__, "Spectrum");
+                log->logInfo("Candidate license is : " + match->licenseName, __LINE__, __FILE__, __func__, "Spectrum");
+                match->foundLicense = true;
+            }
+        }
+    }
+    if (match->degreeOfConfidence < minimumDegreeOfConfidenceRequired)
+    {
+        log->logInfo("Could not find any potential license in file " + pu::get_filename(match->filePath), __LINE__, __FILE__, __func__, "Spectrum");
+        match->foundLicense = false;
+
+    }
+}
+
+
 unsigned int Spectrum::getTotalWordsNb()
 {
     unsigned int out = 0;
@@ -814,6 +919,8 @@ unsigned int Spectrum::getTotalWordsNb()
     }
     return out;
 }
+
+
 
 // #######################################
 // LicenseSpectrum class implementation

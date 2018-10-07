@@ -29,6 +29,8 @@ Version	|	 Date	 |	Comments
 #include <sstream>
 #include <iostream>
 
+#include FS_INCLUDE
+
 #include"PathUtils.h"
 
 #ifdef MSVC_COMPILER

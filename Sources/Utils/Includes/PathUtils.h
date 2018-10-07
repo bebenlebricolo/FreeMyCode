@@ -27,7 +27,11 @@ namespace pathutils {
 	const std::string get_filename(std::string input_string);
 	const std::string get_extension(std::string input);
 	const std::string get_parent_dir(std::string filepath);
+    const std::string get_closest_exisiting_parent_dir(std::string targetedPath);
 	const std::string get_file_version(std::string filename);
+    bool is_POSIX_separator(char in);
+    void reformat_POSIX_separator_in_string(std::string &in);
+    const std::string join(std::string path1, std::string path2);
 	const std::ifstream::pos_type filesize(const char* filename);
 	std::string remove_version(std::string filename);
 	std::string format_filepath(std::string input_string, std::string extension ="");

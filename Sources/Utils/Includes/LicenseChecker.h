@@ -21,13 +21,13 @@ struct LicenseSpectrum;
 struct LicenseInFileMatchResult;
 
 // Exchange class 
-struct LicensesLists
+struct InOut_CheckLicenses
 {
     std::vector<std::string> fileList;
     std::vector<std::string> wrongFilesList;
     std::vector<std::string> alreadyLicensedFiles;
     std::vector<std::string> unlicensedFiles;
-    LicensesLists(){}
+    InOut_CheckLicenses(){}
 };
 
 class LicenseChecker
@@ -42,7 +42,7 @@ public:
 
 	// returns a pointer to a list of already licenses files
 	// Removes already licenses files in input file list
-	bool checkForLicenses(LicensesLists* list);
+	bool checkForLicenses(InOut_CheckLicenses* list);
     void findInRegularFile(LicenseInFileMatchResult* match);
     void findInPlainTextFile(LicenseInFileMatchResult* match);
 
@@ -50,17 +50,27 @@ public:
     // Spectrum-related stuff
     // ################
 
+    // Parses spectrum files (.spec) and register them in recordedLicenses list
 	void parseSpectrums(std::vector<std::string> &fileList);
+    // Build License Sectrum from text license (e.g. GPLV3.txt) and adds it to recordedLicenses list
 	void buildLicensesSpectrum(std::vector < std::string > &filesList);
+    // Builds a Spectrum from a word based vector (containing every word of a given text section) and outputs a spectrum object.
     void buildBasicSpectrum(vector<string> &wordsList, Spectrum *spec);
-	void generateSpectrumFiles(std::string outputPath);
-	void buildGenericLicenseSpectrum();
+    // Overloading wrapper to buildBasicSpectum ... 
+    void buildBasicSpectrum(stringstream *stream, Spectrum *spec);
+
+    // Writes all previously recorded Licenses Spectrum on disk into the targeted directory (outputPath)
+	void writeSpectrumsOnDisk(std::string outputPath);
+	// Builds a generic License Spectrum from all previously recorded Licenses.
+    void buildGenericLicenseSpectrum();
 
     // Utils / debug / test functionalities
 	void printLicenses();
 	void printSpectrums();
 private:
+    // Vector of recorded Licenses (like GPL V2 / V3 , etc.)
 	std::vector<LicenseSpectrum*> recordedLicenses;
+    // Vector of files which does not contain any license (not found any in them)
     std::vector<std::string> unlicensedFiles;
     // List of pair of <file / Potential License name>
     std::vector<LicenseInFileMatchResult *> alreadyLicensedFiles;
@@ -70,7 +80,8 @@ struct Spectrum
 {
     std::vector<std::pair<std::string, unsigned short int>> wordBasedDictionary;
     void printContent();
-    uint8_t compareWithSpectrum(Spectrum *other);
+    uint8_t compareWithSpectrum(LicenseSpectrum *other);
+    void compareWithSpectrumList(vector<LicenseSpectrum* >* other, LicenseInFileMatchResult *match);
     unsigned int getTotalWordsNb();
 };
 

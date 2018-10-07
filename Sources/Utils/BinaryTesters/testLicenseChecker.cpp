@@ -3,14 +3,17 @@
 #include "LoggingTools.h"
 #include "ConfigTools.h"
 #include <iostream>
+#include FS_INCLUDE
+
 
 namespace fs = FS_CPP;
-static const char* valid_options = "-p -b -h -u -c";
+static const char* valid_options = "-p -b -h -u -c -w";
 using namespace std;
 
 static void printUsage();
 static void parsingTest(int argc, char** argv);
 static void spectrumBuilding(int argc, char** argv);
+static void writeSpectrumsOnDisk(int argc, char** argv);
 static void checkLicenseInFile(int argc, char** argv);
 static vector<string> filterInput(int argc, char** argv);
 
@@ -32,6 +35,9 @@ void parse_option(int argc, char* argv[])
                 break;
             case 'c':
                 checkLicenseInFile(argc, argv);
+                break;
+            case 'w':
+                writeSpectrumsOnDisk(argc, argv);
                 break;
             case 'h':
             case 'u':
@@ -77,13 +83,20 @@ int main(int argc, char* argv[])
 void printUsage()
 {
 	cout << "Usage : " << endl;
-	cout << " -p <file1> <file2> ...                   :  Parse spectrum files and display results on std out" << endl;
+	cout << " -p <file1> <file2> ... "<< endl;
+    cout << "    -> Parse spectrum files and display results on std out" << endl;
 	cout << " ---------------------" << endl;
-	cout << " -b <file1> <file2> ...                   :  Builds spectrum from regular text file and display results on std out" << endl;
+    cout << " -b <file1> <file2> ... " << endl;
+    cout << "    -> Builds spectrum from regular text file and display results on std out" << endl;
 	cout << " ---------------------" << endl;
-    cout << " -c <config.json file><file1> <file2> ... :  check for previous licenses in file and displays results on std out" << endl;
+    cout << " -c <config.json file> <file> <License1> <License2> ... " << endl;
+    cout << "    -> Check for previous licenses in file and displays results on std out" << endl;
     cout << " ---------------------" << endl;
-	cout << " -u / -h                :  Displays this help " << endl << endl;
+    cout << " -w <file1> <file2> ... <out dir> " << endl;
+    cout << "    -> Parse licences from given files and write them on disk" << endl;
+    cout << " ---------------------" << endl;
+    cout << " -u / -h " << endl;
+    cout << "    -> Displays this help " << endl << endl;
 
 }
 
@@ -151,16 +164,43 @@ static void checkLicenseInFile(int argc, char** argv)
     }
     else
     {
-		LicensesLists list;
+        InOut_CheckLicenses list;
+        
 
         vector<string> fileList = filterInput(argc, argv);
         ConfObject* config = ConfObject::getConfig();
         config->parse_conf_file(fileList[0]);
         LicenseChecker licenseChecker;
+        
+        // Remove config.json file from input list
         fileList.erase(fileList.begin());
-		list.fileList = fileList;
+		list.fileList.push_back(fileList[0]);
+        fileList.erase(fileList.begin());
+        licenseChecker.parseSpectrums(fileList);
 
         licenseChecker.checkForLicenses(&list);
+        ConfObject::removeConfig();
+    }
+}
+
+
+void writeSpectrumsOnDisk(int argc, char **argv)
+{
+    logger::Logger *log = logger::Logger::get_logger();
+    log->logInfo("Starting test tool for LicenseChecker library : parser unit.");
+    if (argc < 4)
+    {
+        log->logError("Please provide at least one file path and a valid config file");
+    }
+    else
+    {
+
+        // Last path is used as destination directory
+        vector<string> fileList = filterInput(argc - 1, argv);
+        LicenseChecker licenseChecker;
+        licenseChecker.buildLicensesSpectrum(fileList);
+        licenseChecker.writeSpectrumsOnDisk(argv[argc - 1]);
+
         ConfObject::removeConfig();
     }
 }

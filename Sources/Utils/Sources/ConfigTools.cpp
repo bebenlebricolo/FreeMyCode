@@ -23,6 +23,9 @@ Version	|	 Date	 |	Comments
 #include "document.h"
 #include "istreamwrapper.h"
 
+#include FS_INCLUDE
+
+
 
 using namespace rapidjson;
 
