@@ -10,7 +10,7 @@ namespace pu = pathutils;
 
 static void printUsage();
 static void joinPaths(int argc, char **argv);;
-static vector<string> filterInput(int argc, char** argv);
+//static vector<string> filterInput(int argc, char** argv);
 
 void parse_option(int argc, char* argv[])
 {
@@ -63,7 +63,7 @@ void printUsage()
 }
 
 
-vector<string> filterInput(int argc, char** argv)
+/*vector<string> filterInput(int argc, char** argv)
 {
     vector<string> fileList;
     for (int i = 2; i < argc; i++)
@@ -76,7 +76,7 @@ vector<string> filterInput(int argc, char** argv)
         fileList.push_back(arg);
     }
     return fileList;
-}
+}*/
 
 void joinPaths(int argc, char** argv)
 {

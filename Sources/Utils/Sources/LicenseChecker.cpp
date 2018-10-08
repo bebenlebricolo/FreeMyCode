@@ -292,7 +292,7 @@ bool sortAlpha (const pair <string, unsigned short int> &a, const pair <string, 
 void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesList)
 {
 	logger::Logger *log = logger::Logger::get_logger();
-	
+
     // list words which are bigger than letters count trigger (e.g. 3)
 	for (unsigned int i = 0; i < filesList.size(); i++)
 	{
@@ -381,7 +381,7 @@ void LicenseChecker::writeSpectrumsOnDisk(std::string outputPath)
     bool createDirFlag = false;
     // fs::perms userPermissions;
     // string closestParentDir = pu::get_closest_exisiting_parent_dir(outputPath);
-    
+
     // First check if output path directory exist
     if (fs::exists(outputPath) == false)
     {
@@ -403,13 +403,13 @@ void LicenseChecker::writeSpectrumsOnDisk(std::string outputPath)
     {
         string fileName = recordedLicenses[i]->licenseName + spectrumFileExtension;
         string filePath = pu::join(outputPath, fileName);
-        if (fs::exists(filePath) == true) 
+        if (fs::exists(filePath) == true)
         {
             log->logInfo("Targeted License spectrum file already exist. Skipping it. License spectrum name = " + fileName, __LINE__, __FILE__, __func__, "LicenseChecker");
         }
         else
         {
-            ofstream file(filePath, ios::beg);
+            ofstream file(filePath);
             if (file.is_open())
             {
                 file << spectrumCommentDelimiter << "License Spectrum file built upon license " << recordedLicenses[i]->licenseName << endl;
@@ -422,7 +422,7 @@ void LicenseChecker::writeSpectrumsOnDisk(std::string outputPath)
             file.close();
             log->logInfo("Successfully written license spectrum : " + fileName, __LINE__, __FILE__, __func__, "LicenseChecker");
         }
-    }    
+    }
 }
 
 
