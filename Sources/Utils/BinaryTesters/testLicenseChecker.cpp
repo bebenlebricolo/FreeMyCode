@@ -110,7 +110,7 @@ vector<string> filterInput(int argc, char** argv)
 		string arg = argv[i];
 		if (!fs::exists(arg))
 		{
-			log->logWarning("argument \" " + arg + " \" is not rigth. Please check your input.");
+			log->logWarning("argument \" " + arg + " \" is not right : Does not exist ! Please check your input.");
 			continue;
 		}
 		fileList.push_back(arg);

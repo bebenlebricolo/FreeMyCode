@@ -60,6 +60,11 @@ static const uint8_t minimumSeparatorCount = 10;
 void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 {
 	logger::Logger* log = logger::Logger::get_logger();
+    if (fileList.size() == 0)
+    {
+        log->logWarning("Nothing to parse : input vector is empty. Aborting parsing session.", __LINE__, __FILE__, __func__, "LicenseChecker");
+        return;
+    }
 	// first check file exists
 	for (unsigned int f = 0; f < fileList.size(); f++)
 	{
