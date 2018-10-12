@@ -1,0 +1,14 @@
+[20/09/2018]:15-59'-31" - [INIT ]:[ --------------- Session initialized --------------- ]
+[20/09/2018]:15-59'-31" - [WARNING ]:[ ConfigTools.cpp : ConfObject::get_ext_property()-ln:279 ] = Extension : .html : Does not have single line comment marker 
+[20/09/2018]:15-59'-31" - [WARNING ]:[ ConfigTools.cpp : ConfObject::get_ext_property()-ln:269 ] = Extension : .vb : Does not have bloc comment opening marker
+[20/09/2018]:15-59'-31" - [WARNING ]:[ ConfigTools.cpp : ConfObject::get_ext_property()-ln:259 ] = Extension : .vb : Does not have bloc comment closing marker
+[20/09/2018]:15-59'-31" - [WARNING ]:[ ConfigTools.cpp : ConfObject::get_ext_property()-ln:269 ] = Extension : .yaml : Does not have bloc comment opening marker
+[20/09/2018]:15-59'-31" - [WARNING ]:[ ConfigTools.cpp : ConfObject::get_ext_property()-ln:259 ] = Extension : .yaml : Does not have bloc comment closing marker
+[20/09/2018]:15-59'-31" - [WARNING ]:[ LicenseWriter.cpp : LicenseWriter::write_license()-ln:113 ] = Both prepend and append flags are set
+[29/09/2018]:13-42'-24" - [INIT ]:[ --------------- Session initialized --------------- ]
+[29/09/2018]:13-42'-25" - [WARNING ]:Logfile does not exist yet. Creation pending.
+[29/09/2018]:13-42'-25" - [WARNING ]:[ configtools.cpp : ConfObject::get_ext_property()-ln:330 ] = Extension : .html : Does not have single line comment marker 
+[29/09/2018]:13-42'-25" - [WARNING ]:[ configtools.cpp : ConfObject::get_ext_property()-ln:320 ] = Extension : .vb : Does not have bloc comment opening marker
+[29/09/2018]:13-42'-25" - [WARNING ]:[ configtools.cpp : ConfObject::get_ext_property()-ln:310 ] = Extension : .vb : Does not have bloc comment closing marker
+[29/09/2018]:13-42'-25" - [WARNING ]:[ configtools.cpp : ConfObject::get_ext_property()-ln:320 ] = Extension : .yaml : Does not have bloc comment opening marker
+[29/09/2018]:13-42'-25" - [WARNING ]:[ configtools.cpp : ConfObject::get_ext_property()-ln:310 ] = Extension : .yaml : Does not have bloc comment closing marker

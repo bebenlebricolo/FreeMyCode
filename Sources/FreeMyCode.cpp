@@ -22,6 +22,8 @@ Version	|	 Date	 |	Comments
 #include "ConfigTools.h"
 #include "LoggingTools.h"
 #include "LicenseWriter.h"
+#include "LicenseChecker.h"
+#include "PathUtils.h"
 
 #include FS_INCLUDE
 
@@ -29,7 +31,7 @@ Version	|	 Date	 |	Comments
 using namespace std;
 namespace fs = FS_CPP;
 
-static const uint8_t maxPRType = 5;
+static const uint8_t maxPRType = 6;
 
 string PRList[maxPRType] =
 {
@@ -38,6 +40,7 @@ string PRList[maxPRType] =
     "Config",
     "Logoption",
     "Secondary Input",
+    "Installation_Dir"
 };
 
 struct GenericParserResult {
@@ -45,7 +48,7 @@ struct GenericParserResult {
     string license;
     string config;
     string logoption;
-    string  sec_inp;
+    string sec_inp;
 	GenericParserResult(string a, string b, string c, string d, string e):directory(a),license(b),config(c),logoption(d),sec_inp(e){}
 };
 
@@ -71,6 +74,14 @@ int main(int argc , char* argv[])
 {
     logger::Logger* mylog = logger::Logger::get_logger();
     mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
+    
+    // TODO : this sould be provided by the Python script, as it could be dynamically retrieved and passed as an "on the fly" generated file
+    string executablePath = argv[0];
+    string binPath = pathutils::get_parent_dir(executablePath);
+    string installDirPath = pathutils::get_parent_dir(binPath);
+    string ressourcesPath = pathutils::join(installDirPath, "Ressources");
+    string spectrumsDirPath = pathutils::join(ressourcesPath, "Spectrums");
+
 
     CommandLineParser parser;
     init_Parser(&parser);
@@ -100,8 +111,11 @@ int main(int argc , char* argv[])
 
     if( check_args(&parser) == NO_ERROR )
     {
+        // List all files in given directory that match targeted extensions
         vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser.get_arg("Directory"), config.get_supported_ext_list());
         LicenseWriter writer(&parser,&config);
+        // LicenseChecker checker;
+        // Build licenses texts in RAM for each file type
         writer.build_formatted_license_list(files_in_dir);
         vector<string> wrongFiles = writer.write_license();
 
