@@ -38,6 +38,6 @@ namespace pathutils {
 	std::string increment_version(std::string filename);
 	std::string remove_extension(std::string filename);
 	const std::ifstream::pos_type filesize(const char* filename);
-
+    void getAllFilesInDir(vector<string> &vec, string rootPath);
 }
 #endif // !PATHUTILS_HEADER

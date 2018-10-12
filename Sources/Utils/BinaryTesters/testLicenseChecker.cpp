@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 void printUsage()
 {
 	cout << "Usage : " << endl;
-	cout << " -p <file1> <file2> ... "<< endl;
+	cout << " -p [<file1> <file2> || <directory> ] ... "<< endl;
     cout << "    -> Parse spectrum files and display results on std out" << endl;
 	cout << " ---------------------" << endl;
     cout << " -b <file1> <file2> ... " << endl;
@@ -92,7 +92,7 @@ void printUsage()
     cout << " -c <config.json file> <file> <License1> <License2> ... " << endl;
     cout << "    -> Check for previous licenses in file and displays results on std out" << endl;
     cout << " ---------------------" << endl;
-    cout << " -w <file1> <file2> ... <out dir> " << endl;
+    cout << " -w [<file1> <file2> || <directory> ] ... <out dir> " << endl;
     cout << "    -> Parse licences from given files and write them on disk" << endl;
     cout << " ---------------------" << endl;
     cout << " -u / -h " << endl;
@@ -199,8 +199,11 @@ void writeSpectrumsOnDisk(int argc, char **argv)
         vector<string> fileList = filterInput(argc - 1, argv);
         LicenseChecker licenseChecker;
         licenseChecker.buildLicensesSpectrum(fileList);
+        
+        // Write to the output directory (last argument in list)
         licenseChecker.writeSpectrumsOnDisk(argv[argc - 1]);
 
         ConfObject::removeConfig();
     }
 }
+

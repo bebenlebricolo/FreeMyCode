@@ -63,124 +63,136 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 	// first check file exists
 	for (unsigned int f = 0; f < fileList.size(); f++)
 	{
-		string currentFile = fileList[f];
-		string filename = pu::get_filename(currentFile);
-		if (fs::exists(currentFile) == false)
+		string currentPath = fileList[f];
+		string filename = pu::get_filename(currentPath);
+		if (fs::exists(currentPath) == false)
 		{
 			log->logWarning("File " + filename + " does not exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
 		}
 		else
 		{
-			ifstream spectrumFile(currentFile);
-			string currentWord;
-			string lineBuffer;
-			if (spectrumFile.is_open() == true)
-			{
-				log->logWarning("Spectrum file " + filename + " is already opened!", __LINE__, __FILE__, __func__, "LicenseChecker");
-				spectrumFile.close();
-			}
-			spectrumFile.open(currentFile, ios::in);
-			LicenseSpectrum *curLicense = new LicenseSpectrum();
-			unsigned int lineNumber = 0;
-			bool caughtError = false;
+            // If we found a directory, parse all spectrums inside it! 
+            if (fs::is_directory(currentPath))
+            {
+                vector<string> filesInDir;
+                pu::getAllFilesInDir(filesInDir, currentPath);
+                parseSpectrums(filesInDir);
+            }
+            else
+            {
+                // Otherwise, check all files
+                ifstream spectrumFile(currentPath);
+                string currentWord;
+                string lineBuffer;
 
-			// Parse the current file
-			while (getline(spectrumFile, lineBuffer, spectrumLineDelimiter) && caughtError == false)
-			{
-				lineNumber++;
-				bool foundDelimiter = false;
-				string token;
-				string rightMember;
-				log->logDebug("Parsing line : \" " + lineBuffer + " \" ");
-				if (lineBuffer[0] == spectrumCommentDelimiter)
-				{
-					// Found comment section
-					log->logDebug("Found commented section");
-					continue;
-				}
-				else
-				{
-					for (unsigned int i = 0; i < lineBuffer.size(); i++)
-					{
-						char curLetter = lineBuffer[i];
-						if (hasOneCharacter(curLetter, spectrumSpecificChars) == false)
-						{
-							if (foundDelimiter == false)
-							{
-								token += curLetter;
-							}
-							else
-							{
-								rightMember += curLetter;
-							}
-						}
-						else
-						{
-							if (curLetter == spectrumDelimiter)
-							{
-								log->logDebug("Found delimiter");
-								foundDelimiter = true;
-							}
-							if (curLetter == spectrumCommentDelimiter)
-							{
-								log->logDebug("Found comment marker");
-								break;
-							}
-						}
-					}
+                if (pu::get_extension(currentPath) != spectrumFileExtension)
+                {
+                    log->logWarning("Current file < " + pu::get_filename(currentPath) + " > does not have the required extension < " + spectrumFileExtension + " > . Aborting parsing of this file", __LINE__, __FILE__, __func__, "LicenseChecker");
+                    spectrumFile.close();
+                    continue;
+                }
+                else
+                {
+                    LicenseSpectrum *curLicense = new LicenseSpectrum();
+                    unsigned int lineNumber = 0;
+                    bool caughtError = false;
 
-					trimWhiteSpaces(token);
-					trimWhiteSpaces(rightMember);
-					log->logDebug("token = \"" + token + "\"");
-					log->logDebug("rightMember = \"" + rightMember + "\"");
+                    // Parse the current file
+                    while (getline(spectrumFile, lineBuffer, spectrumLineDelimiter) && caughtError == false)
+                    {
+                        lineNumber++;
+                        bool foundDelimiter = false;
+                        string token;
+                        string rightMember;
+                        log->logDebug("Parsing line : \" " + lineBuffer + " \" ");
+                        if (lineBuffer[0] == spectrumCommentDelimiter)
+                        {
+                            // Found comment section
+                            log->logDebug("Found commented section");
+                            continue;
+                        }
+                        else
+                        {
+                            for (unsigned int i = 0; i < lineBuffer.size(); i++)
+                            {
+                                char curLetter = lineBuffer[i];
+                                if (hasOneCharacter(curLetter, spectrumSpecificChars) == false)
+                                {
+                                    if (foundDelimiter == false)
+                                    {
+                                        token += curLetter;
+                                    }
+                                    else
+                                    {
+                                        rightMember += curLetter;
+                                    }
+                                }
+                                else
+                                {
+                                    if (curLetter == spectrumDelimiter)
+                                    {
+                                        log->logDebug("Found delimiter");
+                                        foundDelimiter = true;
+                                    }
+                                    if (curLetter == spectrumCommentDelimiter)
+                                    {
+                                        log->logDebug("Found comment marker");
+                                        break;
+                                    }
+                                }
+                            }
 
-					if (token.size() == 0 || rightMember.size() == 0)
-					{
-						if (foundDelimiter == true)
-						{
-							log->logError("At least one of the line member is empty. Line number is [" + to_string(lineNumber) + "]");
-						}
-						else
-						{
-							log->logError("Cannot find delimiter for this line. Line number is [" + to_string(lineNumber) + "]");
-						}
-						log->logError("Line content : \"" + lineBuffer + "\"");
-						caughtError = true;
-					}
-				}
+                            trimWhiteSpaces(token);
+                            trimWhiteSpaces(rightMember);
+                            log->logDebug("token = \"" + token + "\"");
+                            log->logDebug("rightMember = \"" + rightMember + "\"");
 
-				if (caughtError == false)
-				{
-					// Check for License Header
-					// Name : GNU GPL V3
-					// token : rigthMember
-					if (token == spectrumNameToken)
-					{
-						curLicense->licenseName = rightMember;
-					}
-					else
-					{
-						pair <std::string, unsigned int> curPair(token, atoi(rightMember.c_str()));
-						curLicense->wordBasedDictionary.push_back(curPair);
-					}
-				}
-				else
-				{
-					log->logInfo("Error caught while parsing. Aborting parsing for file " + currentFile);
-					delete curLicense;
-					break;
-				}
-			}
-			if (caughtError == false)
-			{
-				log->logInfo("Successfully parsed this file!");
-				recordedLicenses.push_back(curLicense);
-			}
+                            if (token.size() == 0 || rightMember.size() == 0)
+                            {
+                                if (foundDelimiter == true)
+                                {
+                                    log->logError("At least one of the line member is empty. Line number is [" + to_string(lineNumber) + "]");
+                                }
+                                else
+                                {
+                                    log->logError("Cannot find delimiter for this line. Line number is [" + to_string(lineNumber) + "]");
+                                }
+                                log->logError("Line content : \"" + lineBuffer + "\"");
+                                caughtError = true;
+                            }
+                        }
 
+                        if (caughtError == false)
+                        {
+                            // Check for License Header
+                            // Name : GNU GPL V3
+                            // token : rigthMember
+                            if (token == spectrumNameToken)
+                            {
+                                curLicense->licenseName = rightMember;
+                            }
+                            else
+                            {
+                                pair <std::string, unsigned int> curPair(token, atoi(rightMember.c_str()));
+                                curLicense->wordBasedDictionary.push_back(curPair);
+                            }
+                        }
+                        else
+                        {
+                            log->logInfo("Error caught while parsing. Aborting parsing for file " + currentPath);
+                            delete curLicense;
+                            break;
+                        }
+                    }
+                    if (caughtError == false)
+                    {
+                        log->logInfo("Successfully parsed this file!");
+                        recordedLicenses.push_back(curLicense);
+                    }
+                }
+            }
 		}
 	}
-
-
 }
 
 // Trims whitespaces from both side of a given word
@@ -297,20 +309,31 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
 	for (unsigned int i = 0; i < filesList.size(); i++)
 	{
 		// opens the file
-		string filePath = filesList[i];
+		string path = filesList[i];
 		ifstream file;
-		if (fs::exists(filePath))
+		if (fs::exists(path))
 		{
-			file.open(filesList[i]);
+            // Process all files in pointed directory first
+            if (fs::is_directory(path))
+            {
+                vector<string> filesInDir;
+                pu::getAllFilesInDir(filesInDir, path);
+                buildLicensesSpectrum(filesInDir);
+            }
+            else
+            {
+                // This should be a file, then
+			    file.open(filesList[i]);
+            }
 		}
 		else
 		{
-			log->logWarning("file " + filePath + " doesn't exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
+			log->logWarning("file " + path + " doesn't exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
 			// Loop until next file in list
 			continue;
 		}
 		// If we get here, process file.
-		string licenseName = pu::remove_extension(pu::get_filename(filePath));
+		string licenseName = pu::remove_extension(pu::get_filename(path));
         LicenseSpectrum *lic = new LicenseSpectrum;
         lic->licenseName = licenseName;
 

@@ -203,3 +203,19 @@ const std::ifstream::pos_type pathutils::filesize(const char* filename) {
 	std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
 	return in.tellg();
 }
+
+// Finds all files in the given directory path, recursively.
+void pathutils::getAllFilesInDir(vector<string> &vec, string rootPath)
+{
+    if (fs::exists(rootPath))
+    {
+        for (auto & p : fs::recursive_directory_iterator(fs::path(rootPath)))
+        {
+            if (!fs::is_directory(p.path()))
+            {
+                // For each regular file -> push it in the file stack
+                vec.push_back(p.path().string());
+            }
+        }
+    }
+}
