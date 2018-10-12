@@ -16,7 +16,7 @@
 
 // Handle Microsoft Visual Studio compiler
 #ifdef _MSC_VER 
-    #define OS WIN
+    #define _WIN_OS
     #if _MSC_VER <= 1915
         #define EXPERIMENTAL_FS
     #endif
@@ -24,7 +24,7 @@
 
 // Handle GNU GCC / G++ Compilers versions
 #ifdef __GNUC__
-    #define OS UNIX
+    #define _UNIX_OS
     #if __GNUC__ < 8
         #define EXPERIMENTAL_FS
     #endif

@@ -13,14 +13,10 @@ namespace fs = FS_CPP;
 static const char* POSIX_PathSeparators = "/\\";
 static const size_t maxPathLength = 1024;
 
-#ifdef OS 
-    #if OS == WIN
-static const char OS_PreferedSeparator = '\\';
-    #else
-static const char OS_PreferedSeparator = '/';
-    #endif
-#else
-static const char OS_PreferedSeparator = '/';
+#ifdef _WIN_OS 
+    static const char OS_PreferedSeparator = '\\';
+#elif defined _UNIX_OS
+    static const char OS_PreferedSeparator = '/';
 #endif
 
 
