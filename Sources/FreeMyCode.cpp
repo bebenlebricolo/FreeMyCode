@@ -130,7 +130,7 @@ int main(int argc , char* argv[])
 static void init_Parser(CommandLineParser *parser) {
     ParserResult* directory = new ParserResult(PRList[0], "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
     ParserResult* license = new ParserResult(PRList[1], "License container : catches the License file path which will be added to the source files. Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
-    ParserResult* config = new ParserResult(PRList[2], "Config container : catcparser->get_arg(genPR.directory)hes the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
+    ParserResult* config = new ParserResult(PRList[2], "Config container : catches the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
     ParserResult* logoption = new ParserResult(PRList[3], "LogOption container : catches the Log file output path. The log file holds informations about the application behavior", "[foreflag] <LogFile path> [Flags ...]");
     ParserResult* secondary_input = new ParserResult(PRList[4], "Secondary input container : catches the secondary input file path where user may define optional tags for license writting", "[foreflag] <Secondary Input file path>");
     ParserResult* spectrums_dir = new ParserResult(PRList[5], "Spectrums dir container : Points to the Spectrums directory used when comparing ", "[foreflag] <Spectrum dir path>");

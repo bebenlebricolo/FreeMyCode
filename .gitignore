@@ -4,7 +4,7 @@ build/
 Install/
 Scripts/Dummy_Directory/*
 */Dummy_Directory*
-
+*Dummy*
 *.make
 
 # Swap files (vim) 
