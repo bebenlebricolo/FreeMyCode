@@ -31,28 +31,16 @@ Version	|	 Date	 |	Comments
 using namespace std;
 namespace fs = FS_CPP;
 
-static const uint8_t maxPRType = 6;
-
-string PRList[maxPRType] =
+vector<string> PRList =
 {
     "Directory",
     "License",
     "Config",
     "Logoption",
     "Secondary Input",
-    "Installation_Dir"
+    "Spectrums Dir"
 };
 
-struct GenericParserResult {
-    string directory;
-    string license;
-    string config;
-    string logoption;
-    string sec_inp;
-	GenericParserResult(string a, string b, string c, string d, string e):directory(a),license(b),config(c),logoption(d),sec_inp(e){}
-};
-
-GenericParserResult genPR(PRList[0], PRList[1], PRList[2], PRList[3], PRList[4]);
 
 enum errorType {
     FATAL = -2,
@@ -74,15 +62,8 @@ int main(int argc , char* argv[])
 {
     logger::Logger* mylog = logger::Logger::get_logger();
     mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
-    
-    // TODO : this sould be provided by the Python script, as it could be dynamically retrieved and passed as an "on the fly" generated file
-    string executablePath = argv[0];
-    string binPath = pathutils::get_parent_dir(executablePath);
-    string installDirPath = pathutils::get_parent_dir(binPath);
-    string ressourcesPath = pathutils::join(installDirPath, "Ressources");
-    string spectrumsDirPath = pathutils::join(ressourcesPath, "Spectrums");
 
-
+    // Parsers and results
     CommandLineParser parser;
     init_Parser(&parser);
 #ifdef DEBUG
@@ -96,13 +77,21 @@ int main(int argc , char* argv[])
         return -1;
     }
 
-    mylog->add_handler(new logger::FileHandler(parser.get_arg("Logoption"), logger::FileHandler::Severity::Log_Warning));
+    if (parser.get_flag("-v") == true)
+    {
+        mylog->add_handler(new logger::FileHandler(parser.get_arg(PRList[3]), logger::FileHandler::Severity::Log_Debug));
+    }
+    else
+    {
+        mylog->add_handler(new logger::FileHandler(parser.get_arg(PRList[3]), logger::FileHandler::Severity::Log_Warning));
+    }
+
     mylog->log_init_message();
 
     ConfObject config(mylog);
 
     // Abort execution if we cannot find configuration file
-    if (config.parse_conf_file(parser.get_arg("Config")) == false) {
+    if (config.parse_conf_file(parser.get_arg(PRList[2])) == false) {
         // Ends the programm
         cout << "Programm will quit. Press \" Enter \" to exit." << endl;
         cin.ignore();
@@ -112,9 +101,14 @@ int main(int argc , char* argv[])
     if( check_args(&parser) == NO_ERROR )
     {
         // List all files in given directory that match targeted extensions
-        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser.get_arg("Directory"), config.get_supported_ext_list());
+        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser.get_arg(PRList[0]), config.get_supported_ext_list());
         LicenseWriter writer(&parser,&config);
-        // LicenseChecker checker;
+        LicenseChecker checker;
+        checker.parseSpectrums(parser.get_arg(PRList[5]));
+        InOut_CheckLicenses list;
+        list.fileList = *files_in_dir;
+        checker.checkForLicenses(&list);
+
         // Build licenses texts in RAM for each file type
         writer.build_formatted_license_list(files_in_dir);
         vector<string> wrongFiles = writer.write_license();
@@ -134,11 +128,12 @@ int main(int argc , char* argv[])
 }
 
 static void init_Parser(CommandLineParser *parser) {
-    ParserResult* directory = new ParserResult(genPR.directory, "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
-    ParserResult* license = new ParserResult(genPR.license, "License container : catches the License file path which will be added to the source files. Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
-    ParserResult* config = new ParserResult(genPR.config, "Config container : catcparser->get_arg(genPR.directory)hes the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
-    ParserResult* logoption = new ParserResult(genPR.logoption, "LogOption container : catches the Log file output path. The log file holds informations about the application behavior", "[foreflag] <LogFile path> [Flags ...]");
-    ParserResult* secondary_input = new ParserResult(genPR.sec_inp, "Secondary input container : catches the secondary input file path where user may define optional tags for license writting", "[foreflag] <Secondary Input file path>");
+    ParserResult* directory = new ParserResult(PRList[0], "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
+    ParserResult* license = new ParserResult(PRList[1], "License container : catches the License file path which will be added to the source files. Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
+    ParserResult* config = new ParserResult(PRList[2], "Config container : catcparser->get_arg(genPR.directory)hes the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
+    ParserResult* logoption = new ParserResult(PRList[3], "LogOption container : catches the Log file output path. The log file holds informations about the application behavior", "[foreflag] <LogFile path> [Flags ...]");
+    ParserResult* secondary_input = new ParserResult(PRList[4], "Secondary input container : catches the secondary input file path where user may define optional tags for license writting", "[foreflag] <Secondary Input file path>");
+    ParserResult* spectrums_dir = new ParserResult(PRList[5], "Spectrums dir container : Points to the Spectrums directory used when comparing ", "[foreflag] <Spectrum dir path>");
 
     directory->available_flags.push_back(ParserFlags(vector<string>({ "-A" , "--Analyse" }),
         "Analyse flag : Tells the application to first analyse the directory and build a map of the directory for a faster run",
@@ -159,8 +154,10 @@ static void init_Parser(CommandLineParser *parser) {
         "Verbose flag : Tells the application to set the logger to verbose (info, warning and error logs will be written)", "<LogFile> -v"));
     secondary_input->available_flags.push_back(ParserFlags(vector<string>({ "-Si","--Secondary-Input" }),
         "Secondary Input flag : Adds a container for secondary input filepath","-Si <SecondaryInputFile>"));
+    spectrums_dir->available_flags.push_back(ParserFlags(vector<string>({ "-Sd","--Spectrums-dir" }),
+        "Spectrums Directory flag : Adds a container for spectrums directory path", "-Sd <SpectrumsDir>"));
 
-    parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input }));
+    parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input ,spectrums_dir}));
 }
 
 #ifdef DEBUG
@@ -193,7 +190,7 @@ static errorType check_args(CommandLineParser *parser)
         return NULL_POINTER;
     }
 
-    for(unsigned int i = 0 ;  i < maxPRType ; i ++)
+    for(unsigned int i = 0 ;  i < PRList.size() ; i ++)
     {
         current_file = parser->get_arg(PRList[i]);
         if(fs::exists(current_file))

@@ -52,6 +52,8 @@ public:
 
     // Parses spectrum files (.spec) and register them in recordedLicenses list
 	void parseSpectrums(std::vector<std::string> &fileList);
+    // Overloading with a directory structure
+    void parseSpectrums(std::string);
     // Build License Sectrum from text license (e.g. GPLV3.txt) and adds it to recordedLicenses list
 	void buildLicensesSpectrum(std::vector < std::string > &filesList);
     // Builds a Spectrum from a word based vector (containing every word of a given text section) and outputs a spectrum object.

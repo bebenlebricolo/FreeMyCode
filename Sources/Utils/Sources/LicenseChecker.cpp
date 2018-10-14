@@ -191,13 +191,21 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
                     }
                     if (caughtError == false)
                     {
-                        log->logInfo("Successfully parsed this file!");
+                        log->logInfo("Successfully parsed file " + pu::get_filename(currentPath));
                         recordedLicenses.push_back(curLicense);
                     }
                 }
             }
 		}
 	}
+}
+
+// Wrapper to parseSpectrums, capable of handling full directory
+void LicenseChecker::parseSpectrums(string dir)
+{
+    vector<string> fileList;
+    pu::getAllFilesInDir(fileList, dir);
+    parseSpectrums(fileList);
 }
 
 // Trims whitespaces from both side of a given word

@@ -122,16 +122,18 @@ def getParent(path, recursionDepth) :
 # Checks whether c is a POSIX separator (either '/' or '\' )
 def isASeparator(c):
     for s in sepList :
-        if c == sepList:
+        if c == s:
             return True
     return False
 
 #Converts input path to posix Path whenever a separator (like '\') is detected
 def convertToStandard(path, locale) :
+    tmpPath = ""
     for c in path :
         if isASeparator(c) :
             c = locale
-    return path 
+        tmpPath +=c
+    return tmpPath 
 
 # C style parent depth resolver ()
 def resolveRelativePath(path , count) :
@@ -231,6 +233,12 @@ def displayArgs(argList) :
             logInfo("Arg[{}] = {}".format(counter,arg))
             counter +=1
 
+def displayCommandLine(argList) :
+    print("Full Command Line is : ")
+    for arg in argList :
+        print("\"{}\"".format(arg), end=" ")
+    print("")
+
 ################################## Main function's body ####################################
 
 def main() :
@@ -245,10 +253,12 @@ def main() :
 
     # Dynamically retrieve the other ones
     freeMyCodeExecutable = find (FreeMyCode_exeName , installationDir )
+    spectrumsDir = os.path.join(installationDir , "Ressources/Spectrums")
+    spectrumsDir = convertToStandard(spectrumsDir , WIN_sep)
     configFile = find ('Config.json' , installationDir)
     secondaryInputFile = find( 'Secondary_input.json' , userRessourcesDir)
-    licenseFile = find ('License.txt',targetedDirectory)
-    logFile = os.path.join(targetedDirectory, 'logfile.txt')
+    licenseFile = find ('License.txt',userRessourcesDir)
+    logFile = os.path.join(userRessourcesDir, 'logfile.log')
 
     # Check file paths for any error (mispelling, etc.)
     checkArgs({'FreeMyCode_executable':freeMyCodeExecutable ,
@@ -274,10 +284,13 @@ def main() :
             "-v",
             "-sr",
             "-Si",
-            secondaryInputFile]
+            secondaryInputFile,
+            "-Sd",
+            spectrumsDir]
 
     displayArgs(args)
-    # subprocess.call(args)
+    displayCommandLine(args)
+    subprocess.call(args)
     return 0
 
 
