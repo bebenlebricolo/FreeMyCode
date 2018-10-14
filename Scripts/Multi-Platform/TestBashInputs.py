@@ -8,6 +8,8 @@ currentWorkingDir = Path(os.getcwd())
 print("Current working dir is = {}".format(str(currentWorkingDir)) )
 sepList = "/\\"
 
+# Recursive find parent 
+# Note: does not verify if path exists.
 def getParent(path, recursionDepth) :
     if recursionDepth >= 2 :
         [ path , recursionDepth ] = getParent(str(Path(path).parent) , recursionDepth - 1)
@@ -17,13 +19,15 @@ def getParent(path, recursionDepth) :
     else:
         return [ path , 0]
 
+# Checks whether c is a POSIX separator (either '/' or '\' )
 def isASeparator(c):
     for s in sepList :
         if c == sepList:
             return True
     return False
 
-def stripDots(path , count) :
+# C style parent depth resolver ()
+def resolveRelativePath(path , count) :
     tmpArg = ""
     copyTriggered = False
     count = 0
@@ -39,26 +43,38 @@ def stripDots(path , count) :
     print("Tmp arg  = {}".format(tmpArg) )
     return [ tmpArg , count ]
 
+
+def handleRelativePath(path) :
+    if path[0] == '.' : 
+        countDotNumb = 0
+        [ path , countDotNumb ] = resolveRelativePath(path,countDotNumb)
+        if countDotNumb == 1 :
+            # Local reference
+            stringedCWD = str(currentWorkingDir)
+            path = os.path.join(stringedCWD, str(Path(path)))
+        elif countDotNumb >=2 and countDotNumb % 2  == 0 :
+            # Parent dir
+            parDir = currentWorkingDir
+            [ parDir , countDotNumb ] = getParent(currentWorkingDir,countDotNumb / 2)
+            path = os.path.join(parDir, str(Path(path)))
+        else : 
+            print("Wrong recursion")
+        print("Targeted path is : {}".format(path) )
+    else :
+        print("Don't know how to handle {} : this is not an absolute path, neither a relative one".format(path))
+    return path
+
+
+# Main program section
 def main():
     for arg in sys.argv :
         print("Arg is {}".format(arg) )
         if os.path.isabs(arg) :
             print("Current arg is an absolute path")
-        elif arg[0] == '.' : 
-            countDotNumb = 0
-            [ arg , countDotNumb ] = stripDots(arg,countDotNumb)
-            if countDotNumb == 1 :
-                # Local reference
-                stringedCWD = str(currentWorkingDir)
-                arg = os.path.join(stringedCWD, str(Path(arg)))
-            elif countDotNumb >=2 and countDotNumb % 2  == 0 :
-                # Parent dir
-                parDir = currentWorkingDir
-                [ parDir , countDotNumb ] = getParent(currentWorkingDir,countDotNumb / 2)
-                arg = os.path.join(parDir, str(Path(arg)))
-            else : 
-                print("Wrong recursion")
-            print("Targeted path is : {}".format(arg) )
+        else :
+            # Check if it looks like a relative path
+            # If relative : converts it to absolute path (resolve location in current working tree)
+            arg = handleRelativePath(arg)
     return 
 
 main ()
