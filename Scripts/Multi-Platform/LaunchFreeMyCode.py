@@ -11,6 +11,9 @@ reqMajor = 3
 reqMinor = 4
 
 DEBUG = 1
+POSIX_sep = '/'
+WIN_sep = '\\'
+sepList = "{}{}".format(POSIX_sep,WIN_sep)
 
 # Handle Python versions
 if(major >= reqMajor):
@@ -42,10 +45,12 @@ if(platform == 'Linux' ):
     FreeMyCode_exeName = 'FreeMyCode'
     CLI_ErrorTag = '\033[1;91m'
     CLI_NormalTag = '\033[0;m'
+    localeSep = POSIX_sep
 elif(platform == 'Windows'):
     FreeMyCode_exeName = 'FreeMyCode.exe'
     CLI_ErrorTag = ''
     CLI_NormalTag = ''
+    localeSep = WIN_sep
 
 def logInfo(message) :
     # Debug stuff
@@ -88,9 +93,7 @@ def checkArgs(args):
 
 currentWorkingDir = Path(os.getcwd())
 logInfo("Current working dir is = {}".format(str(currentWorkingDir)) )
-POSIX_sep = '/'
-WIN_sep = '\\'
-sepList = "{}{}".format(POSIX_sep,WIN_sep)
+
 
 
 
@@ -254,7 +257,7 @@ def main() :
     # Dynamically retrieve the other ones
     freeMyCodeExecutable = find (FreeMyCode_exeName , installationDir )
     spectrumsDir = os.path.join(installationDir , "Ressources/Spectrums")
-    spectrumsDir = convertToStandard(spectrumsDir , WIN_sep)
+    spectrumsDir = convertToStandard(spectrumsDir , localeSep)
     configFile = find ('Config.json' , installationDir)
     secondaryInputFile = find( 'Secondary_input.json' , userRessourcesDir)
     licenseFile = find ('License.txt',userRessourcesDir)
