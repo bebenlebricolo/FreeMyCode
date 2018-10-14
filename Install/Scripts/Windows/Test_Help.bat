@@ -1,2 +1,0 @@
-
- FreeMyCode.exe --help
