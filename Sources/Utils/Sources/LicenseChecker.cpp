@@ -971,7 +971,7 @@ void Spectrum::compareWithSpectrumList(vector<LicenseSpectrum* > *other, License
             if (match->degreeOfConfidence > minimumDegreeOfConfidenceRequired)
             {
                 log->logInfo("Probably found license in file "+ pu::get_filename(match->filePath), __LINE__, __FILE__, __func__, "Spectrum");
-                log->logInfo("Candidate license is : " + match->licenseName + ". Match is : " + to_string(match->degreeOfConfidence) + "%%", __LINE__, __FILE__, __func__, "Spectrum");
+                log->logInfo("Candidate license is : " + match->licenseName + ". Match is : ( " + to_string(match->degreeOfConfidence) + " % )", __LINE__, __FILE__, __func__, "Spectrum");
                 match->foundLicense = true;
             }
         }
