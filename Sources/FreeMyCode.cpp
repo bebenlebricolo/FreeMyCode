@@ -64,26 +64,23 @@ int main(int argc , char* argv[])
     mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
 
     // Parsers and results
-    CommandLineParser parser;
-    init_Parser(&parser);
+    CommandLineParser *parser = CommandLineParser::getParser();
+    init_Parser(parser);
 #ifdef DEBUG
     printArgs(argc, argv);
 #endif
 
-    if (parser.parse_arguments(argc, argv) == false) {
+    if (parser->parse_arguments(argc, argv) == false) {
         // Ends the programm
         cout << "Programm will quit. Press \" Enter \" to exit." << endl;
         cin.ignore();
         return -1;
     }
 
-    if (parser.get_flag("-v") == true)
-    {
-        mylog->add_handler(new logger::FileHandler(parser.get_arg(PRList[3]), logger::FileHandler::Severity::Log_Debug));
-    }
-    else
-    {
-        mylog->add_handler(new logger::FileHandler(parser.get_arg(PRList[3]), logger::FileHandler::Severity::Log_Warning));
+    if (parser->get_flag("-v") == true){
+        mylog->add_handler(new logger::FileHandler(parser->get_arg(PRList[3]), logger::FileHandler::Severity::Log_Debug));
+    }else{
+        mylog->add_handler(new logger::FileHandler(parser->get_arg(PRList[3]), logger::FileHandler::Severity::Log_Warning));
     }
 
     mylog->log_init_message();
@@ -91,33 +88,37 @@ int main(int argc , char* argv[])
     ConfObject config(mylog);
 
     // Abort execution if we cannot find configuration file
-    if (config.parse_conf_file(parser.get_arg(PRList[2])) == false) {
+    if (config.parse_conf_file(parser->get_arg(PRList[2])) == false) {
         // Ends the programm
         cout << "Programm will quit. Press \" Enter \" to exit." << endl;
         cin.ignore();
         return -1;
     }
 
-    if( check_args(&parser) == NO_ERROR )
+    if( check_args(parser) == NO_ERROR )
     {
         // List all files in given directory that match targeted extensions
-        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser.get_arg(PRList[0]), config.get_supported_ext_list());
-        LicenseWriter writer(&parser,&config);
+        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser->get_arg(PRList[0]), config.get_supported_ext_list());
+        LicenseWriter writer(parser,&config);
         LicenseChecker checker;
-        checker.parseSpectrums(parser.get_arg(PRList[5]));
+        checker.parseSpectrums(parser->get_arg(PRList[5]));
         InOut_CheckLicenses list;
         list.fileList = *files_in_dir;
         checker.checkForLicenses(&list);
-
+        
+        // TODO / NOTE : this should be obsolete as list->unlicensedFiles should contain only wanted files
+        checker.removeWrongFiles(files_in_dir, &list);
+        
         // Build licenses texts in RAM for each file type
         writer.build_formatted_license_list(files_in_dir);
-        vector<string> wrongFiles = writer.write_license();
+        vector<string> wrongFiles = writer.write_license(files_in_dir);
 
         cout << "End of Program. Press any key to exit" << endl;
         cin.ignore();
         mylog->logInfo("Program is ending");
 
         delete (files_in_dir);
+        CommandLineParser::destroyParser();
     }
     else
     {
@@ -135,27 +136,39 @@ static void init_Parser(CommandLineParser *parser) {
     ParserResult* secondary_input = new ParserResult(PRList[4], "Secondary input container : catches the secondary input file path where user may define optional tags for license writting", "[foreflag] <Secondary Input file path>");
     ParserResult* spectrums_dir = new ParserResult(PRList[5], "Spectrums dir container : Points to the Spectrums directory used when comparing ", "[foreflag] <Spectrum dir path>");
 
+    // Directory container
     directory->available_flags.push_back(ParserFlags(vector<string>({ "-A" , "--Analyse" }),
-        "Analyse flag : Tells the application to first analyse the directory and build a map of the directory for a faster run",
-        ""));
+        "Analyse flag : Tells the application to first analyse the directory and build a map of the directory for a faster run", ""));
+    
+    // License container
     license->available_flags.push_back(ParserFlags(vector<string>({ "-p", "--prepend" }),
         "Prepend flag : write the passed text on top of the targeted file", "<License> --prepend"));
     license->available_flags.push_back(ParserFlags(vector<string>({ "-a", "--append" }),
         "Append flag : write the passed text at the end of the targeted file", "<License> --append"));
     license->available_flags.push_back(ParserFlags(vector<string>({ "-lf","--log-formatted-license" }),
         "Log formatted license flag : logs the content of each pre-formatted license","<License> -lf"));
-    license->available_flags.push_back(ParserFlags(vector<string>({ "-fsl","--parser->get_arg(genPR.directory)force-single-line" }),
+    license->available_flags.push_back(ParserFlags(vector<string>({ "-fsl","--force-single-line" }),
         "Force single line flag : Forces the usage of single line comments if possible","<License> -fsl"));
+    
+    // Config container
     config->available_flags.push_back(ParserFlags(vector<string>({ "-c", "--config" }),
         "Config flag : allows the parser to know we are targeting a config flag (foreflag)", "-c <ConfigFile>"));
+   
+    // Log option container
     logoption->available_flags.push_back(ParserFlags(vector<string>({ "-L" , "--Log" }),
         "Log flag : Tells the application to use a log file (foreflag)", "-L <LogFile>"));
     logoption->available_flags.push_back(ParserFlags(vector<string>({ "-v" , "--verbose" }),
         "Verbose flag : Tells the application to set the logger to verbose (info, warning and error logs will be written)", "<LogFile> -v"));
+   
+    // Secondary Input container
     secondary_input->available_flags.push_back(ParserFlags(vector<string>({ "-Si","--Secondary-Input" }),
         "Secondary Input flag : Adds a container for secondary input filepath","-Si <SecondaryInputFile>"));
+    
+    // Spectrums directory container
     spectrums_dir->available_flags.push_back(ParserFlags(vector<string>({ "-Sd","--Spectrums-dir" }),
         "Spectrums Directory flag : Adds a container for spectrums directory path", "-Sd <SpectrumsDir>"));
+    spectrums_dir->available_flags.push_back(ParserFlags(vector<string>({ "-lb","--log-block-comments" }),
+        "log block comment flag : logs block comments when found in parsed files", "<SpectrumsDir> -lb"));
 
     parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input ,spectrums_dir}));
 }

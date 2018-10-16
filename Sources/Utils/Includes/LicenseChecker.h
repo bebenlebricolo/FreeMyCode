@@ -64,7 +64,11 @@ public:
     // Writes all previously recorded Licenses Spectrum on disk into the targeted directory (outputPath)
 	void writeSpectrumsOnDisk(std::string outputPath);
 	// Builds a generic License Spectrum from all previously recorded Licenses.
-    void buildGenericLicenseSpectrum();
+    // TODO : to be implemented
+    // void buildGenericLicenseSpectrum();
+
+    static void removeWrongFiles(vector<string>* fileList, InOut_CheckLicenses* list);
+
 
     // Utils / debug / test functionalities
 	void printLicenses();

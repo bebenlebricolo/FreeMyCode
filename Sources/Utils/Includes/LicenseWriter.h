@@ -32,7 +32,7 @@ class LicenseWriter {
 public:
 	~LicenseWriter();
 	LicenseWriter(CommandLineParser* _parser, ConfObject* _config, logger::Logger* _log = NULL);
-	std::vector<std::string> write_license(void);
+	std::vector<std::string> write_license(std::vector<string> *fileList);
 	void build_formatted_license_list(std::vector<std::string>* file_list);
 	FormattedLicense* getLicenseByExt(std::string extension);
 

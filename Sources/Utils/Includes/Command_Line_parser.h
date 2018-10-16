@@ -74,9 +74,6 @@ class CommandLineParser {
 	string all_args;
 
 	ParserResult Global_flags;
-
-	logger::Logger* logsys;
-
 	bool is_a_flag(string parsed_arg);
 	bool is_flag_valid(string _parsed_arg, ParserResult** _temp_PR);
 	int find_next_PR_index(int _target_id);
@@ -85,9 +82,11 @@ class CommandLineParser {
 	bool found_globals(int argc, char * argv[]);
 	bool found_terminals();
 	void show_globals();
-public:
-	CommandLineParser(logger::Logger* log_ptr = NULL);
+    static CommandLineParser *instance;
+    CommandLineParser();
 	~CommandLineParser();
+
+public:
 	bool parse_arguments(int argc, char * argv[]);
 	void show_results();
 	bool get_flag(string flag);
@@ -95,9 +94,10 @@ public:
 	void overrideFlag(string flagName, bool flagState);
 	void add_container(std::vector<ParserResult*>* Result_vector);
 	void add_container(ParserResult* Result_object);
-
-
 	ParserResult* find_owner(string flag);
+
+    static CommandLineParser *getParser();
+    static void destroyParser();
 };
 
 

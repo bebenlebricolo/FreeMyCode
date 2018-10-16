@@ -4,6 +4,7 @@
 #include "PathUtils.h"
 #include "ParsingUtils.h"
 #include "ConfigTools.h"
+#include "Command_Line_parser.h"
 
 #include FS_INCLUDE
 #include <fstream>
@@ -721,6 +722,7 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
 void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
 {
     lg::Logger* log = lg::getLogger();
+    CommandLineParser *parser = CommandLineParser::getParser();
     if (match == nullptr)
     {
         log->logError("Input parameter is null. Aborting function execution", __LINE__, __FILE__, __func__, "LicenseChecker");
@@ -796,7 +798,10 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         commentBlockCollection.push_back(commentBlock);
     }
     // Finished iterating over the 100 first file's lines
-    printBlockCommentSections(&commentBlockCollection);
+    if (parser->get_flag("-lg") == true)
+    {
+        printBlockCommentSections(&commentBlockCollection);
+    }
 
 
     // Build Spectrums for each found commented section
@@ -808,10 +813,12 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         buildBasicSpectrum(commentBlockCollection[i],spec);
         specList.push_back(spec);
 
-        //TODO remove these lines
-        cout << "comment block " << to_string(i) << " word based dictionary : \n";
-        spec->printContent();
-        cout << endl;
+        if (parser->get_flag("-lg") == true)
+        {
+            cout << "comment block " << to_string(i) << " word based dictionary : \n";
+            spec->printContent();
+            cout << endl;
+        }
     }
 
     // Compare with all available licenses onboard
@@ -871,6 +878,38 @@ void LicenseChecker::findInPlainTextFile(LicenseInFileMatchResult* match)
     resetMatch(match);
 }
 
+
+static inline void removeItems(vector<string> *target, vector<string> *reference)
+{
+    if (target != nullptr && reference != nullptr)
+    {
+        vector<string>::iterator it;
+        for (unsigned int i = 0; i < reference->size(); i++)
+        {
+            string currentItem = (*reference)[i];
+            it = std::find(target->begin(), target->end(), currentItem);
+            if (it != target->end())
+            {
+                // Remove current item in list
+                target->erase(it);
+            }
+        }
+    }
+}
+
+// Removes wrong files and already licensed files from targeted files list
+void LicenseChecker::removeWrongFiles(vector<string>* fileList, InOut_CheckLicenses* list)
+{
+    logger::Logger *log = logger::getLogger();
+    if (fileList == nullptr || list == nullptr)
+    {
+        log->logError("Input parameter is null. Aborting function execution", __LINE__, __FILE__, __func__, "LicenseChecker");
+        return;
+    }
+    removeItems(fileList, &(list->wrongFilesList));
+    // Same goes for alreadyLicensedList
+    removeItems(fileList, &(list->alreadyLicensedFiles));
+}
 
 // #######################################
 // Spectrum struct implementation
@@ -932,7 +971,7 @@ void Spectrum::compareWithSpectrumList(vector<LicenseSpectrum* > *other, License
             if (match->degreeOfConfidence > minimumDegreeOfConfidenceRequired)
             {
                 log->logInfo("Probably found license in file "+ pu::get_filename(match->filePath), __LINE__, __FILE__, __func__, "Spectrum");
-                log->logInfo("Candidate license is : " + match->licenseName, __LINE__, __FILE__, __func__, "Spectrum");
+                log->logInfo("Candidate license is : " + match->licenseName + ". Match is : " + to_string(match->degreeOfConfidence) + "%%", __LINE__, __FILE__, __func__, "Spectrum");
                 match->foundLicense = true;
             }
         }

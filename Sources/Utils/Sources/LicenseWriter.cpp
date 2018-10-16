@@ -90,10 +90,17 @@ FormattedLicense* LicenseWriter::getLicenseByExt(std::string extension)
 }
 
 
-std::vector<std::string> LicenseWriter::write_license(void) {
-	std::vector<std::string>* file_list = DirectoryAnalyser::get_files_in_dir(parser->get_arg("Directory"), config->get_supported_ext_list());
-
-	// TODO : check fo previous licenses in every files before attempting to write in them.
+std::vector<std::string> LicenseWriter::write_license(vector<string> *fileList) {
+    if (fileList == nullptr)
+    {
+        log->logError("null parameter detected", __LINE__, __FILE__, __func__, "LicenseWriter");
+        return *fileList;
+    }
+    else if (fileList->size() == 0)
+    {
+        log->logInfo("No files to write on : file list is empty! ", __LINE__, __FILE__, __func__, "LicenseWriter");
+        return *fileList;
+    }
 
 	// Wrong files : List of files which cannot be modified (for any reason)
 	std::vector<std::string> wrongFiles;
@@ -132,8 +139,8 @@ std::vector<std::string> LicenseWriter::write_license(void) {
 	}
 
 
-	for (unsigned int i = 0; i < file_list->size(); i++) {
-		string currentFile = (*file_list)[i];
+	for (unsigned int i = 0; i < fileList->size(); i++) {
+		string currentFile = (*fileList)[i];
 		string currentExtension = pathutils::get_extension(currentFile);
 		targetedLicense = getLicenseByExt(currentExtension);
 		if (targetedLicense == nullptr) {
@@ -210,15 +217,20 @@ std::vector<std::string> LicenseWriter::write_license(void) {
 }
 
 // Build formatted licenses list and store them in memory
-void LicenseWriter::build_formatted_license_list(std::vector<std::string>* file_list) {
+void LicenseWriter::build_formatted_license_list(std::vector<std::string>* fileList) {
 	ostringstream* tagsBlock = nullptr;
 	if (second_in != nullptr) {
 		second_in->parse_secondary_input_file();
 		 tagsBlock = second_in->getTagsFormattedBlock();
 	}
-	for (unsigned int i = 0; i < file_list->size(); i++) {
+    if (fileList->size() == 0)
+    {
+        log->logInfo("File list is empty ! No need to build formatted licenses.", __LINE__, __FILE__, __func__, "LicenseWriter");
+        return;
+    }
+	for (unsigned int i = 0; i < fileList->size(); i++) {
 		bool match_previous_ext = false;
-		string cur_ext = pathutils::get_extension((*file_list)[i]);
+		string cur_ext = pathutils::get_extension((*fileList)[i]);
 		if (form_lic_list.size() == 0) {
 			FormattedLicense *f_lic = new FormattedLicense();
 			if (f_lic != NULL) {

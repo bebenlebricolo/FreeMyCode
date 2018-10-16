@@ -317,3 +317,7 @@ main ()
 
 # SECONDARY INPUT FILE Specifics
 # -Si : positional flag ->   -Si < Secondary input file location > : triggers Secondary input file parsing
+
+# SPECTRUMS DIRECTORY
+# -Sd : positional flag ->   -Sd < Spectrums directory> : allows to use licenses while parsing
+# -lg : log block comments while parsing source files

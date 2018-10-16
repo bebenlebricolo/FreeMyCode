@@ -33,9 +33,8 @@ Version	|	 Date	 |	Comments
 
 #include"PathUtils.h"
 
-#ifdef MSVC_COMPILER
+#ifdef _MSC_VER
 	#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
-	#define FS_CPP std::experimental::filesystem
 #endif
 
 using namespace logger;
