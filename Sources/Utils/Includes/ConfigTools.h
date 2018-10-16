@@ -9,20 +9,30 @@
 
 using namespace FormattingTags;
 
+struct CommentTag {
+    static enum commentType { single, block };
+    std::string name;
+    std::string value;
+    commentType type;
+    CommentTag() {};
+    CommentTag(std::string n, std::string v, commentType _t) : name(n) , value(v) , type(_t){}
+};
+
 // Simple comment markers pack
 struct CommentMarkers
 {
     bool isPlainText;
-    std::string sgLine;
-    std::string bStart;
-    std::string bEnd;
+    
+    CommentTag sgLine;
+    CommentTag bStart;
+    CommentTag bEnd;
     void checkIfPlainText();
     CommentMarkers();
     CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end);
 
     void reset();
     uint8_t getMaxMarkerLength();
-    void vectorizeMembers(std::vector<pair<std::string, std::string>> *vec);
+    void vectorizeMembers(std::vector<CommentTag> *vec);
     bool checkForMissingCommentMarker(ostringstream *errorMessage);
 };
 

@@ -1,3 +1,4 @@
+
 /*
 FreeMyCode is a piece of software which is aimed to help you license your projects under open-sources licenses.
 It may also be used to batch write a specific portion of text into the files which are matching the extensions supported by the tool.

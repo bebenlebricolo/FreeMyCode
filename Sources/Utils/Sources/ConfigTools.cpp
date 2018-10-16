@@ -44,19 +44,21 @@ static const char*  TAGS_NODE = "Tags";
 
 
 
-
 // ##########################################
 // CommentMarker structure's implementation
 // ##########################################
 CommentMarkers::CommentMarkers() : isPlainText(true) {}
-CommentMarkers::CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end) : sgLine(_single_line_comment), bStart(_block_comment_start), bEnd(_block_comment_end) {
+CommentMarkers::CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end) :
+    sgLine("single line comment", _single_line_comment, CommentTag::single),
+    bStart("block comment start",_block_comment_start,CommentTag::block),
+    bEnd("block comment end",_block_comment_end,CommentTag::block) {
     checkIfPlainText();
 }
 
 
 void CommentMarkers::checkIfPlainText()
 {
-    if (sgLine == "" && bStart == "" && bEnd == "")
+    if (sgLine.value == "" && bStart.value == "" && bEnd.value == "")
     {
         isPlainText = true;
     }
@@ -68,36 +70,36 @@ void CommentMarkers::checkIfPlainText()
 
 uint8_t CommentMarkers::getMaxMarkerLength()
 {
-    uint8_t result = sgLine.length();
-    if (bStart.length() > result) result = bStart.length();
-    if (bEnd.length() > result) result = bEnd.length();
+    uint8_t result = sgLine.value.length();
+    if (bStart.value.length() > result) result = bStart.value.length();
+    if (bEnd.value.length() > result) result = bEnd.value.length();
     return result;
 }
 
 void CommentMarkers::reset()
 {
     isPlainText = false;
-    sgLine = "";
-	bStart = "";
-	bEnd = "";
+    sgLine.value = "";
+	bStart.value = "";
+	bEnd.value = "";
 }
 
-void CommentMarkers::vectorizeMembers(std::vector<pair<std::string, std::string>> *vec)
+void CommentMarkers::vectorizeMembers(std::vector<CommentTag> *vec)
 {
-    vec->push_back({ sgLine,"single line comment" });
-    vec->push_back({ bStart , "block comment start" });
-    vec->push_back({ bEnd , "block comment end" });
+    vec->push_back(sgLine);
+    vec->push_back(bStart);
+    vec->push_back(bEnd );
 }
 
 bool CommentMarkers::checkForMissingCommentMarker(ostringstream *errorMessage)
 {
     bool errorFound = false;
-    if (sgLine == "" )
+    if (sgLine.value == "" )
     {
         (*errorMessage) << "Single line comment is empty !";
         errorFound = true;
     }
-    if (bStart == "" || bEnd == "")
+    if (bStart.value == "" || bEnd.value == "")
     {
         (*errorMessage) << "Block comment marker are empty! ";
         errorFound = true;
