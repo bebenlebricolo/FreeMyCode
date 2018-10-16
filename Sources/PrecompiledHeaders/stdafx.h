@@ -16,6 +16,7 @@
 
 // Handle Microsoft Visual Studio compiler
 #ifdef _MSC_VER 
+    #define _WIN_OS
     #if _MSC_VER <= 1915
         #define EXPERIMENTAL_FS
     #endif
@@ -23,6 +24,7 @@
 
 // Handle GNU GCC / G++ Compilers versions
 #ifdef __GNUC__
+    #define _UNIX_OS
     #if __GNUC__ < 8
         #define EXPERIMENTAL_FS
     #endif
@@ -31,10 +33,10 @@
 
 
 #ifdef EXPERIMENTAL_FS
-    #include <experimental/filesystem>
+    #define FS_INCLUDE <experimental/filesystem>
     #define FS_CPP std::experimental::filesystem
 #else
-    #include <filesystem>
+    #define FS_INCLUDE <filesystem>
     #define FS_CPP std::filesystem
 #endif // !EXPERIMENTAL
 #include <fstream>

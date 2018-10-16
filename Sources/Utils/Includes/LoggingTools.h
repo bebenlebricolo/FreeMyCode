@@ -23,6 +23,8 @@ Version	|	 Date	 |	Comments
 
 namespace logger {
 
+    
+
 	// Abstract class whose pattern is used to define any specific Handler
 	class LoggerHandler {
 
@@ -134,6 +136,12 @@ namespace logger {
 		void log_data(const std::string &message, Severity sev_level);
 
 	};
+
+
+    
+    
+    // Aliases 
+    Logger* getLogger();
 }
 
 /*

@@ -23,6 +23,9 @@ Version	|	 Date	 |	Comments
 #include "document.h"
 #include "istreamwrapper.h"
 
+#include FS_INCLUDE
+
+
 
 using namespace rapidjson;
 
@@ -39,6 +42,69 @@ static const char*  LANG_EXT_NODE = "Extension";
 
 static const char*  TAGS_NODE = "Tags";
 
+
+
+
+// ##########################################
+// CommentMarker structure's implementation
+// ##########################################
+CommentMarkers::CommentMarkers() : isPlainText(true) {}
+CommentMarkers::CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end) : sgLine(_single_line_comment), bStart(_block_comment_start), bEnd(_block_comment_end) {
+    checkIfPlainText();
+}
+
+
+void CommentMarkers::checkIfPlainText()
+{
+    if (sgLine == "" && bStart == "" && bEnd == "")
+    {
+        isPlainText = true;
+    }
+    else
+    {
+        isPlainText = false;
+    }
+}
+
+uint8_t CommentMarkers::getMaxMarkerLength()
+{
+    uint8_t result = sgLine.length();
+    if (bStart.length() > result) result = bStart.length();
+    if (bEnd.length() > result) result = bEnd.length();
+    return result;
+}
+
+void CommentMarkers::reset()
+{
+    isPlainText = false;
+    sgLine = "";
+	bStart = "";
+	bEnd = "";
+}
+
+void CommentMarkers::vectorizeMembers(std::vector<pair<std::string, std::string>> *vec)
+{
+    vec->push_back({ sgLine,"single line comment" });
+    vec->push_back({ bStart , "block comment start" });
+    vec->push_back({ bEnd , "block comment end" });
+}
+
+bool CommentMarkers::checkForMissingCommentMarker(ostringstream *errorMessage)
+{
+    bool errorFound = false;
+    if (sgLine == "" )
+    {
+        (*errorMessage) << "Single line comment is empty !";
+        errorFound = true;
+    }
+    if (bStart == "" || bEnd == "")
+    {
+        (*errorMessage) << "Block comment marker are empty! ";
+        errorFound = true;
+    }
+
+    return errorFound;
+}
 
 
 
@@ -80,11 +146,17 @@ bool SupportedExtension::match_ext(std::string _ext)
 /*------------------------------------------------------------------------
 --------------------- ConfObject class implementation---------------------
 --------------------------------------------------------------------------*/
+ConfObject* ConfObject::_instance = nullptr;
 
 ConfObject::ConfObject(logger::Logger* new_logger):log_ptr(new_logger) {
-	if (log_ptr == NULL) {
+    if (_instance != nullptr)
+    {
+        delete _instance;
+    }
+    if (log_ptr == NULL) {
 		log_ptr = logger::Logger::get_logger();
 	}
+    _instance = this;
 }
 
 // Now that we have a dedicated pointer to a logger, we need to properly delete it.
@@ -92,6 +164,7 @@ ConfObject::~ConfObject() {
 	for (unsigned i = 0; i < tags_vect.size(); i++) {
 		delete(tags_vect[i]);
 	}
+    _instance = nullptr;
 }
 
 
@@ -355,4 +428,24 @@ SupportedExtension ConfObject::find_language_spec(std::string _ext)
 		}
 	}
 	return SupportedExtension("", "", "", "");
+}
+
+
+ConfObject* ConfObject::getConfig()
+{
+    if (_instance == nullptr)
+    {
+        _instance = new ConfObject(logger::Logger::get_logger());
+    }
+
+    return _instance;
+}
+
+void ConfObject::removeConfig()
+{
+    if (_instance != nullptr)
+    {
+        delete _instance;
+        _instance = nullptr;
+    }
 }

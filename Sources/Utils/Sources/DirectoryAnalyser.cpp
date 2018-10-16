@@ -17,6 +17,7 @@ Version	|	 Date	 |	Comments
 #include "DirectoryAnalyser.h"
 #include "PathUtils.h"
 #include "LoggingTools.h"
+#include FS_INCLUDE
 
 namespace fs = FS_CPP;
 namespace pu = pathutils;

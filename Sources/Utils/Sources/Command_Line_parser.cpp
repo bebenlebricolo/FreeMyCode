@@ -44,17 +44,25 @@ static void print_line(unsigned int indent_spaces = 4, unsigned int length = 40,
     cout << line << endl;
 }
 
-CommandLineParser::CommandLineParser(logger::Logger* log_ptr) : logsys(log_ptr){
-    if (logsys == NULL) {
-        logsys = logger::Logger::get_logger();
-    }
-    Global_flags.available_flags.push_back(ParserFlags({"-h","--help"} ,"help flag : displays the help section" ,"",true));
-    Global_flags.available_flags.push_back(ParserFlags({ "-U","--Usage" },"Usage flag ; displays the usage section","",true));
+CommandLineParser* CommandLineParser::instance = nullptr;
+
+CommandLineParser::CommandLineParser() {
+    Global_flags.available_flags.push_back(ParserFlags({ "-h","--help" }, "help flag : displays the help section", "", true));
+    Global_flags.available_flags.push_back(ParserFlags({ "-U","--Usage" }, "Usage flag ; displays the usage section", "", true));
     Global_flags.available_flags.push_back(ParserFlags({ "-sr" , "--show-results" }, "Show results flag : displays current state of flags and args", ""));
+}
+CommandLineParser* CommandLineParser::getParser()
+{
+    if (instance == nullptr)
+    {
+        instance = new CommandLineParser;
+    }
+    return instance;
 }
 
 // Parse the given arguments and
 bool CommandLineParser::found_globals(int argc, char * argv[]) {
+    logger::Logger *logsys = logger::getLogger();
     bool temp_result = false;
     for (int i = 0; i < argc; i++) {
         string flag = string(argv[i]);
@@ -79,6 +87,7 @@ bool CommandLineParser::found_terminals() {
 // Show the global messages if needed
 // Priorities apply between commands (Help > usage)
 void CommandLineParser::show_globals() {
+    logger::Logger *logsys = logger::getLogger();
     // First check for Help requests
     if (Global_flags.flag_state("--help")) {
         logsys->logDebug("Flag < --help > found", __LINE__, __FILE__, __func__, "CommandLineParser");
@@ -102,6 +111,14 @@ void CommandLineParser::show_globals() {
     }
 }
 
+void CommandLineParser::destroyParser()
+{
+    if (instance != nullptr)
+    {
+        delete instance;
+        instance = nullptr;
+    }
+}
 CommandLineParser::~CommandLineParser() {
     for (unsigned int i = 0; i < Result.size(); i++) {
         delete(Result[i]);
@@ -109,6 +126,7 @@ CommandLineParser::~CommandLineParser() {
 }
 
 bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
+    logger::Logger *logsys = logger::getLogger();
     if(argc < 2 )
     {
         logsys->logError("No arguments given. Aborting execution");
@@ -272,6 +290,8 @@ ParserResult* CommandLineParser::find_owner(string flag) {
 }
 
 int CommandLineParser::find_next_PR_index(int _target_id) {
+    logger::Logger *logsys = logger::getLogger();
+
     for (unsigned int i = _target_id; i < Result.size(); i++) {
         if (!Result[i]->is_full()) return i;
     }

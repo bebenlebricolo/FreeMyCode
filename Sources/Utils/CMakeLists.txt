@@ -120,6 +120,7 @@ target_link_libraries(libLicenseChecker
 	libLogTools
 	libPathUtils
 	libParsingUtils
+	libConfigTools
 )
 
 target_include_directories(libLicenseChecker PUBLIC

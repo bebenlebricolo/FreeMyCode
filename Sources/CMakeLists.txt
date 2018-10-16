@@ -70,7 +70,30 @@ target_link_libraries( FreeMyCode
 )
 
 
+# Installing binaries ...
+install( TARGETS FreeMyCode 
+	DESTINATION ${CMAKE_SOURCE_DIR}/Install/bin)
 
+# Creating Install folder
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Scripts/Multi-Platform 
+	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Scripts)
+# Install Platform-dependant scripts
+if(${TARGETED_OS} MATCHES "Windows" )
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/Scripts/Windows
+		DESTINATION ${CMAKE_SOURCE_DIR}/Install/Scripts)
+elseif (${TARGETED_OS} MATCHES "Linux")
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/Scripts/Linux
+		DESTINATION ${CMAKE_SOURCE_DIR}/Install/Scripts)
+endif()
 
+# Installing ressources directory
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Ressources/AvailableLicenses 
+	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Ressources/Spectrums 
+	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources)
+install(FILES ${CMAKE_SOURCE_DIR}/Ressources/Config.json 
+	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources)
 
+install(FILES ${CMAKE_SOURCE_DIR}/Ressources/Secondary_input.json 
+	RENAME Secondary_input.template.json DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources )
 

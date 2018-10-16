@@ -29,17 +29,31 @@ Version	|	 Date	 |	Comments
 #include <sstream>
 #include <iostream>
 
+#include FS_INCLUDE
+
 #include"PathUtils.h"
 
-#ifdef MSVC_COMPILER
+#ifdef _MSC_VER
 	#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
-	#define FS_CPP std::experimental::filesystem
 #endif
 
 using namespace logger;
 using namespace std;
 namespace fs = FS_CPP;
 namespace pu = pathutils;
+
+// Wrapper to Logger class' get_logger() function
+// Makes it easier to use 
+// before   : logger::Logger* myLog = logger::Logger::get_logger()
+// after    : logger::Logger* myLog = logger::getLogger()
+// using namespace logger:
+// Logger* myLog = getLogger()
+
+logger::Logger* logger::getLogger()
+{
+    return logger::Logger::get_logger();
+}
+
 
 /*
 **************************************************************************************

@@ -1,42 +1,62 @@
 #include "stdafx.h"
 #include "LicenseChecker.h"
 #include "LoggingTools.h"
+#include "ConfigTools.h"
 #include <iostream>
+#include FS_INCLUDE
+
 
 namespace fs = FS_CPP;
-static const char* valid_options = "-p -b -h -u ";
+static const char* valid_options = "-p -b -h -u -c -w";
 using namespace std;
 
 static void printUsage();
 static void parsingTest(int argc, char** argv);
 static void spectrumBuilding(int argc, char** argv);
+static void writeSpectrumsOnDisk(int argc, char** argv);
+static void checkLicenseInFile(int argc, char** argv);
 static vector<string> filterInput(int argc, char** argv);
 
 void parse_option(int argc, char* argv[])
 {
-	if (argv[1][0] == '-')
-	{
-		// option detected
-		switch (argv[1][1])
-		{
-		case 'p':
-			parsingTest(argc, argv);
-			break;
-		case 'b':
-			spectrumBuilding(argc, argv);
-			break;
-		case 'h':
-		case 'u':
-		default :
-			printUsage();
-			break;
-		}
-	}
-	else
-	{
-		cerr << "Wrong option detected. Please use one of the following options with the '-' starting character : " << valid_options << endl;
-		printUsage();
-	}
+    if (argc > 1)
+    {
+
+        if (argv[1][0] == '-')
+        {
+            // option detected
+            switch (argv[1][1])
+            {
+            case 'p':
+                parsingTest(argc, argv);
+                break;
+            case 'b':
+                spectrumBuilding(argc, argv);
+                break;
+            case 'c':
+                checkLicenseInFile(argc, argv);
+                break;
+            case 'w':
+                writeSpectrumsOnDisk(argc, argv);
+                break;
+            case 'h':
+            case 'u':
+            default:
+                printUsage();
+                break;
+            }
+        }
+        else
+        {
+            cerr << "Wrong option detected. Please use one of the following options with the '-' starting character : " << valid_options << endl;
+            printUsage();
+        }
+    }
+    else
+    {
+        cerr << "No input detected. Please provide arguments to command" << endl;
+        printUsage();
+    }
 }
 
 
@@ -63,11 +83,20 @@ int main(int argc, char* argv[])
 void printUsage()
 {
 	cout << "Usage : " << endl;
-	cout << " -p <file1> <file2> ...     :  Parse spectrum files and display results on std out" << endl;
+	cout << " -p [<file1> <file2> || <directory> ] ... "<< endl;
+    cout << "    -> Parse spectrum files and display results on std out" << endl;
 	cout << " ---------------------" << endl;
-	cout << " -b <file1> <file2> ...     :  Builds spectrum from regular text file and display results on std out" << endl;
+    cout << " -b <file1> <file2> ... " << endl;
+    cout << "    -> Builds spectrum from regular text file and display results on std out" << endl;
 	cout << " ---------------------" << endl;
-	cout << " -u / -h                :  Displays this help " << endl << endl;
+    cout << " -c <config.json file> <file> <License1> <License2> ... " << endl;
+    cout << "    -> Check for previous licenses in file and displays results on std out" << endl;
+    cout << " ---------------------" << endl;
+    cout << " -w [<file1> <file2> || <directory> ] ... <out dir> " << endl;
+    cout << "    -> Parse licences from given files and write them on disk" << endl;
+    cout << " ---------------------" << endl;
+    cout << " -u / -h " << endl;
+    cout << "    -> Displays this help " << endl << endl;
 
 }
 
@@ -81,7 +110,7 @@ vector<string> filterInput(int argc, char** argv)
 		string arg = argv[i];
 		if (!fs::exists(arg))
 		{
-			log->logWarning("argument \" " + arg + " \" is not rigth. Please check your input.");
+			log->logWarning("argument \" " + arg + " \" is not right : Does not exist ! Please check your input.");
 			continue;
 		}
 		fileList.push_back(arg);
@@ -122,3 +151,59 @@ void spectrumBuilding(int argc, char** argv)
 		licenseChecker.printSpectrums();
 	}
 }
+
+
+
+static void checkLicenseInFile(int argc, char** argv)
+{
+    logger::Logger *log = logger::Logger::get_logger();
+    log->logInfo("Starting test tool for LicenseChecker library : parser unit.");
+    if (argc < 4)
+    {
+        log->logError("Please provide at least one file path and a valid config file");
+    }
+    else
+    {
+        InOut_CheckLicenses list;
+        
+
+        vector<string> fileList = filterInput(argc, argv);
+        ConfObject* config = ConfObject::getConfig();
+        config->parse_conf_file(fileList[0]);
+        LicenseChecker licenseChecker;
+        
+        // Remove config.json file from input list
+        fileList.erase(fileList.begin());
+		list.fileList.push_back(fileList[0]);
+        fileList.erase(fileList.begin());
+        licenseChecker.parseSpectrums(fileList);
+
+        licenseChecker.checkForLicenses(&list);
+        ConfObject::removeConfig();
+    }
+}
+
+
+void writeSpectrumsOnDisk(int argc, char **argv)
+{
+    logger::Logger *log = logger::Logger::get_logger();
+    log->logInfo("Starting test tool for LicenseChecker library : parser unit.");
+    if (argc < 4)
+    {
+        log->logError("Please provide at least one file path and a valid config file");
+    }
+    else
+    {
+
+        // Last path is used as destination directory
+        vector<string> fileList = filterInput(argc - 1, argv);
+        LicenseChecker licenseChecker;
+        licenseChecker.buildLicensesSpectrum(fileList);
+        
+        // Write to the output directory (last argument in list)
+        licenseChecker.writeSpectrumsOnDisk(argv[argc - 1]);
+
+        ConfObject::removeConfig();
+    }
+}
+

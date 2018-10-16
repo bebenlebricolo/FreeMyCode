@@ -6,7 +6,7 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 ## External libraries used :
   - Rapidjson  : [Github repo](https://github.com/Tencent/rapidjson/)
 ### Functionalities to be implemented: (TODO)
-- [ ] Check for previous license files
+- [x] Check for previous license files
    * Prevent re-licensing of a file
    * Compute Licenses spectrums
    * Embed all known licenses spectrums in one file (Licences.spec)
@@ -34,8 +34,8 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 - [ ] Harmonize logger usage
      * Upgrade logger as singleton
      * Do not pass logger ptr as parameter anymore (unnecessary noise)
- - [ ] Input simplification (make it easier to use !)
-     * [ ] Switch input scripts (.bat / .bash) to Python3
+ - [x] Input simplification (make it easier to use !)
+     * [x] Switch input scripts (.bat / .bash) to Python3
           - More flexible and provides support for more complex input algorithms (path checks, automatically retrieves generic files such as config.json / Secondary Input.json & other
  
 ## Cross platform adaptations
