@@ -22,9 +22,45 @@ Note 2 : FreeMyCode could only detect licenses which it already knows about (ple
 ### Multi-platform support
 FreeMyCode is available on Microsoft Windows 10 platform and GNU/Linux platforms (tested under Debian and Ubuntu, Virtual machines &  native ). It uses CMake as a multi-platform compilation tool.
 Supports Microsoft Visual Studio project files & Makefiles.
-
 ## External libraries used :
   - Rapidjson  : [Github repo](https://github.com/Tencent/rapidjson/)
+ ________
+# Building process
+## Prerequisite
+* CMake version 3.1
+* Linux : GNU/GCC-G++ > 6  (check with gcc --version )
+* Windows : Microsoft Visual Studio > 19
+* Python 3 ( Multi-Platform Script )
+## Step-by-step
+* Clone the repo on your workspace
+* make a new directory build/
+* change directory to build/
+* run ``cmake ../``
+* Linux : run ``make install``  (if build completed, you should have a new FreeMyCode/Install/ folder)
+* Windows : open project located under build/Project.sln (Project msvc solution file)
+    * -> click on ALL_BUILD target, choose your release type and generate solution
+    * -> Under CMake panel, look for Install > Project
+    * -> Same as for Linux build process :  new directory Install sould be present in your repo
+# Running the application
+* Locate Install folder of FreeMyCode (if you get the Install folder as an archive, maybe you would like to look for a "FreeMyCode" install folder on your machine)
+* Create a new directory next to your project's folder to be machined/licensed by FreeMyCode E.g: "UserRessourcesDir"
+* Copy Secondary_input.template.json as Secondary_input.json into this folder (you may find the template file under <InstallFolder>/Ressources/Secondary_input.template.json)
+* Modify this file and add your own kind of nodes (simply respect json format, you can use [this tool](https://jsonformatter.curiousconcept.com) for help )
+* Copy the license you would like to use as License.txt into this folder (fill it with whatever text you want, or pick a license notice header under <InstallFolder>/Ressources/AvailableLicenses )
+* Change dir to your user directory (or where you like) and run 
+    ```python3 <LaunchFreeMyCode.py> <TargetedDirectory> <User Dir> ```
+  * Command should look like something like this :
+    `python.exe .\Scripts\Multi-Platform\LaunchFreeMyCode.py .\Install\ .\Sources\ .\AutoLicensingOutput\ `
+  
+  *Note : relative paths are supported by the Python script (supports only patterns like `. .. ./<somewhere> ../<somewhere> ./../../<somewhere> and <somewhere>/ `*
+ 
+## More complex input : using special flags
+LaunchFreeMyCode script has been written with (relative) simplicity in mind ; that is, it allows the user to lay back by dynamically retrieving required files to pass to FreeMyCode.
+However, to get more control over FreeMyCode, it is still possible to modify how LaunchFreeMyCode passes arguments to FreeMyCode executable and trigger other behaviours such as force logging , force single line comments, etc.
+A complete list of the flags and their effects is available both in LaunchFreeMyCode script (at the end), or directly from FreeMyCode executable, by running FreeMyCode -u or issuing a wrong command directly to it.
+
+___
+
 ### Functionalities to be implemented: (TODO)
 - [x] Check for previous license files
    * Prevent re-licensing of a file
