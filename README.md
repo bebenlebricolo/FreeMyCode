@@ -1,7 +1,27 @@
 # FreeMyCode
-Licenser tool which batch-writes a piece of text inside all specific targeted files of a directory (filtered by their extension : e.g.- {.cpp , .c , .h , .hpp , .py...}
+## Generalities
+FreeMyCode is a command line tool which allows to write a specific pattern of text (such as a license notice header ) in all files of a given directory, recursively.
+Some more informations could be included, in the form of a yaml-like data structure, directly in native comments in each file, allowing the user to add specific informations about its project.
 
-# This tool is still a WORK IN PROGRESS
+## Key Features
+### Wide range of supported languages :
+This piece of software handles most common types of languages (such as C, C++, Python, C#, Html, Xml, etc.) and is easily configurable via a configuration file, written in JSON.
+
+### Provides a simplified command line interface written in Python3
+FreeMyCode project embeds many scripts which are used to launch the main executable as well as library testers.
+Those scripts are written in Python3, or in Linux shell script / Batch depending on the targeted platform.
+Input is as simple as : python3 LaunchFreeMyCode.py <Install directory> <Targeted Directory> <User ressources directory>
+
+### Automatically detects previously licensed files
+This feature is one the most critical ones, as it provides a safe way to protect external libraries which have already been licensed by their authors. It detects comments blocks (single line or block comments if available in currently targeted language) and compares it sequentially with licenses spectrums in database (/Install/Ressources/Spectrums)
+
+Note : It is still not possible to manually exclude directories, this feature should be added soon. All parsed files may contain a notice header.
+
+Note 2 : FreeMyCode could only detect licenses which it already knows about (please refer to Install/Ressources/AvailableLicenses/ directory to see what licenses notice headers have already been evaluated.
+
+### Multi-platform support
+FreeMyCode is available on Microsoft Windows 10 platform and GNU/Linux platforms (tested under Debian and Ubuntu, Virtual machines &  native ). It uses CMake as a multi-platform compilation tool.
+Supports Microsoft Visual Studio project files & Makefiles.
 
 ## External libraries used :
   - Rapidjson  : [Github repo](https://github.com/Tencent/rapidjson/)
@@ -10,13 +30,9 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
    * Prevent re-licensing of a file
    * Compute Licenses spectrums
    * Embed all known licenses spectrums in one file (Licences.spec)
-- [ ] Prevent multiple license writing in a file
+- [x] Prevent multiple license writing in a file
 - [ ] Implement GUI with Qt
 - [x] Use tags to add specific content
-   - ~~@author~~
-   - ~~@license-url~~
-   - ~~@freemycode-version~~
-   * **Every tag is parsed as "custom" tag and formatted with a YAML-like format**
     ```
     FreeMyCode :
        Version : 0.1
@@ -44,8 +60,3 @@ Licenser tool which batch-writes a piece of text inside all specific targeted fi
 - [x] Port code to GNU/Linux systems
 - [x] Provide back support for Windows systems after code adaptations (CMake used)
      * [x] Repair compilation issues such as filesystem specific handlings
- 
-### Known issues : To be repaired
-- ~~Crashes when SecondaryInput file is not found~~  - Done
-- ~~Crashes when configuration file is not found~~   - Done
-- Input is too complex
