@@ -536,7 +536,7 @@ bool LicenseChecker::checkForLicenses(InOut_CheckLicenses* list)
         else
         {
             findInRegularFile(match);
-            if (match->degreeOfConfidence >= minimumDegreeOfConfidenceRequired)
+            if (match->foundLicense == true)
             {
                 // Remove this license from the editing pipeline
                 list->alreadyLicensedFiles.push_back(match->filePath);
@@ -770,6 +770,12 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         handStr.buffer = &buffer;
         // List all comments and regroup them in block comments sections
         // After processing : second pass -> clearing block comments which are too small ( e.g. less than 5 lines )
+
+        if (pu::get_filename(match->filePath) == "filewritestream.h")
+        {
+            cout << "a";
+        }
+
 
         trimWhiteSpaces(buffer);
         stripCommentMarker(&(match->markers), &buffer , &(handStr.mNumb));

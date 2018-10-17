@@ -47,7 +47,12 @@ static const char*  TAGS_NODE = "Tags";
 // ##########################################
 // CommentMarker structure's implementation
 // ##########################################
-CommentMarkers::CommentMarkers() : isPlainText(true) {}
+CommentMarkers::CommentMarkers() : 
+    sgLine("single line comment", "", CommentTag::single),
+    bStart("block comment start","", CommentTag::block),
+    bEnd("block comment end", "", CommentTag::block),
+    isPlainText(true) {
+}
 CommentMarkers::CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end) :
     sgLine("single line comment", _single_line_comment, CommentTag::single),
     bStart("block comment start",_block_comment_start,CommentTag::block),
