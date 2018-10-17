@@ -28,6 +28,7 @@ static const char* spectrumFileExtension = ".spec";
 
 // Generate license spectrum from license files
 static const uint8_t maxLettersThreshold = 3;
+static const uint8_t minimumSpacesBeforeCommentTag = 3;
 
 static const unsigned int maxWordSize = 50;
 
@@ -511,9 +512,9 @@ bool LicenseChecker::checkForLicenses(InOut_CheckLicenses* list)
 
         // Get all comment markers ;  We don't know yet the targeted file's encoding
         // So we need to target all kind of comments blocks
-        match->markers.bStart = config->get_bloc_comment_start(fileExtension);
-        match->markers.bEnd = config->get_bloc_comment_end(fileExtension);
-        match->markers.sgLine = config->get_single_line_com(fileExtension);
+        match->markers.bStart.value = config->get_bloc_comment_start(fileExtension);
+        match->markers.bEnd.value = config->get_bloc_comment_end(fileExtension);
+        match->markers.sgLine.value = config->get_single_line_com(fileExtension);
 
         ostringstream errorMessage;
         if (match->markers.checkForMissingCommentMarker(&errorMessage) == true)
@@ -535,7 +536,7 @@ bool LicenseChecker::checkForLicenses(InOut_CheckLicenses* list)
         else
         {
             findInRegularFile(match);
-            if (match->degreeOfConfidence >= minimumDegreeOfConfidenceRequired)
+            if (match->foundLicense == true)
             {
                 // Remove this license from the editing pipeline
                 list->alreadyLicensedFiles.push_back(match->filePath);
@@ -571,21 +572,34 @@ static void stripCommentMarker(CommentMarkers *markers, string *bufferLine , mar
     else
     {
         string buffer = *bufferLine;
-        vector<pair< string, string >> markersVect;
+        vector<CommentTag> markersVect;
         markers->vectorizeMembers(&markersVect);
 
         // Iterate over each marker and check for presence in line
         for (uint8_t m = 0; m < markersVect.size(); m++)
         {
-            string currentMarker = markersVect[m].first;
-            string markerDescription = markersVect[m].second;
+            string currentMarker = markersVect[m].value;
+            string markerDescription = markersVect[m].name;
             size_t markerStartOffset = buffer.find(currentMarker);
+
+            if (markersVect[m].type == CommentTag::commentType::single)
+            {
+                if (markerStartOffset >= minimumSpacesBeforeCommentTag)
+                {
+                    // We found a single line comment with some text right before
+                    // This kind of comments should be discarded as they are only context-related single line comment types
+                    continue;
+                }
+            }
+
 
             if (currentMarker.size() == 0)
             {
                 // skip marker -> this marker is not set!
                 continue;
             }
+
+            // While we can find markers in string, keep deleting it!
             while (markerStartOffset != string::npos)
             {
                 // Increment marker discover number
@@ -757,8 +771,14 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         // List all comments and regroup them in block comments sections
         // After processing : second pass -> clearing block comments which are too small ( e.g. less than 5 lines )
 
-        stripCommentMarker(&(match->markers), &buffer , &(handStr.mNumb));
+        if (pu::get_filename(match->filePath) == "filewritestream.h")
+        {
+            cout << "a";
+        }
+
+
         trimWhiteSpaces(buffer);
+        stripCommentMarker(&(match->markers), &buffer , &(handStr.mNumb));
         handStr.isSeparatorLine = isASeparator(&buffer);
 
         // Determine which comment type we are facing
@@ -965,6 +985,7 @@ void Spectrum::compareWithSpectrumList(vector<LicenseSpectrum* > *other, License
         currentMatch = compareWithSpectrum((*other)[sp]);
         if (currentMatch >= maxMatch)
         {
+
             maxMatch = currentMatch;
             match->degreeOfConfidence = maxMatch;
             match->licenseName = (*other)[sp]->licenseName;
@@ -976,11 +997,9 @@ void Spectrum::compareWithSpectrumList(vector<LicenseSpectrum* > *other, License
             }
         }
     }
-    if (match->degreeOfConfidence < minimumDegreeOfConfidenceRequired)
+    if (match->degreeOfConfidence < minimumDegreeOfConfidenceRequired && match->foundLicense == false)
     {
         log->logInfo("Could not find any potential license in file " + pu::get_filename(match->filePath), __LINE__, __FILE__, __func__, "Spectrum");
-        match->foundLicense = false;
-
     }
 }
 
