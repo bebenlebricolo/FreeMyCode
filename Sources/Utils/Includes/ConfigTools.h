@@ -10,22 +10,23 @@
 using namespace FormattingTags;
 
 struct CommentTag {
-    enum commentType { single, block };
+    enum commentType { single, block ,unknown};
     std::string name;
     std::string value;
     commentType type;
-    CommentTag() {};
+    CommentTag() : name(""), value("") , type(unknown) {};
     CommentTag(std::string n, std::string v, commentType _t) : name(n) , value(v) , type(_t){}
 };
 
 // Simple comment markers pack
 struct CommentMarkers
 {
-    bool isPlainText;
     
     CommentTag sgLine;
     CommentTag bStart;
     CommentTag bEnd;
+    bool isPlainText;
+	
     void checkIfPlainText();
     CommentMarkers();
     CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end);
