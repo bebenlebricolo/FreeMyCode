@@ -211,7 +211,6 @@ def handleArgs() :
     argList = list()
     if len(sys.argv) != 4 :
         logError("Args count is too small, please check your input")
-        showUsage()
         foundErrors = True
     else: 
         for i in range(1,len(sys.argv)) :
