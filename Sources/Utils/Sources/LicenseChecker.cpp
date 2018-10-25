@@ -768,14 +768,9 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
         handStr.isSeparatorLine = false;
         handStr.pushNewData = false;
         handStr.buffer = &buffer;
+
         // List all comments and regroup them in block comments sections
         // After processing : second pass -> clearing block comments which are too small ( e.g. less than 5 lines )
-
-        if (pu::get_filename(match->filePath) == "filewritestream.h")
-        {
-            cout << "a";
-        }
-
 
         trimWhiteSpaces(buffer);
         stripCommentMarker(&(match->markers), &buffer , &(handStr.mNumb));
