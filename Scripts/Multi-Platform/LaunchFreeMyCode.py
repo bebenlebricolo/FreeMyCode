@@ -44,11 +44,13 @@ platform = platform.system()
 if(platform == 'Linux' ):
     FreeMyCode_exeName = 'FreeMyCode'
     CLI_ErrorTag = '\033[1;91m'
+    CLI_SuccessTag = '\033[1;32m'
     CLI_NormalTag = '\033[0;m'
     localeSep = POSIX_sep
 elif(platform == 'Windows'):
     FreeMyCode_exeName = 'FreeMyCode.exe'
     CLI_ErrorTag = ''
+    CLI_SuccessTag = ''
     CLI_NormalTag = ''
     localeSep = WIN_sep
 
@@ -188,7 +190,7 @@ def handleRelativePath(path) :
 def showUsage() :
     print("---------- USAGE ---------")
     print("This tool is used as an abstraction layer for FreeMyCode user\n")
-    print("Usage example : $ python LaunchFreeMyCode.py <InstallationFolder> <TargetedDirectory> <RessourcesDirectory>\n")
+    print("Usage example : $ {} python LaunchFreeMyCode.py <InstallationFolder> <TargetedDirectory> <RessourcesDirectory>{}\n".format(CLI_SuccessTag,CLI_NormalTag))
     print(" Where : ")
     print("   InstallationFolder stands for the FreeMyCode installation folder ")
     print("   TargetedDirectory is the project's directory to be analysed")
