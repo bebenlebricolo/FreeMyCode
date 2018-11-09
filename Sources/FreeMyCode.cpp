@@ -25,12 +25,18 @@ Version	|	 Date	 |	Comments
 #include "LicenseChecker.h"
 #include "PathUtils.h"
 
+// Filesystem C++ standard library inclusion depends on which version of compiler is actually running on your machine
+// this is why we need to abstract inclusion mechanism. Could either be std::experiment::filesystem or std::filesystem (C++17 native feature ) 
 #include FS_INCLUDE
+
+// Used for debugging purposes : will log some more informations such as complete input command
+#define DEBUG
 
 
 using namespace std;
 namespace fs = FS_CPP;
 
+// List of parser results available for this program
 vector<string> PRList =
 {
     "Directory",
@@ -41,7 +47,9 @@ vector<string> PRList =
     "Spectrums Dir"
 };
 
-
+// Generic error types 
+// TODO migrate this elsewhere, we shall not bother with those in the main file
+// Note : C++ provides exception throwing ; however it could be lighter to use generic errors (such as in C programs).
 enum errorType {
     FATAL = -2,
     NO_ERROR = 0,
@@ -50,24 +58,28 @@ enum errorType {
     NULL_POINTER
 };
 
-static void init_Parser(CommandLineParser *parser);
+// Parser initialiser and debugging functions
+static void init_parser(CommandLineParser *parser);
 static errorType check_args(CommandLineParser *parser);
-
-#define DEBUG
-#ifdef DEBUG
 static void printArgs(int argc, char** argv);
-#endif
+
 
 int main(int argc , char* argv[])
 {
+    // ------------------- Initialisation -------------------
+
+    // First, take care of logging tools
     logger::Logger* mylog = logger::Logger::get_logger();
-    mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
 
     // Parsers and results
     CommandLineParser *parser = CommandLineParser::getParser();
-    init_Parser(parser);
+    ConfObject config;
+    
+    mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
+    init_parser(parser);
     printArgs(argc, argv);
 
+    // Parse arguments passed by the user and exit if arg count is not right
     if (parser->parse_arguments(argc, argv) == false) {
         // Ends the programm
         cout << "Programm will quit. Press \" Enter \" to exit." << endl;
@@ -85,7 +97,6 @@ int main(int argc , char* argv[])
     // Initialise new logging session (display init message) -> helps identifying new session
     mylog->log_init_message();
 
-    ConfObject config;
 
     // Abort execution if we cannot find configuration file
     if (config.parse_conf_file(parser->get_arg(PRList[2])) == false) {
@@ -95,6 +106,10 @@ int main(int argc , char* argv[])
         return -1;
     }
 
+
+    // ------------------- Start working -------------------
+
+    // Make sure passed arguments are reliable, otherwise it could do harm to our files 
     if( check_args(parser) == NO_ERROR )
     {
         // List all files in given directory that match targeted extensions
@@ -128,7 +143,10 @@ int main(int argc , char* argv[])
     return 0;
 }
 
-static void init_Parser(CommandLineParser *parser) {
+
+// Initialises our command line parser with its parser results 
+// -> simply add one PR with its description, parser will take care of filling them at run time.
+static void init_parser(CommandLineParser *parser) {
     ParserResult* directory = new ParserResult(PRList[0], "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
     ParserResult* license = new ParserResult(PRList[1], "License container : catches the License file path which will be added to the source files. Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
     ParserResult* config = new ParserResult(PRList[2], "Config container : catches the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
@@ -173,6 +191,7 @@ static void init_Parser(CommandLineParser *parser) {
     parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input ,spectrums_dir}));
 }
 
+// Debugging stuff : show full command line arguments (really usefull while working with tools such as Visual Studio C++)
 static void printArgs(int argc, char** argv)
 {
 #ifdef DEBUG
@@ -192,7 +211,7 @@ static void printArgs(int argc, char** argv)
 #endif
 }
 
-
+// Checks user input. Passed args should point to something reachable (existing files / directories) for it to complete
 static errorType check_args(CommandLineParser *parser)
 {
     errorType _rc = NO_ERROR;
