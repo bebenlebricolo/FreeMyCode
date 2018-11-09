@@ -15,14 +15,12 @@ namespace pu = pathutils;
 namespace lg = logger;
 using namespace std;
 
-//static const char* genericLicenseName = "Generic";
 static const char* spectrumNameToken = "Name";
 static const char spectrumDelimiter = ':';
 static const char spectrumLineDelimiter = '\n';
 static const char spectrumCommentDelimiter = '#';
 static const char* spectrumSpecificChars = "#:\n";
 static const unsigned int spectrumMaxSpecificCharsCount = 10;
-//static const char spectrumIgnoreChar = ' ';
 static const char* spectrumFileExtension = ".spec";
 
 

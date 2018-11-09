@@ -22,7 +22,7 @@ using namespace std;
 
 namespace pathutils {
 	// Forward declarations
-	std::string remove_illegal_chars(std::string string_to_clean, std::string characters_list = "'-_\\/.|[]}~#{^@$+-=*()%!:;,<>&²°012345689");
+	std::string remove_illegal_chars(std::string string_to_clean, std::string characters_list = "'-_\\/.|[]}~#{^@$+-=*()%!:;,<>&ï¿½ï¿½012345689");
 	const std::string get_parent_dir(std::string);
 	const std::string get_filename(std::string input_string);
 	const std::string get_extension(std::string input);

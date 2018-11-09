@@ -26,7 +26,7 @@ endif(${TARGETED_OS} MATCHES "Linux")
 
 ### GCC with GNU/Linux systems
 if( CCompiler MATCHES "GCC")
-	set (CXX_WARNINGS "-Wall -Wextra -Wfloat-equal -Wundef -Wshadow ")
+	set (CXX_WARNINGS "-Wall -Wextra -Wfloat-equal -Wundef -Wshadow -Wunused")
 	set (CXX_FLAGS "-std=c++17 -lstdc++fs ")
 	set (CXX_OPTIMISATIONS "-O1")
 	set (FS_LIB "stdc++fs")

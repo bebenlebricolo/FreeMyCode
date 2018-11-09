@@ -33,11 +33,17 @@ struct NullPtrException : public runtime_error {
 };
 
 
-logger::Logger* DirectoryAnalyser::logsys = logger::Logger::get_logger();
+
+
+// Getting list of files using C++ standard features
+// C++ 14
+// Sources : 
+// https://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
 
 // Returns a vector of the file paths which contains potential code / text files.
 std::vector<std::string>* DirectoryAnalyser::get_files_in_dir(const std::string &root_path, std::string targeted_extensions) {
 
+	logger::Logger *logsys = logger::getLogger();
 	unsigned file_counter = 0;
 
 	// Uses a pointer in case of big file list -> only uses one memory location for the vector

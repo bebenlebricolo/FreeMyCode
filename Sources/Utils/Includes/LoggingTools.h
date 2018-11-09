@@ -46,6 +46,7 @@ namespace logger {
 
 	};
 
+// Logger class implemented as a singleton
 	class Logger {
 		std::vector<LoggerHandler*> handlers;
 
@@ -71,7 +72,7 @@ namespace logger {
 		std::string get_current_date();
 		void log_init_message(const std::string &message = "");
 		static Logger* get_logger(bool display_date = true);
-
+		static void destroy_logger();
 		// Dedicated functions to handle logging functionalities
 		void logDebug(
 			std::string message = "",
@@ -107,11 +108,7 @@ namespace logger {
 			std::string file = "",
 			std::string function = "",
 			std::string class_name = "");
-
-
 	};
-
-
 
 
 	// Writes data to a file
@@ -137,43 +134,7 @@ namespace logger {
 
 	};
 
-
-    
-    
     // Aliases 
     Logger* getLogger();
 }
-
-/*
-void log_Wrapper(const char* msg,
-	logger::LoggerHandler::Severity level,
-	int line,
-	const char* file,
-	const char* function,
-	const char* className)
-{
-	logger::Logger* log_ptr = logger::Logger::get_logger();
-	switch (level)
-	{
-	case logger::LoggerHandler::Log_Debug :
-		log_ptr->logDebug(msg, line, file, function, className);
-		break;
-	case logger::LoggerHandler::Log_Warning:
-		log_ptr->logWarning(msg, line, file, function, className);
-		break;
-	case logger::LoggerHandler::Log_Info:
-		log_ptr->logInfo(msg, line, file, function, className);
-		break;
-	case logger::LoggerHandler::Log_Error:
-		log_ptr->logError(msg, line, file, function, className);
-		break;
-	case logger::LoggerHandler::Log_Fatal:
-		log_ptr->logFatal(msg, line, file, function, className);
-		break; break;
-	}
-}
-#define logDEBUG(msg, cls) \
-				log_Wrapper(msg , logger::LoggerHandler::Log_Debug, __LINE__, __FILE__ , __func__ , cls)
-
-*/
 #endif // !LOGGINGTOOLS_HEADER

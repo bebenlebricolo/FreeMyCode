@@ -57,10 +57,10 @@ class ConfObject {
 	const std::string get_ext_property(std::string targeted_extension, SupportedExtension::properties prop_type);
 	std::vector<ProtoTag*> tags_vect;
     static ConfObject* _instance;
-public:
-	const std::string get_supported_ext_list();
 	ConfObject();
 	~ConfObject();
+public:
+	const std::string get_supported_ext_list();
 	bool parse_conf_file(std::string in_filepath);
 	bool is_extension_supported(std::string extension);
 	const std::string get_bloc_comment_start(std::string targeted_extension);

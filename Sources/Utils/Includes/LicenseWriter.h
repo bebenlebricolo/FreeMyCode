@@ -25,13 +25,12 @@ class SecondaryInput;
 class LicenseWriter {
 	CommandLineParser* parser;
 	ConfObject* config;
-	logger::Logger* log;
 	SecondaryInput* second_in;
 	std::vector<FormattedLicense *> form_lic_list;	// Formatted licenses list
 
 public:
 	~LicenseWriter();
-	LicenseWriter(CommandLineParser* _parser, ConfObject* _config, logger::Logger* _log = NULL);
+	LicenseWriter(CommandLineParser* _parser, ConfObject* _config);
 	std::vector<std::string> write_license(std::vector<string> *fileList);
 	void build_formatted_license_list(std::vector<std::string>* file_list);
 	FormattedLicense* getLicenseByExt(std::string extension);

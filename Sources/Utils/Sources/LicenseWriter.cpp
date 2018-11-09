@@ -50,11 +50,10 @@ LicenseWriter class definition
 **************************************************************************************
 */
 
-LicenseWriter::LicenseWriter(CommandLineParser* _parser, ConfObject* _config, logger::Logger* _log) :
-	parser(_parser), config(_config), log(_log) {
-	if (_log == NULL) {
-		log = logger::Logger::get_logger();
-	}
+LicenseWriter::LicenseWriter(CommandLineParser* _parser, ConfObject* _config) :
+	parser(_parser), config(_config) {
+	
+	logger::Logger* log = logger::getLogger();
 
 	// If we found a Secondary Input argument when parsing input
 	// build a new Secondary Input instance
@@ -89,9 +88,11 @@ FormattedLicense* LicenseWriter::getLicenseByExt(std::string extension)
 	return nullptr;
 }
 
-
+// Writes license to each files ing of the list. Takes care of generating proper headers before
 std::vector<std::string> LicenseWriter::write_license(vector<string> *fileList) {
-    if (fileList == nullptr)
+
+	logger::Logger* log = logger::getLogger();
+	if (fileList == nullptr)
     {
         log->logError("null parameter detected", __LINE__, __FILE__, __func__, "LicenseWriter");
         return *fileList;
@@ -218,6 +219,7 @@ std::vector<std::string> LicenseWriter::write_license(vector<string> *fileList) 
 
 // Build formatted licenses list and store them in memory
 void LicenseWriter::build_formatted_license_list(std::vector<std::string>* fileList) {
+	logger::Logger* log = logger::getLogger();
 	ostringstream* tagsBlock = nullptr;
 	if (second_in != nullptr) {
 		second_in->parse_secondary_input_file();

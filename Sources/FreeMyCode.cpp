@@ -73,7 +73,7 @@ int main(int argc , char* argv[])
 
     // Parsers and results
     CommandLineParser *parser = CommandLineParser::getParser();
-    ConfObject config;
+    ConfObject *config = ConfObject::getConfig();
     
     mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
     init_parser(parser);
@@ -99,7 +99,7 @@ int main(int argc , char* argv[])
 
 
     // Abort execution if we cannot find configuration file
-    if (config.parse_conf_file(parser->get_arg(PRList[2])) == false) {
+    if (config->parse_conf_file(parser->get_arg(PRList[2])) == false) {
         // Ends the programm
         cout << "Programm will quit. Press \" Enter \" to exit." << endl;
         cin.ignore();
@@ -113,8 +113,8 @@ int main(int argc , char* argv[])
     if( check_args(parser) == NO_ERROR )
     {
         // List all files in given directory that match targeted extensions
-        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser->get_arg(PRList[0]), config.get_supported_ext_list());
-        LicenseWriter writer(parser,&config);
+        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser->get_arg(PRList[0]), config->get_supported_ext_list());
+        LicenseWriter writer(parser,config);
         LicenseChecker checker;
         checker.parseSpectrums(parser->get_arg(PRList[5]));
         InOut_CheckLicenses list;
@@ -134,6 +134,8 @@ int main(int argc , char* argv[])
 
         delete (files_in_dir);
         CommandLineParser::destroyParser();
+        mylog->destroy_logger();
+        config->removeConfig();
     }
     else
     {

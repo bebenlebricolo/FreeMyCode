@@ -95,6 +95,16 @@ Logger * logger::Logger::get_logger(bool display_date)
 	return Logger::log_object;
 }
 
+// delete logger instance (preventing memory leak)
+void logger::Logger::destroy_logger()
+{
+	if(log_object != nullptr)
+	{
+		delete log_object;
+		log_object = nullptr;
+	}
+}
+
 // Returns a formatted version of date based on std::time library (C++11)
 // https://stackoverflow.com/a/16358111/8716917
 std::string logger::Logger::get_current_date()
