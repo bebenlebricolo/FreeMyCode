@@ -66,26 +66,26 @@ int main(int argc , char* argv[])
     // Parsers and results
     CommandLineParser *parser = CommandLineParser::getParser();
     init_Parser(parser);
-#ifdef DEBUG
     printArgs(argc, argv);
-#endif
 
     if (parser->parse_arguments(argc, argv) == false) {
         // Ends the programm
         cout << "Programm will quit. Press \" Enter \" to exit." << endl;
         cin.ignore();
-        return -1;
+        return 1;
     }
 
+    // Check if user asked for a verbose output
     if (parser->get_flag("-v") == true){
         mylog->add_handler(new logger::FileHandler(parser->get_arg(PRList[3]), logger::FileHandler::Severity::Log_Debug));
     }else{
         mylog->add_handler(new logger::FileHandler(parser->get_arg(PRList[3]), logger::FileHandler::Severity::Log_Warning));
     }
 
+    // Initialise new logging session (display init message) -> helps identifying new session
     mylog->log_init_message();
 
-    ConfObject config(mylog);
+    ConfObject config;
 
     // Abort execution if we cannot find configuration file
     if (config.parse_conf_file(parser->get_arg(PRList[2])) == false) {
@@ -173,9 +173,9 @@ static void init_Parser(CommandLineParser *parser) {
     parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input ,spectrums_dir}));
 }
 
-#ifdef DEBUG
 static void printArgs(int argc, char** argv)
 {
+#ifdef DEBUG
     cout << "\nFull command line \n" << endl;
     for(int i = 0 ; i < argc ; i++)
     {
@@ -189,8 +189,8 @@ static void printArgs(int argc, char** argv)
         cout << "Arg" << to_string(i) << " = " << argv[i] << endl;
     }
     cout << endl;
-}
 #endif
+}
 
 
 static errorType check_args(CommandLineParser *parser)

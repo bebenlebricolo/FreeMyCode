@@ -42,43 +42,41 @@ static const char*  LANG_EXT_NODE = "Extension";
 
 static const char*  TAGS_NODE = "Tags";
 
+static const char* MARK_SL_COM ="single line comment";
+static const char* MARK_BL_COM_OP ="block comment start";
+static const char* MARK_BL_COM_CL ="block comment end";
+
 
 
 // ##########################################
 // CommentMarker structure's implementation
 // ##########################################
+
+// Comment Markers stores information about comment patterns of a given set of languages (e.g : /* ; */ ; //  for C-style languages)
 CommentMarkers::CommentMarkers() : 
-    sgLine("single line comment", "", CommentTag::single),
-    bStart("block comment start","", CommentTag::block),
-    bEnd("block comment end", "", CommentTag::block),
+    sgLine(MARK_SL_COM, "", CommentTag::single),
+    bStart(MARK_BL_COM_OP,"", CommentTag::block),
+    bEnd(MARK_BL_COM_CL, "", CommentTag::block),
     isPlainText(true) {
 }
+
 CommentMarkers::CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end) :
-    sgLine("single line comment", _single_line_comment, CommentTag::single),
-    bStart("block comment start",_block_comment_start,CommentTag::block),
-    bEnd("block comment end",_block_comment_end,CommentTag::block) {
+    sgLine(MARK_SL_COM, _single_line_comment, CommentTag::single),
+    bStart(MARK_BL_COM_OP,_block_comment_start,CommentTag::block),
+    bEnd(MARK_BL_COM_CL,_block_comment_end,CommentTag::block) {
     checkIfPlainText();
 }
 
-
-void CommentMarkers::checkIfPlainText()
+// Checks if we are targetting plain text (no comment markers) or something else
+bool CommentMarkers::checkIfPlainText()
 {
-    if (sgLine.value == "" && bStart.value == "" && bEnd.value == "")
-    {
+    if (sgLine.value == "" && bStart.value == "" && bEnd.value == "") {
         isPlainText = true;
     }
-    else
-    {
+    else {
         isPlainText = false;
     }
-}
-
-uint8_t CommentMarkers::getMaxMarkerLength()
-{
-    uint8_t result = sgLine.value.length();
-    if (bStart.value.length() > result) result = bStart.value.length();
-    if (bEnd.value.length() > result) result = bEnd.value.length();
-    return result;
+	return isPlainText;
 }
 
 void CommentMarkers::reset()
@@ -89,12 +87,14 @@ void CommentMarkers::reset()
 	bEnd.value = "";
 }
 
+// Returns comment markers in the form of a vector 
 void CommentMarkers::vectorizeMembers(std::vector<CommentTag> *vec)
 {
     vec->push_back(sgLine);
     vec->push_back(bStart);
     vec->push_back(bEnd );
 }
+
 
 bool CommentMarkers::checkForMissingCommentMarker(ostringstream *errorMessage)
 {
@@ -109,31 +109,36 @@ bool CommentMarkers::checkForMissingCommentMarker(ostringstream *errorMessage)
         (*errorMessage) << "Block comment marker are empty! ";
         errorFound = true;
     }
-
     return errorFound;
 }
 
 
+// ##################################################
+// #### SupportedExtension structure implementation
+// ##################################################
 
 SupportedExtension::SupportedExtension(
 	std::vector<std::string> _ext_list,
 	std::string line_com,
-	std::string bloc_start,
-	std::string bloc_end) :
-	extension(_ext_list),
-	single_line_comment(line_com),
-	bloc_comment_start(bloc_start),
-	bloc_comment_end(bloc_end){}
-
+	std::string block_start,
+	std::string block_end 
+	) :
+		extension(_ext_list),
+		markers(line_com,
+				block_start,
+				block_end) 
+		{}
 SupportedExtension::SupportedExtension(
 	std::string _single_ext,
 	std::string line_com,
-	std::string bloc_start,
-	std::string bloc_end) :
-	extension(),
-	single_line_comment(line_com),
-	bloc_comment_start(bloc_start),
-	bloc_comment_end(bloc_end)
+	std::string block_start,
+	std::string block_end
+	) :
+		extension(),
+		markers(line_com,
+				block_start,
+				block_end) 
+
 {
 	extension.push_back(_single_ext);
 }
@@ -155,14 +160,11 @@ bool SupportedExtension::match_ext(std::string _ext)
 --------------------------------------------------------------------------*/
 ConfObject* ConfObject::_instance = nullptr;
 
-ConfObject::ConfObject(logger::Logger* new_logger):log_ptr(new_logger) {
+ConfObject::ConfObject() {
     if (_instance != nullptr)
     {
         delete _instance;
     }
-    if (log_ptr == NULL) {
-		log_ptr = logger::Logger::get_logger();
-	}
     _instance = this;
 }
 
@@ -177,8 +179,10 @@ ConfObject::~ConfObject() {
 
 
 // Parses a file using the rapidjson library
+// Note: this function is obviously super long (...)
 bool ConfObject::parse_conf_file(std::string filepath) {
 
+	logger::Logger* log_ptr = logger::getLogger();
 	if (!fs::exists(filepath)) {
 		log_ptr->logWarning("Filepath doesn't exist", __LINE__, __FILE__, __func__, "ConfObject");
 		// Nothing to be parsed
@@ -318,6 +322,7 @@ bool ConfObject::parse_conf_file(std::string filepath) {
 // Simply look for a given extension in memory.
 // If the passed extension matches at least one extension in the ConfObject, return true.
 bool ConfObject::is_extension_supported(string extension) {
+	logger::Logger* log_ptr = logger::getLogger();
 	for (auto& ext : extension_vect) {
 		for (unsigned int i = 0; i < ext.extension.size(); i++) {
 			if (ext.extension[i] == extension) return true;
@@ -329,39 +334,41 @@ bool ConfObject::is_extension_supported(string extension) {
 	return false;
 }
 
+// Get targeted extension comment marker string (e.g : C -> block opening : /* )
 const string ConfObject::get_ext_property(string targeted_ext, SupportedExtension::properties prop_type) {
+	logger::Logger* log_ptr = logger::getLogger();	
 	for (auto& ext : extension_vect) {
 		for (unsigned int i = 0; i < ext.extension.size(); i++) {
 			if (ext.extension[i] == targeted_ext) {
 				switch (prop_type) {
 				case SupportedExtension::properties::Bloc_End:
-					if (ext.bloc_comment_start == "") {
+					if (ext.markers.bStart.value == "") {
 						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have bloc comment closing marker", __LINE__, __FILE__, __func__, "ConfObject");
 						return "";
 					}
 					else {
-						log_ptr->logDebug("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.bloc_comment_end + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-						return ext.bloc_comment_end;
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Closing block comment marker <" + ext.markers.bEnd.value + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.markers.bEnd.value;
 					}
 					break;
 				case SupportedExtension::properties::Bloc_Start:
-					if (ext.bloc_comment_start == "") {
+					if (ext.markers.bStart.value == "") {
 						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have bloc comment opening marker", __LINE__, __FILE__, __func__, "ConfObject");
 						return "";
 					}
 					else {
-						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.bloc_comment_start + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-						return ext.bloc_comment_start;
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Opening block comment marker <" + ext.markers.bStart.value + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.markers.bStart.value;
 					}
 					break;
 				case SupportedExtension::properties::Single_Comment:
-					if (ext.single_line_comment == "") {
+					if (ext.markers.sgLine.value == "") {
 						log_ptr->logWarning("Extension : " + targeted_ext + " : Does not have single line comment marker ", __LINE__, __FILE__, __func__, "ConfObject");
 						return "";
 					}
 					else {
-						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.single_line_comment + "> ", __LINE__, __FILE__, __func__, "ConfObject");
-						return ext.single_line_comment;
+						log_ptr->logDebug("Extension : " + targeted_ext + " : Found Single line comment marker <" + ext.markers.sgLine.value + "> ", __LINE__, __FILE__, __func__, "ConfObject");
+						return ext.markers.sgLine.value;
 					}
 					break;
 				default:
@@ -414,7 +421,8 @@ ProtoTag* ConfObject::get_tag(string tag_name) {
 // Add an element to extension_vector of ConfObject.
 // If an extension overlaps a previously added one, then it will be overwritten by the new one
 void ConfObject::add_element(SupportedExtension new_language_spec) {
-	//new_ext = new_language_spec.extension;
+	logger::Logger* log_ptr = logger::getLogger();
+	
 	// look for previous extension with the same name and overwrite it with new data
 	for (auto& ext : extension_vect) {
 		if (ext.extension == new_language_spec.extension) {
@@ -442,7 +450,7 @@ ConfObject* ConfObject::getConfig()
 {
     if (_instance == nullptr)
     {
-        _instance = new ConfObject(logger::Logger::get_logger());
+        _instance = new ConfObject();
     }
 
     return _instance;

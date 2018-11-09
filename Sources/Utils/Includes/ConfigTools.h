@@ -21,18 +21,16 @@ struct CommentTag {
 // Simple comment markers pack
 struct CommentMarkers
 {
-    
     CommentTag sgLine;
     CommentTag bStart;
     CommentTag bEnd;
     bool isPlainText;
 	
-    void checkIfPlainText();
+    bool checkIfPlainText();
     CommentMarkers();
     CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end);
 
     void reset();
-    uint8_t getMaxMarkerLength();
     void vectorizeMembers(std::vector<CommentTag> *vec);
     bool checkForMissingCommentMarker(ostringstream *errorMessage);
 };
@@ -43,9 +41,7 @@ struct SupportedExtension {
 	SupportedExtension(std::string _single_ext, std::string line_com, std::string bloc_start, std::string bloc_end);
 	enum properties{ Single_Comment, Bloc_Start , Bloc_End};
 	std::vector<std::string> extension;
-	std::string single_line_comment;
-	std::string bloc_comment_start;
-	std::string bloc_comment_end;
+	CommentMarkers markers;
 	bool match_ext(std::string _ext);
 };
 
@@ -59,12 +55,11 @@ class ConfObject {
 	std::vector<SupportedExtension> extension_vect;
 	// general template used to get a property inside config file
 	const std::string get_ext_property(std::string targeted_extension, SupportedExtension::properties prop_type);
-	logger::Logger* log_ptr;
 	std::vector<ProtoTag*> tags_vect;
     static ConfObject* _instance;
 public:
 	const std::string get_supported_ext_list();
-	ConfObject(logger::Logger* new_logger = NULL);
+	ConfObject();
 	~ConfObject();
 	bool parse_conf_file(std::string in_filepath);
 	bool is_extension_supported(std::string extension);
