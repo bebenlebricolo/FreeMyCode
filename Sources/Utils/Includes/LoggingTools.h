@@ -8,9 +8,6 @@ Version	|	 Date	 |	Comments
 0.2		| 14/04/2018 | Implemented LoggerSlot struct -> handles logger management inside owner classes
 */
 
-// MSVC compiler multiple inclusions guard
-#pragma once
-// Else for any other compiler
 #ifndef LOGGINGTOOLS_HEADER
 #define LOGGINGTOOLS_HEADER
 
@@ -19,15 +16,10 @@ Version	|	 Date	 |	Comments
 #include <vector>
 #include <fstream>
 
-
-
-namespace logger {
-
-    
-
+namespace logger { 
+	
 	// Abstract class whose pattern is used to define any specific Handler
 	class LoggerHandler {
-
 	public:
 		enum Severity { Log_Debug = 0, Log_Info=1, Log_Warning = 2, Log_Error = 3, Log_Fatal = 4 , Log_Init = 10};
 		std::string name;
@@ -73,6 +65,7 @@ namespace logger {
 		void log_init_message(const std::string &message = "");
 		static Logger* get_logger(bool display_date = true);
 		static void destroy_logger();
+		
 		// Dedicated functions to handle logging functionalities
 		void logDebug(
 			std::string message = "",
@@ -121,7 +114,6 @@ namespace logger {
 		FileHandler(std::string _filepath,Severity level,
 			long max_file_size = 1000000000 , bool rolling_file = false);
 		~FileHandler();
-		//void introspection();
 		void log_data(const std::string &message, Severity sev_level);
 
 	};
@@ -129,7 +121,6 @@ namespace logger {
 	class ConsoleHandler : public LoggerHandler {
 	public:
 		ConsoleHandler(Severity level);
-		//void introspection();
 		void log_data(const std::string &message, Severity sev_level);
 
 	};

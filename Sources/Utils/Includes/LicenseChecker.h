@@ -82,6 +82,10 @@ private:
     std::vector<LicenseInFileMatchResult *> alreadyLicensedFiles;
 };
 
+// Spectrum base class : any text spectrum.
+// A file spectrum (text) represents all words that could be found in a targeted file and
+// list their frequency throughout the file. It used to compare comment blocks in input file with known licenses, 
+// thus allowing our program to determine whether the file already contains a license or not. 
 struct Spectrum
 {
     std::vector<std::pair<std::string, unsigned short int>> wordBasedDictionary;
@@ -91,7 +95,7 @@ struct Spectrum
     unsigned int getTotalWordsNb();
 };
 
-
+// Same as parent class , but dedicated to one targeted license (embeds License name along with its spectrum)
 struct LicenseSpectrum : public Spectrum
 {
 	std::string licenseName;
@@ -112,63 +116,67 @@ struct LicenseInFileMatchResult
 // -> Used to know if we are reading an opening / closing block comment, or a single line comment
 struct markersNumbers {
     enum markerType {line, block , undetermined , uncommented};
-    uint8_t singleLine;
-    uint8_t blockOpen;
-    uint8_t blockClose;
+    uint8_t sLine_count;
+    uint8_t bOpen_count;
+    uint8_t bClose_count;
     bool foundMarker;
 
-    markersNumbers() : singleLine(0), blockOpen(0) , blockClose(0), foundMarker(false) {}
+    markersNumbers() : sLine_count(0), bOpen_count(0) , bClose_count(0), foundMarker(false) {}
     void resolveMarker(uint8_t index)
     {
         switch (index)
         {
         case 0:
-            singleLine++;
+            sLine_count++;
             foundMarker = true;
             break;
         case 1:
-            blockOpen++;
+            bOpen_count++;
             foundMarker = true;
             break;
         case 2:
-            blockClose++;
+            bClose_count++;
             foundMarker = true;
             break;
         default:
             return;
         }
     }
+
+    // Extract informations about the currently parsed markers
+    // So that we could know if we are facing an opening block comment, closing, or single line comment section 
     markerType getMarkerType()
     {
-        if (singleLine != 0 ||
-               ( (blockOpen == blockClose) &&
-                blockOpen != 0 ) )
+        if (sLine_count != 0 ||
+               ( (bOpen_count == bClose_count) &&
+                bOpen_count != 0 ) )
         {
             return markerType::line;
         }
-        else if (singleLine == 0 &&
-                (blockOpen != 0 ||
-                blockClose != 0))
+        else if (sLine_count == 0 &&
+                (bOpen_count != 0 ||
+                bClose_count != 0))
         {
             return markerType::block;
         }
-        else if (singleLine == 0 && blockClose ==0 && blockOpen == 0)
+        else if (sLine_count == 0 && bClose_count ==0 && bOpen_count == 0)
         {
             return markerType::uncommented;
         }
         else
         {
-            // singleLine != 0
-            // blockOpen != blockClose
+            // sLine_count != 0
+            // bOpen_count != bClose_count
             return markerType::undetermined;
         }
     }
 
+    // Resets current marker container counters for a new session
     void reset()
     {
-        singleLine = 0;
-        blockOpen = 0;
-        blockClose = 0;
+        sLine_count = 0;
+        bOpen_count = 0;
+        bClose_count = 0;
         foundMarker = false;
     }
 
@@ -176,9 +184,6 @@ struct markersNumbers {
 
 
 // Comment handlong stuff and structures
-
-enum commentType { Line, Block, None };
-
 struct CommentTypeHandlingStruct
 {
     bool isSeparatorLine;
@@ -186,10 +191,17 @@ struct CommentTypeHandlingStruct
     bool pushNewData;
     uint8_t commentBlockLineNb;
     markersNumbers mNumb;
-    commentType activeCommentBlockType;
+    CommentTag::commentType activeCommentBlockType;
     string *buffer;
 
-    CommentTypeHandlingStruct():isSeparatorLine(false), switchToNewBlockFlag(false), pushNewData(false), commentBlockLineNb(0), activeCommentBlockType(commentType::None), buffer(nullptr){}
+    CommentTypeHandlingStruct():
+        isSeparatorLine(false),
+        switchToNewBlockFlag(false),
+        pushNewData(false),
+        commentBlockLineNb(0),
+        activeCommentBlockType(CommentTag::commentType::unknown),
+        buffer(nullptr)
+    {}
 };
 
 

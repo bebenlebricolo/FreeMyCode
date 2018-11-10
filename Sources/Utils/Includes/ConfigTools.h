@@ -10,7 +10,7 @@
 using namespace FormattingTags;
 
 struct CommentTag {
-    enum commentType { single, block ,unknown};
+    enum commentType { single_line, block ,unknown};
     std::string name;
     std::string value;
     commentType type;

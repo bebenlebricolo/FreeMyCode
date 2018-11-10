@@ -54,14 +54,14 @@ static const char* MARK_BL_COM_CL ="block comment end";
 
 // Comment Markers stores information about comment patterns of a given set of languages (e.g : /* ; */ ; //  for C-style languages)
 CommentMarkers::CommentMarkers() : 
-    sgLine(MARK_SL_COM, "", CommentTag::single),
+    sgLine(MARK_SL_COM, "", CommentTag::single_line),
     bStart(MARK_BL_COM_OP,"", CommentTag::block),
     bEnd(MARK_BL_COM_CL, "", CommentTag::block),
     isPlainText(true) {
 }
 
 CommentMarkers::CommentMarkers(std::string _single_line_comment, std::string _block_comment_start, std::string _block_comment_end) :
-    sgLine(MARK_SL_COM, _single_line_comment, CommentTag::single),
+    sgLine(MARK_SL_COM, _single_line_comment, CommentTag::single_line),
     bStart(MARK_BL_COM_OP,_block_comment_start,CommentTag::block),
     bEnd(MARK_BL_COM_CL,_block_comment_end,CommentTag::block) {
     checkIfPlainText();

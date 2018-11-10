@@ -1,15 +1,13 @@
-
-#pragma once
-#include "stdafx.h"
 #include <vector>
 #include <string>
 #include <iostream>
-#include "LoggingTools.h"
 
+#include "stdafx.h"
+#include "LoggingTools.h"
 
 using namespace std;
 
-
+// Generic structure for parser flags/result(Argument)
 struct GlobalHook {
 	string description;
 	string usage;
@@ -19,19 +17,21 @@ struct GlobalHook {
 	void usage_request();
 };
 
+// Parser's flag container
 struct ParserFlags : public GlobalHook{
-	// static enum position { before, after };
 	ParserFlags(vector<string> flags_aliases ,
 		string _descrption = "Standard ParserFlag description" ,
 		string _usage = "Standard ParserFlag Usage line", bool is_terminal = false);
-
 	vector<string> aliases;
 	bool state;
 	bool match_flag(string flag, bool auto_set = false);
 	void init(vector<string> flags_aliases);
-	// position pos;
+	
+	// Prints out internal states of flag (activated / unactivated)
 	void introspective();
 	void help_request(int indent_spaces = 4);
+	
+	// If flag is terminal, it will tell the program not to continue execution after usage has been printed out
 	bool is_terminal();
 
 private:
@@ -39,6 +39,9 @@ private:
 	bool terminal_flag = false;
 };
 
+// Parser's result container. 
+// Embeds data about argument (such as file path) and some flags which are related to its function
+// E.g : logger parser result will embed logging file path and logging flags such as 'Verbose' , 'Force debug output', etc.
 struct ParserResult : public GlobalHook{
 	ParserResult();
 	ParserResult(string _name,  string _description, string _usage);
@@ -66,8 +69,8 @@ protected :
 	bool full;
 };
 
-
-
+// Class implementation of our CommandLineParser
+// Embeds parser results as well as printing facilities (could print all activated flags, all filled args, etc.)
 class CommandLineParser {
 		
 	vector<ParserResult*> Result;

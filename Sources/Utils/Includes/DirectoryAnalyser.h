@@ -8,6 +8,9 @@
 #include <iostream>
 #include "LoggingTools.h"
 
+// Directory analyser class whose role is to list all files in the targeted directory, and 
+// to store each file's extension.
+// Files extensions are stored to target only supported files types (by comparing both lists)
 class DirectoryAnalyser {
 	static std::vector<std::string> isolate_file_ext(std::string extension_string);
 	static std::vector<std::string> split(const char * str, char c = ' ');

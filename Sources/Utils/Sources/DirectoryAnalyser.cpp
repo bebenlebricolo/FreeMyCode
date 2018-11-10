@@ -114,11 +114,10 @@ std::string DirectoryAnalyser::convert_string(std::string path) {
 }
 
 // https://stackoverflow.com/a/53878/8716917
-// Very simple and straight forward
+// Splits a string in two halves based on a given delimiter (character)
 vector<string> DirectoryAnalyser::split(const char *str, char c)
 {
 	vector<string> result;
-
 	do
 	{
 		const char *begin = str;

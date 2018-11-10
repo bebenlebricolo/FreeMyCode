@@ -19,8 +19,7 @@ static const size_t maxPathLength = 1024;
     static const char OS_PreferedSeparator = '/';
 #endif
 
-
-
+// Removes characters in a string based on a given "illegal" characters list
 std::string pathutils::remove_illegal_chars(std::string string_to_clean, std::string characters_list) {
 	string output_string;
 	for (unsigned int i = 0; i < string_to_clean.size(); i++) {
@@ -195,6 +194,7 @@ std::string pathutils::remove_extension(std::string filename) {
 }
 
 // https://stackoverflow.com/a/5840160/8716917
+// Extracts file size in bytes and returns the answers under the form of position in file (block number starting from the beginning of the file)
 const std::ifstream::pos_type pathutils::filesize(const char* filename) {
 	std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
 	return in.tellg();

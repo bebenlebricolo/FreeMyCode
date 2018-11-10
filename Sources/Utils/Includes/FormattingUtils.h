@@ -14,6 +14,8 @@ using namespace std;
 // Formatting stuff
 // ############################
 
+// Indentation related class
+// Handles basic indentation facilites such as generating indent strings (length is a multiple of indent value)
 class Indent
 {
 private:
@@ -30,6 +32,8 @@ public:
 	string buildString() const;
 };
 
+// Bundles which embeds a default delimiter (such as ';' ) and Indent class
+// -> It is used to generate user's custom information section
 class Formatter
 {
 private:
@@ -92,13 +96,6 @@ namespace FormattingTags
 	TagLine* parseLine(rapidjson::Value::ConstMemberIterator &itr);
 	TagObject* parseObject(rapidjson::Value::ConstMemberIterator &itr);
 	TagArray* parseArray(rapidjson::Value::ConstMemberIterator& itr);
-	// Returns a pointer to the corresponding node (if any)
-	//std::string extractProperty(ProtoTag* inputTag, std::string &name);
 }
-
-
-
-
-
 
 #endif

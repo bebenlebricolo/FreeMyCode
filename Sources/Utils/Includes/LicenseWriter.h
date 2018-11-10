@@ -1,4 +1,3 @@
-#pragma once
 #ifndef LICENSE_WRITER_HEADER
 #define LICENSE_WRITER_HEADER
 
@@ -13,20 +12,23 @@
 #include "LoggingTools.h"
 #include "FormattingUtils.h"
 
+// Third party libraries
 #include "rapidjson.h"
 #include "document.h"
 
 using namespace FormattingTags;
 
-
+// Forward declarations
 struct FormattedLicense;
 class SecondaryInput;
 
+// Class whose role is to write formatted license text block to targeted file list
 class LicenseWriter {
 	CommandLineParser* parser;
 	ConfObject* config;
 	SecondaryInput* second_in;
-	std::vector<FormattedLicense *> form_lic_list;	// Formatted licenses list
+	// Formatted licenses list
+	std::vector<FormattedLicense *> form_lic_list;	
 
 public:
 	~LicenseWriter();
@@ -37,6 +39,7 @@ public:
 
 };
 
+// Text block containing license header notice (or any piece of text) with proper language formatting 
 struct FormattedLicense {
 	std::vector<std::string> targeted_extensions;
 	ostringstream for_lic;
@@ -49,7 +52,8 @@ struct FormattedLicense {
 // Secondary input class declaration
 // ############################
 
-
+// Secondary Input class' role is to handle user input (custom informations such as author, etc...) 
+// Provides parsing and formatting facilities.
 class SecondaryInput {
 	ConfObject* config;
 	CommandLineParser* parser;

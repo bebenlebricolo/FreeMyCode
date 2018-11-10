@@ -11,7 +11,7 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
     0.12    | 17/03/2018 |	Fixed bug when "directory license config Logfile" doesn't parse "config".
     0.13	| 19/03/2018 |  Created two CommandLineParser methods (push_arg and push_flag) to make the code shorter
     0.14	| 19/03/2018 |  Implemented first support for help requests and usage requests (-h --help -U --Usage)
-                            -> Note : Still some work to do for it to catch everything : directory(ok) license(ok) config(ok) logfile (ko)
+                                -> Note : Still some work to do for it to catch everything : directory(ok) license(ok) config(ok) logfile (ko)
     0.15	| 20/03/2018 |  Fixed last bug and implemented CommandLineParser :: get_arg & get_flag
     0.16	| 22/03/2018 |  Added external initiaisation functionalities: it is now possible to init the parser from outside this file
                              -> Simplifies usage and extends compatibility (all ParserResult are direct ParserResult objects, and not classes which inherits from it)
@@ -60,7 +60,8 @@ CommandLineParser* CommandLineParser::getParser()
     return instance;
 }
 
-// Parse the given arguments and
+// Parse the given arguments and checks if at least one flag is considered as a global flag
+// E.g: "Help , Usage" are global flags. They do not apply to any specific target
 bool CommandLineParser::found_globals(int argc, char * argv[]) {
     logger::Logger *logsys = logger::getLogger();
     bool temp_result = false;
@@ -80,6 +81,7 @@ bool CommandLineParser::found_globals(int argc, char * argv[]) {
     return temp_result;
 }
 
+// Checks if flag is "terminal" -> if it is, then stop execution and print Usage section
 bool CommandLineParser::found_terminals() {
     return Global_flags.has_terminal_flags();
 }
@@ -111,6 +113,7 @@ void CommandLineParser::show_globals() {
     }
 }
 
+// Singleton implementation destroying feature
 void CommandLineParser::destroyParser()
 {
     if (instance != nullptr)
@@ -119,14 +122,21 @@ void CommandLineParser::destroyParser()
         instance = nullptr;
     }
 }
+
 CommandLineParser::~CommandLineParser() {
     for (unsigned int i = 0; i < Result.size(); i++) {
         delete(Result[i]);
     }
 }
 
+// Main method of our command line parser
+// Extracts user's input and filters them by type (flag/arg); then fill
+// Parser results containers with them.
 bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
     logger::Logger *logsys = logger::getLogger();
+    
+    // Input checking section
+    // If anything goes wrong here, stop execution of program and exit.
     if(argc < 2 )
     {
         logsys->logError("No arguments given. Aborting execution");
@@ -143,6 +153,7 @@ bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
     }
 
 
+    // Then initialise "real" parsing work
     ParserResult* current_target;
     current_target = Result[0];
     int target_index = 0;
@@ -156,15 +167,15 @@ bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
         parsed_arg = string(argv[i]);
 
         if (is_a_flag(parsed_arg)) {
-            if (!is_flag_valid(parsed_arg, &temp_PR)) {
-                // Go to next argument if the flag is not valid
 
+            // Go to next argument if the flag is not valid
+            if (!is_flag_valid(parsed_arg, &temp_PR)) {
                 logsys->logWarning("Invalid flag <" + parsed_arg + "> ", __LINE__, __FILE__, __func__, "CommandLineParser");
                 continue;
             }
+            // Then flag is valid, hurray! Continue execution
             else
             {
-
                 // If different, it means the target has changed since last use
                 if (temp_PR != current_target)
                 {
@@ -267,7 +278,7 @@ void CommandLineParser::push_flag(ParserResult** target, string flag) {
     all_flags += flag + " ";
 }
 
-
+// Checks if targeted string matches our registered flags structure 
 bool CommandLineParser::is_a_flag(string _parsed_arg) {
     if (_parsed_arg[0] == '-') return true;
     else return false;
@@ -282,6 +293,9 @@ bool CommandLineParser::is_flag_valid(string _parsed_arg, ParserResult** _temp_P
     else return false;
 }
 
+// Find targeted flag owner (Parser Result)
+// We do this to retrieve which Parser Result we are currently filling
+ 
 ParserResult* CommandLineParser::find_owner(string flag) {
     for (unsigned int index = 0; index < Result.size(); index++) {
         if (Result[index]->contain_flag(flag)) return Result[index];
@@ -289,6 +303,9 @@ ParserResult* CommandLineParser::find_owner(string flag) {
     return NULL;
 }
 
+// Find next parser result to be filled 
+// Note: if the current Parser Result is full (arg section is filled), then we need to move on to the next Parser Result of the list
+// Note2: if we get a flag related to another ParserResult than the current one, this is an indicator to start filling the next one
 int CommandLineParser::find_next_PR_index(int _target_id) {
     logger::Logger *logsys = logger::getLogger();
 
@@ -301,7 +318,7 @@ int CommandLineParser::find_next_PR_index(int _target_id) {
     return -1;
 }
 
-
+// Prints parser results content to stdout (debugging purpose)
 void CommandLineParser::show_results() {
     cout << "\nInternal states of flags and args:" << endl ;
     cout << "---------------------------------------------" << endl;
@@ -310,6 +327,7 @@ void CommandLineParser::show_results() {
     }
 }
 
+// Returns requested flag state 
 bool CommandLineParser::get_flag(string flag) {
     for (unsigned int R = 0; R < Result.size(); R++) {
         if (Result[R]->contain_flag(flag)) {
@@ -329,6 +347,8 @@ string CommandLineParser::get_arg(string name) {
     return "";
 }
 
+// Manually override flag ; some flags may be overriden by hand to tweak (hack?) program's behaviour.
+// It is also a way to prevent mutually excluding flags to take effect both at the same time
 void CommandLineParser::overrideFlag(string flagName, bool flagState) {
     for (unsigned int R = 0; R < Result.size(); R++) {
         if (Result[R]->contain_flag(flagName)) {
@@ -378,6 +398,7 @@ bool ParserFlags::match_flag(string flag, bool auto_set) {
     return false;
 }
 
+// Gives a representation of what is contained in this object (internal states printing)
 void ParserFlags::introspective(){
     cout << "*ParserFlags : " << endl;
     cout << "	-> Aliases : ";
@@ -389,6 +410,7 @@ void ParserFlags::introspective(){
     cout << "	-> State : " << state << endl ;
 }
 
+// Prints the help request based on parser flags content and description
 void ParserFlags::help_request(int indent_spaces) {
     // indent 4 spaces
     indent(indent_spaces);

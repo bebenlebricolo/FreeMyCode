@@ -10,7 +10,7 @@ using namespace std;
 static const unsigned int maxIllegalChar = 50;
 static bool wayToSort(const string &a, const string &b) { return a < b; }
 
-
+// Extract words from a line 
 void tokenizeWords(std::string &line, std::vector<std::string> &outputVector)
 {
     string word;

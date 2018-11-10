@@ -580,7 +580,7 @@ static void stripCommentMarker(CommentMarkers *markers, string *bufferLine , mar
             string markerDescription = markersVect[m].name;
             size_t markerStartOffset = buffer.find(currentMarker);
 
-            if (markersVect[m].type == CommentTag::commentType::single)
+            if (markersVect[m].type == CommentTag::commentType::single_line)
             {
                 if (markerStartOffset >= minimumSpacesBeforeCommentTag)
                 {
@@ -645,7 +645,7 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
 {
     lg::Logger *log = lg::getLogger();
     // Handle comment block type and what to do next
-    if (input->mNumb.foundMarker || input->isSeparatorLine || input->activeCommentBlockType == commentType::Line)
+    if (input->mNumb.foundMarker || input->isSeparatorLine || input->activeCommentBlockType == CommentTag::commentType::single_line)
     {
         if (input->isSeparatorLine == true)
         {
@@ -664,23 +664,23 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
             case markersNumbers::markerType::line:
                 switch (input->activeCommentBlockType)
                 {
-                case commentType::Line:
-                case commentType::Block:
+                case CommentTag::commentType::single_line:
+                case CommentTag::commentType::block:
                     input->pushNewData = true;
                     break;
                 default:
-                    input->activeCommentBlockType = commentType::Line;
+                    input->activeCommentBlockType = CommentTag::commentType::single_line;
                     break;
                 }
                 break;
             case markersNumbers::markerType::block:
                 switch (input->activeCommentBlockType)
                 {
-                case commentType::Line:
+                case CommentTag::commentType::single_line:
                     input->pushNewData = true;
                     break;
-                case commentType::Block:
-                    input->activeCommentBlockType = commentType::None;
+                case CommentTag::commentType::block:
+                    input->activeCommentBlockType = CommentTag::commentType::unknown;
                     if (input->commentBlockLineNb != 0)
                     {
                         // Found closing comment block marker
@@ -692,7 +692,7 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
                     if (input->commentBlockLineNb == 0)
                     {
                         // Found Opening comment block
-                        input->activeCommentBlockType = commentType::Block;
+                        input->activeCommentBlockType = CommentTag::commentType::block;
                         input->pushNewData = true;
                     }
                     else
@@ -704,11 +704,11 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
             case markersNumbers::markerType::uncommented:
                 switch (input->activeCommentBlockType)
                 {
-                case commentType::Block:
+                case CommentTag::commentType::block:
                     input->pushNewData = true;
                     break;
-                case commentType::Line:
-                    input->activeCommentBlockType = commentType::None;
+                case CommentTag::commentType::single_line:
+                    input->activeCommentBlockType = CommentTag::commentType::unknown;
                     break;
                 default:
                     break;
@@ -724,7 +724,7 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
     }
     else
     {
-        if (input->activeCommentBlockType != commentType::None)
+        if (input->activeCommentBlockType != CommentTag::commentType::unknown)
         {
             input->pushNewData = true;
         }
