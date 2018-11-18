@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-#include "Command_Line_parser.h"
+#include "CommandLineParser.h"
 #include "ConfigTools.h"
 #include "DirectoryAnalyser.h"
 #include "LoggingTools.h"

@@ -1,3 +1,6 @@
+#ifndef COMMAND_LINE_PARSER_HEADER
+#define COMMAND_LINE_PARSER_HEADER
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -105,5 +108,5 @@ public:
 };
 
 
-
+#endif // COMMAND_LINE_PARSER_HEADER
 

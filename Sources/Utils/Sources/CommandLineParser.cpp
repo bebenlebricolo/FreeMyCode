@@ -23,7 +23,7 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 #include "stdafx.h"
 #include <iostream>
 #include <vector>
-#include "Command_Line_parser.h"
+#include "CommandLineParser.h"
 
 using namespace std;
 

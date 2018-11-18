@@ -3,7 +3,7 @@
 
 #include "FormattingUtils.h"
 #include "LoggingTools.h"
-#include "Command_Line_parser.h"
+#include "CommandLineParser.h"
 
 using namespace FormattingTags;
 using namespace rapidjson;

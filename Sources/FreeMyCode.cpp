@@ -17,7 +17,7 @@ Version	|	 Date	 |	Comments
 #include "stdafx.h"
 #include <iostream>
 
-#include "Command_Line_parser.h"
+#include "CommandLineParser.h"
 #include "DirectoryAnalyser.h"
 #include "ConfigTools.h"
 #include "LoggingTools.h"
