@@ -24,8 +24,10 @@ Each ParserResult class has dedicated flags which handles the parsed flags and a
 #include <iostream>
 #include <vector>
 #include "CommandLineParser.h"
+#include FS_INCLUDE
 
 using namespace std;
+namespace fs = FS_CPP;
 
 static void indent(unsigned int spaces = 0) {
     string indent_line = "";
@@ -111,6 +113,44 @@ void CommandLineParser::show_globals() {
         cout << endl << endl;
         return;
     }
+}
+
+
+// Checks user input. Passed args should point to something reachable (existing files / directories) for it to complete
+errorType CommandLineParser::check_args()
+{
+    errorType _rc = NO_ERROR;
+    string current_file;
+    logger::Logger *logger = logger::Logger::get_logger();
+
+    for(unsigned int i = 0 ;  i < Result.size() ; i ++)
+    {
+        switch(Result[i]->get_content_type())
+        {
+            case ParserResult::ContentType::EXISTING_FILE_OR_DIRECTORY :
+                current_file = Result[i]->get_arg();
+                if(fs::exists(current_file) == false)
+                {
+                    logger->logError("Cannot find " + current_file + ". No such file or directory here." );
+                    _rc = NO_SUCH_FILE_OR_DIRECTORY;            
+                }
+                else
+                {
+                    logger->logDebug("Found " + current_file + " !");
+                }
+                break;
+            case ParserResult::ContentType::FILE_TO_BE_CREATED :
+                if(fs::exists(current_file) == false)
+                {
+                    logger->logWarning("Logfile does not exist yet. Creation pending.");
+                }
+                break;
+            default:
+                // Regular use cases ; do not raise errors
+                break;                
+        }
+    }
+    return _rc;   
 }
 
 // Singleton implementation destroying feature
@@ -337,6 +377,29 @@ bool CommandLineParser::get_flag(string flag) {
     return false;
 }
 
+// Prints all parsed args on stdout;
+void CommandLineParser::print_all_registered_args()
+{
+    ParserResult *_tmpResult = nullptr;
+    cout << "Printing all parsed results : " << endl;
+    for(unsigned int i = 0 ; Result.size() ; i++)
+    {
+        _tmpResult = Result[i];
+        cout << "Slot " <<  _tmpResult->get_name() 
+             << " args : " << _tmpResult->get_arg() << endl;
+    }
+}
+
+// Get argument based on the ParserResult name (string)
+string CommandLineParser::get_arg(ParserResultElement _elem) {
+    for (unsigned int R = 0; R < Result.size(); R++) {
+        if (Result[R]->match_type(_elem)) {
+            return Result[R]->get_arg();
+        }
+    }
+    return "";
+}
+
 // Get argument based on the ParserResult name (string)
 string CommandLineParser::get_arg(string name) {
     for (unsigned int R = 0; R < Result.size(); R++) {
@@ -449,12 +512,20 @@ void GlobalHook::usage_request() {
 // ParserResult Object definition ##################################################
 ParserResult::ParserResult() :
     GlobalHook("Standard ParserResult description" ,
-                "Standard ParserResult usage"), full(false)
+                "Standard ParserResult usage"), elem(GENERIC),full(false)
 {}
 
 // Overloaded constructor with name, description and usages.
-ParserResult::ParserResult(string _name ,  string _description, string _usage) :
-    GlobalHook(_description , _usage), name(_name), full(false){}
+ParserResult::ParserResult(ParserResultElement _elem,
+                           string _name ,
+                           ContentType _type,
+                           string _description,
+                           string _usage) :
+                                 GlobalHook(_description , _usage),
+                                 elem(_elem) ,
+                                 c_type(_type),
+                                 name(_name),
+                                  full(false){}
 
 // Helps to identify if arguments have been parsed properly
 // Offers a simple way to debug stuff and see parsing problems.
@@ -537,9 +608,25 @@ void ParserResult::usage_request() {
     GlobalHook::usage_request();
 }
 
+
+// Returns the content type of this parser result
+ParserResult::ContentType ParserResult::get_content_type() { return c_type; }
+
 // Returns the parsed argument of the ParserResult
 // Used when accessing the results after parsing
 string ParserResult::get_arg() { return arg; }
+
+// Returns the parser result's  slot name
+string ParserResult::get_name() {return name; }
+
+// Used to find a particular ParserResult by its type / element
+// -> Used when we need to access the parser's results.
+bool ParserResult::match_type(ParserResultElement _elem)
+{
+    if(_elem == elem) return true;
+    else return false;
+}
+
 
 // Used to find a particular ParserResult by its name
 // -> Used when we need to access the parser's results.

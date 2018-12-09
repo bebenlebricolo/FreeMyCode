@@ -36,32 +36,10 @@ Version	|	 Date	 |	Comments
 using namespace std;
 namespace fs = FS_CPP;
 
-// List of parser results available for this program
-vector<string> PRList =
-{
-    "Directory",
-    "License",
-    "Config",
-    "Logoption",
-    "Secondary Input",
-    "Spectrums Dir"
-};
-
-// Generic error types 
-// TODO migrate this elsewhere, we shall not bother with those in the main file
-// Note : C++ provides exception throwing ; however it could be lighter to use generic errors (such as in C programs).
-enum errorType {
-    FATAL = -2,
-    NO_ERROR = 0,
-    BAD_ARGUMENTS,
-    NO_SUCH_FILE_OR_DIRECTORY,
-    NULL_POINTER
-};
-
 // Parser initialiser and debugging functions
-static void init_parser(CommandLineParser *parser);
-static errorType check_args(CommandLineParser *parser);
+static errorType init_parser(CommandLineParser *parser);
 static void printArgs(int argc, char** argv);
+static void print_wrong_files_list(vector<string> &file_list);
 
 
 int main(int argc , char* argv[])
@@ -89,9 +67,9 @@ int main(int argc , char* argv[])
 
     // Check if user asked for a verbose output
     if (parser->get_flag("-v") == true){
-        mylog->add_handler(new logger::FileHandler(parser->get_arg(PRList[3]), logger::FileHandler::Severity::Log_Debug));
+        mylog->add_handler(new logger::FileHandler(parser->get_arg(LOGGING_FILE), logger::FileHandler::Severity::Log_Debug));
     }else{
-        mylog->add_handler(new logger::FileHandler(parser->get_arg(PRList[3]), logger::FileHandler::Severity::Log_Warning));
+        mylog->add_handler(new logger::FileHandler(parser->get_arg(LOGGING_FILE), logger::FileHandler::Severity::Log_Warning));
     }
 
     // Initialise new logging session (display init message) -> helps identifying new session
@@ -99,7 +77,7 @@ int main(int argc , char* argv[])
 
 
     // Abort execution if we cannot find configuration file
-    if (config->parse_conf_file(parser->get_arg(PRList[2])) == false) {
+    if (false == config->parse_conf_file(parser->get_arg(CONFIG_FILE))) {
         // Ends the programm
         cout << "Programm will quit. Press \" Enter \" to exit." << endl;
         cin.ignore();
@@ -109,52 +87,151 @@ int main(int argc , char* argv[])
 
     // ------------------- Start working -------------------
 
-    // Make sure passed arguments are reliable, otherwise it could do harm to our files 
-    if( check_args(parser) == NO_ERROR )
-    {
-        // List all files in given directory that match targeted extensions
-        vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser->get_arg(PRList[0]), config->get_supported_ext_list());
-        LicenseWriter writer(parser,config);
-        LicenseChecker checker;
-        checker.parseSpectrums(parser->get_arg(PRList[5]));
-        InOut_CheckLicenses list;
-        list.fileList = *files_in_dir;
-        checker.checkForLicenses(&list);
-        
-        // TODO / NOTE : this should be obsolete as list->unlicensedFiles should contain only wanted files
-        checker.removeWrongFiles(files_in_dir, &list);
-        
-        // Build licenses texts in RAM for each file type
-        writer.build_formatted_license_list(files_in_dir);
-        vector<string> wrongFiles = writer.write_license(files_in_dir);
-
-        cout << "End of Program. Press any key to exit" << endl;
-        cin.ignore();
-        mylog->logInfo("Program is ending");
-
-        delete (files_in_dir);
-        CommandLineParser::destroyParser();
-        mylog->destroy_logger();
-        config->removeConfig();
-    }
-    else
+    // Make sure passed arguments are reliable, otherwise it could do harm to our files
+    // Otherwise, close program immediately 
+    if( parser->check_args() != NO_ERROR )
     {
         mylog->logFatal("At least one of the input is wrong. Please check your inputs ; aborting execution.");
         return -2;
     }
+
+    // Normal excution flow
+
+    // List all files in given directory that match targeted extensions
+    vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser->get_arg(PROJECT_DIRECTORY), config->get_supported_ext_list());
+    LicenseWriter writer(parser,config);
+    LicenseChecker checker;
+    
+    // Parse spectrums from files given as input
+    checker.parseSpectrums(parser->get_arg(SPECTRUMS_DIRECTORY));
+    InOut_CheckLicenses list;
+    list.fileList = *files_in_dir;
+    checker.checkForLicenses(&list);
+    
+    // TODO / NOTE : this should be obsolete as list->unlicensedFiles should contain only wanted files
+    checker.removeWrongFiles(files_in_dir, &list);
+    
+    // Build licenses texts in RAM for each file type
+    writer.build_formatted_license_list(files_in_dir);
+    vector<string> wrongFiles = writer.write_license(files_in_dir);
+    print_wrong_files_list(wrongFiles);
+
+    cout << "End of Program. Press any key to exit" << endl;
+    cin.ignore();
+    mylog->logInfo("Program is ending");
+
+
+    // Do not forget to destroy all dynamically allocated objects
+    delete (files_in_dir);
+    CommandLineParser::destroyParser();
+    mylog->destroy_logger();
+    config->removeConfig();
+
     return 0;
 }
 
 
 // Initialises our command line parser with its parser results 
 // -> simply add one PR with its description, parser will take care of filling them at run time.
-static void init_parser(CommandLineParser *parser) {
-    ParserResult* directory = new ParserResult(PRList[0], "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
-    ParserResult* license = new ParserResult(PRList[1], "License container : catches the License file path which will be added to the source files. Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
-    ParserResult* config = new ParserResult(PRList[2], "Config container : catches the Config file path. The config file holds informations about each file type supported by the tool", "[foreflag] <Config>");
-    ParserResult* logoption = new ParserResult(PRList[3], "LogOption container : catches the Log file output path. The log file holds informations about the application behavior", "[foreflag] <LogFile path> [Flags ...]");
-    ParserResult* secondary_input = new ParserResult(PRList[4], "Secondary input container : catches the secondary input file path where user may define optional tags for license writting", "[foreflag] <Secondary Input file path>");
-    ParserResult* spectrums_dir = new ParserResult(PRList[5], "Spectrums dir container : Points to the Spectrums directory used when comparing ", "[foreflag] <Spectrum dir path>");
+static errorType init_parser(CommandLineParser *parser) {
+    logger::Logger *logger = logger::Logger::get_logger();
+
+    ParserResult* directory = nullptr;
+    ParserResult* license = nullptr;
+    ParserResult* config = nullptr;
+    ParserResult* logoption = nullptr;
+    ParserResult* secondary_input = nullptr;
+    ParserResult* spectrums_dir = nullptr;
+
+    // Project directory to be analysed
+    try
+    {    
+        directory = new ParserResult( PROJECT_DIRECTORY,
+                                                    convert_ParserResultElement_to_string(PROJECT_DIRECTORY),
+                                                    ParserResult::ContentType::EXISTING_FILE_OR_DIRECTORY,
+                                                    "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
+    } 
+    catch (string e)
+    {
+        logger->logError(e);
+        return FATAL;
+    }
+
+    // Targeted license which will be used to write to files    
+    try
+    {
+        license = new ParserResult(   TARGETED_LICENSE,
+                                                    convert_ParserResultElement_to_string(TARGETED_LICENSE),
+                                                    ParserResult::ContentType::EXISTING_FILE_OR_DIRECTORY,
+                                                    "License container : catches the License file path which will be added to the source files. "
+                                                    "Note : it can also be regular text.", "[foreflag] <License>[Flags ...] ");
+    }
+    catch (string e)
+    {
+        logger->logError(e);
+        return FATAL;
+    }
+    
+    // Configuration file used to tell FreeMyCode how to write to files
+    try
+    {
+        config = new ParserResult( CONFIG_FILE,
+                                                convert_ParserResultElement_to_string(CONFIG_FILE),
+                                                ParserResult::ContentType::EXISTING_FILE_OR_DIRECTORY,
+                                                "Config container : catches the Config file path. The config file holds informations about "
+                                                "each file type supported by the tool", "[foreflag] <Config>");
+    }
+    catch (string e)
+    {
+        logger->logError(e);
+        return FATAL;
+    }
+
+    // Logging file which will be used
+    try
+    {
+        logoption = new ParserResult( LOGGING_FILE,
+                                                    convert_ParserResultElement_to_string(LOGGING_FILE),
+                                                    ParserResult::ContentType::FILE_TO_BE_CREATED,
+                                                    "LogOption container : catches the Log file output path. The log file holds informations "
+                                                    "about the application behavior", "[foreflag] <LogFile path> [Flags ...]");
+    }
+    catch (string e)
+    {
+        logger->logError(e);
+        return FATAL;
+    }
+
+    // Secondary input file which is used to handle user preferences
+    try
+    {
+        secondary_input = new ParserResult( SECONDARY_INPUT_FILE,
+                                                          convert_ParserResultElement_to_string(SECONDARY_INPUT_FILE),
+                                                          ParserResult::ContentType::EXISTING_FILE_OR_DIRECTORY,
+                                                          "Secondary input container : catches the secondary input file path where user may define "
+                                                          "optional tags for license writting", "[foreflag] <Secondary Input file path>");
+
+    }
+    catch (string e)
+    {
+        logger->logError(e);
+        return FATAL;
+    }
+
+    // Spectrums directory which contains all spectrum files to be used for the current session
+    try
+    {
+        spectrums_dir = new ParserResult( SPECTRUMS_DIRECTORY,
+                                                        convert_ParserResultElement_to_string(SPECTRUMS_DIRECTORY),
+                                                        ParserResult::ContentType::EXISTING_FILE_OR_DIRECTORY,
+                                                        "Spectrums dir container : Points to the Spectrums directory used when comparing ",
+                                                        "[foreflag] <Spectrum dir path>");
+    }
+    catch (string e)
+    {
+        logger->logError(e);
+        return FATAL;
+    }
 
     // Directory container
     directory->available_flags.push_back(ParserFlags(vector<string>({ "-A" , "--Analyse" }),
@@ -191,6 +268,7 @@ static void init_parser(CommandLineParser *parser) {
         "log block comment flag : logs block comments when found in parsed files", "<SpectrumsDir> -lb"));
 
     parser->add_container(new vector<ParserResult*>({ directory,license,config,logoption,secondary_input ,spectrums_dir}));
+    return NO_ERROR;
 }
 
 // Debugging stuff : show full command line arguments (really usefull while working with tools such as Visual Studio C++)
@@ -213,35 +291,20 @@ static void printArgs(int argc, char** argv)
 #endif
 }
 
-// Checks user input. Passed args should point to something reachable (existing files / directories) for it to complete
-static errorType check_args(CommandLineParser *parser)
+
+void print_wrong_files_list(vector<string> &file_list)
 {
-    errorType _rc = NO_ERROR;
-    string current_file;
     logger::Logger *logger = logger::Logger::get_logger();
-    if(parser == nullptr)
+    if(file_list.size() != 0)
     {
-        return NULL_POINTER;
-    }
-
-    for(unsigned int i = 0 ;  i < PRList.size() ; i ++)
-    {
-        current_file = parser->get_arg(PRList[i]);
-        if(fs::exists(current_file))
+        logger->logWarning("Printing list of files that FreeMyCode could not process : " );
+        for(unsigned int i = 0 ; i < file_list.size() ; i++)
         {
-            logger->logInfo("Found " + current_file + " !");
-        }
-        else if (i == 3)
-        {
-            logger->logWarning("Logfile does not exist yet. Creation pending.");
-            // Does not matter for logfile -> will be created on the fly
-        }
-        else
-        {
-            logger->logError("Cannot find " + current_file + ". No such file or directory here." );
-            _rc = NO_SUCH_FILE_OR_DIRECTORY;
+            logger->logWarning("     " + file_list[i]);
         }
     }
-
-    return _rc;
+    else
+    {
+        logger->logInfo("Good news ! FreeMyCode has successfully processed all required files!");
+    }
 }

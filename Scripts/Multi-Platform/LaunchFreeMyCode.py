@@ -284,6 +284,7 @@ def main() :
             "-L",
             logFile ,
             "-Si",
+            "-sr",
             secondaryInputFile,
             "-Sd",
             spectrumsDir]

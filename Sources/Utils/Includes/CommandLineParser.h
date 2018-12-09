@@ -7,6 +7,7 @@
 
 #include "stdafx.h"
 #include "LoggingTools.h"
+#include "CommandLineParser_PublicTypes.h"
 
 using namespace std;
 
@@ -46,27 +47,39 @@ private:
 // Embeds data about argument (such as file path) and some flags which are related to its function
 // E.g : logger parser result will embed logging file path and logging flags such as 'Verbose' , 'Force debug output', etc.
 struct ParserResult : public GlobalHook{
+	enum ContentType {
+		STRING,
+		EXISTING_FILE_OR_DIRECTORY,
+		FILE_TO_BE_CREATED
+	};
+
 	ParserResult();
-	ParserResult(string _name,  string _description, string _usage);
+	ParserResult(ParserResultElement _elem, string _name, ContentType _type, string _description, string _usage);
 	
 	string raw_args;
 	vector<ParserFlags> available_flags;
 	
 	bool contain_flag(string flag);
 	bool flag_state(string flag);
-	void set_flag(string flag);
-	bool is_full();
-	void set_arg(string arg);
 	void introspective();
 	void overrideFlag(string flagName, bool flagState);
 
 	void help_request(unsigned int indent_spaces = 4);
 	void usage_request();
-	string get_arg();
+	bool match_type(ParserResultElement _elem);
 	bool match_name(string _name);
 	bool has_terminal_flags();
 
+	bool is_full();
+	void set_flag(string flag);
+	void set_arg(string arg);
+	string get_arg();
+	string get_name();
+	ContentType get_content_type();
+
 protected :
+	ParserResultElement elem;
+	ContentType c_type;
 	string name;
 	string arg;
 	bool full;
@@ -93,11 +106,19 @@ class CommandLineParser {
     CommandLineParser();
 	~CommandLineParser();
 
+
 public:
 	bool parse_arguments(int argc, char * argv[]);
 	void show_results();
 	bool get_flag(string flag);
+	void print_all_registered_args();
+	errorType check_args();
+	
+	// Extracts the content of the targeted parser result object based on its Index (<=> ParserResultElement enum)
+	string get_arg(ParserResultElement _elem);
+	// Overloaded method to get full argument based on the exact string 
 	string get_arg(string name);
+
 	void overrideFlag(string flagName, bool flagState);
 	void add_container(std::vector<ParserResult*>* Result_vector);
 	void add_container(ParserResult* Result_object);

@@ -83,7 +83,7 @@ ___
    * Writes license file according to the parsed arguments
   
 ### Corrections and improvements : (TODO)
-- [ ] Harmonize logger usage
+- [x] Harmonize logger usage 
      * Upgrade logger as singleton
      * Do not pass logger ptr as parameter anymore (unnecessary noise)
  - [x] Input simplification (make it easier to use !)

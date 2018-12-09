@@ -19,6 +19,7 @@ list(APPEND GeneralInclusions
 ## libCmdLineParser ----------
 add_library(libCmdLineParser STATIC
     ${SRC}/CommandLineParser.cpp
+    ${SRC}/CommandLineParser_PublicTypes.cpp
 )
 target_link_libraries(libCmdLineParser
     libRapidjson
