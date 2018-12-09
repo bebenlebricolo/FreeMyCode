@@ -57,7 +57,7 @@ LicenseWriter::LicenseWriter(CommandLineParser* _parser, ConfObject* _config) :
 
 	// If we found a Secondary Input argument when parsing input
 	// build a new Secondary Input instance
-	string second_in_path = parser->get_arg("Secondary Input");
+	string second_in_path = parser->get_arg(SECONDARY_INPUT_FILE);
 	if (second_in_path != "" &&
 		exists(second_in_path))
 	{
@@ -348,8 +348,8 @@ void FormattedLicense::generate(string _ext, ConfObject& config,
 	// Copy License file content to formatted one
 	// First check if path points to something
 	// Then check if file opening succeeded
-	if (exists(parser.get_arg("License"))) {
-		license_file.open(parser.get_arg("License"));
+	if (exists(parser.get_arg(TARGETED_LICENSE))) {
+		license_file.open(parser.get_arg(TARGETED_LICENSE));
 		if(license_file) {
 			while (getline(license_file, buffer_string)) {
 				for_lic << (use_single_line_comment ? (single_com + " ") : "") << buffer_string << endl;
@@ -421,7 +421,7 @@ SecondaryInput::~SecondaryInput() {
 
 
 void SecondaryInput::parse_secondary_input_file() {
-	string filepath = parser->get_arg("Secondary Input");
+	string filepath = parser->get_arg(SECONDARY_INPUT_FILE);
 
 	// Documentation : using file stream instead of C FILE pointers
 	// http://rapidjson.org/md_doc_stream.html#FileStreams
