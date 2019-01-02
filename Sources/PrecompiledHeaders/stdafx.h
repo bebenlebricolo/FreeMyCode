@@ -18,7 +18,7 @@
     // Handle Microsoft Visual Studio compiler
     #ifdef _MSC_VER 
         #define _WIN_OS
-        #if _MSC_VER <= 1915
+        #if _MSC_VER <= 1916
             #define EXPERIMENTAL_FS
         #endif
     #endif // _MSC_VER
