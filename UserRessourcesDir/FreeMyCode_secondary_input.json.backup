@@ -1,0 +1,17 @@
+{
+  "Tags": {
+    "Author": "bebenlebricolo",
+    "Contributors": [
+      "FoxP"
+    ],
+    "License": {
+      "name": "GPL V3",
+      "url": "https://www.gnu.org/licenses/quick-guide-gplv3.html"
+    },
+    "About the author": {
+      "url": "https://github.com/bebenlebricolo"
+    },
+    "Date": "16/10/2018 (16th of October 2018)",
+    "Motivations": "This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected."
+  }
+}
