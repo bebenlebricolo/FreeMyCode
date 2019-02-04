@@ -1,4 +1,4 @@
-import system_utils as su
+import FreeMyCode_python_utils.system_utils as su
 
 def logInfo(message) :
     # Debug stuff

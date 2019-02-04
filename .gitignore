@@ -7,5 +7,7 @@ Scripts/Dummy_Directory/*
 *Dummy*
 *.make
 
-# Swap files (vim) 
+# Python related stuff
+__pycache__/
+# Swap files (vim)
 *.swp

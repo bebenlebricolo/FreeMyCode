@@ -3,13 +3,9 @@
 project(FreeMyCodeProject)
 
 
-set( COMPILE_TYPE "Release")
+set(CMAKE_BUILD_TYPE Debug)
 
-if( ${COMPILE_TYPE} MATCHES "Debug")
-	set(CMAKE_BUILD_TYPE Debug)
-else()
-	set(CMAKE_BUILD_TYPE Release)
-endif()
+# build types configurations available : Debug or Release
 
 
 set( TARGETED_OS ${CMAKE_SYSTEM_NAME} )
@@ -30,13 +26,18 @@ if( CCompiler MATCHES "GCC")
 	set (CXX_FLAGS "-std=c++17 -lstdc++fs ")
 	set (CXX_OPTIMISATIONS "-O1")
 	set (FS_LIB "stdc++fs")
-	set (DEFINES "-DGCC_COMPILER ")
+	if(CMAKE_BUILD_TYPE MATCHES Debug)
+		add_definitions(-DDEBUG)
+	endif()
 
 ### Microsoft Visual Studio Compiler (MSVC)
 elseif( ${CCompiler} MATCHES "MSVC")
 	set (CXX_FLAGS "/std:c++17 /Wall /W2 /EHsc stdc++fs.lib")
 	set (CXX_OPTIMISATIONS "/O1")
 	set (FS_LIB "")
+	if(CMAKE_BUILD_TYPE MATCHES Debug)
+		add_definitions(/DDEBUG)
+	endif()
 endif(CCompiler MATCHES "GCC")
 
 set(CMAKE_CXX_FLAGS "${CXX_FLAGS} ${CXX_OPTIMISATIONS} ${CXX_COMPILE_TYPE} ${CXX_WARNINGS} ${DEFINES}")
@@ -71,11 +72,11 @@ target_link_libraries( FreeMyCode
 
 
 # Installing binaries ...
-install( TARGETS FreeMyCode 
+install( TARGETS FreeMyCode
 	DESTINATION ${CMAKE_SOURCE_DIR}/Install/bin)
 
 # Creating Install folder
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Scripts/Multi-Platform 
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Scripts/Multi-Platform
 	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Scripts)
 # Install Platform-dependant scripts
 if(${TARGETED_OS} MATCHES "Windows" )
@@ -87,13 +88,13 @@ elseif (${TARGETED_OS} MATCHES "Linux")
 endif()
 
 # Installing ressources directory
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Ressources/AvailableLicenses 
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Ressources/AvailableLicenses
 	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/Ressources/Spectrums 
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Ressources/Spectrums
 	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources)
-install(FILES ${CMAKE_SOURCE_DIR}/Ressources/Config.json 
+install(FILES ${CMAKE_SOURCE_DIR}/Ressources/Config.json
 	DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources)
 
-install(FILES ${CMAKE_SOURCE_DIR}/Ressources/Secondary_input.json 
+install(FILES ${CMAKE_SOURCE_DIR}/Ressources/Secondary_input.json
 	RENAME Secondary_input.template.json DESTINATION ${CMAKE_SOURCE_DIR}/Install/Ressources )
 

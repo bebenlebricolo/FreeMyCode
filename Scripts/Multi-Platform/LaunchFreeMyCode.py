@@ -4,10 +4,10 @@
 import sys
 import os
 import subprocess
-import FreeMyCode_python_utils
-from FreeMyCode_python_utils import logging_tools as log
-from FreeMyCode_python_utils import system_utils as su
-from FreeMyCode_python_utils import path_utils as pu
+
+import FreeMyCode_python_utils.system_utils as su
+import FreeMyCode_python_utils.path_utils as pu
+import FreeMyCode_python_utils.logging_tools as log
 
 
 pythonVersion = sys.version_info
