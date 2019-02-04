@@ -70,7 +70,7 @@ static bool hasOneCharacter(char letter,const char* testChars);
 // ##############################
 // TODO : make this configurable with a file or via command line
 
-static const uint8_t minimumDegreeOfConfidenceRequired = 50;
+static const uint8_t minimumDegreeOfConfidenceRequired = 50U;
 
 // Only look in the 100 first lines of each file
 static const uint8_t lineCounterLimit = 100;
@@ -702,6 +702,7 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
                     break;
                 default:
                     input->activeCommentBlockType = CommentTag::commentType::single_line;
+					input->pushNewData = true;
                     break;
                 }
                 break;
@@ -729,7 +730,10 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
                     }
                     else
                     {
-                        //should not get here
+						// Maybe we had a single line comment just before,
+						// which could be merged with a block comment
+						input->activeCommentBlockType = CommentTag::commentType::block;
+						input->pushNewData = true;
                     }
                 }
                 break;
@@ -790,6 +794,9 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
 
     stringstream* commentBlock = new stringstream;
     vector<stringstream*> commentBlockCollection;
+	uint8_t blank_lines_counter = 0;
+	CommentTag::commentType previous_comment_type = CommentTag::commentType::unknown;
+
 
     for (uint8_t lineCounter = 0; (getline(currentFile, buffer) && lineCounter <= lineCounterLimit ); lineCounter++)
     {
@@ -815,17 +822,21 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
             if (handStr.commentBlockLineNb < minimumCommentBlockLineSize)
             {
                 log->logInfo("Dropping current comment block : block size is too small.", __LINE__, __FILE__, __func__, "LicenseChecker");
-            }
+				delete commentBlock;
+			}
             else
             {
+				// Store the last line before switching to another comment block
                 if (handStr.commentBlockLineNb != 0)
                 {
+					handStr.commentBlockLineNb++;
                     *commentBlock << buffer << endl;
                 }
                 commentBlockCollection.push_back(commentBlock);
             }
             commentBlock = new stringstream;
             handStr.commentBlockLineNb = 0;
+			blank_lines_counter = 0;
         }
         else if (handStr.pushNewData == true)
         {
@@ -833,17 +844,57 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
             {
                 handStr.commentBlockLineNb++;
                 *commentBlock << buffer << endl;
+				blank_lines_counter = 0;
             }
         }
+		else if(handStr.commentBlockLineNb > 0)
+		{
+			// Discard blank lines 
+			blank_lines_counter++;
+			if (blank_lines_counter >= 3) 
+			{
+				if (handStr.commentBlockLineNb >= minimumCommentBlockLineSize) 
+				{
+					commentBlockCollection.push_back(commentBlock);
+				}
+				else 
+				{
+					delete commentBlock;
+				}
+				commentBlock = new stringstream;
+				handStr.commentBlockLineNb = 0;
+				blank_lines_counter = 0;
+			}
+		}
+		// If the currently parser comment type is something different than before
+		else if (   handStr.commentBlockLineNb != 0
+				&&  (	(handStr.activeCommentBlockType != CommentTag::commentType::unknown) 
+					||  (previous_comment_type != CommentTag::commentType::unknown) )
+				&& (previous_comment_type != handStr.activeCommentBlockType))
+		{
+			if (handStr.commentBlockLineNb >= minimumCommentBlockLineSize) 
+			{
+				commentBlockCollection.push_back(commentBlock);
+			}
+			else 
+			{
+				delete commentBlock;
+				commentBlock = new stringstream;
+			}
+			handStr.commentBlockLineNb = 0;
+			blank_lines_counter = 0;
+
+		}
+		previous_comment_type = handStr.activeCommentBlockType;
 
     } // End of for loop
     currentFile.close();
-    if (handStr.commentBlockLineNb != 0)
+    if (handStr.commentBlockLineNb != 0 && commentBlock != nullptr)
     {
         commentBlockCollection.push_back(commentBlock);
     }
     // Finished iterating over the 100 first file's lines
-    if (parser->get_flag("-lg") == true)
+    if (parser->get_flag("-lb") == true)
     {
         printBlockCommentSections(&commentBlockCollection);
     }
@@ -978,8 +1029,13 @@ uint8_t Spectrum::compareWithSpectrum(LicenseSpectrum *other)
 
     uint8_t percentageResult = 0;
     unsigned int matchedItemNb = 0;
+	unsigned int other_total = other->getTotalWordsNb();
+	unsigned int self_total = getTotalWordsNb();
+	unsigned int total_words = (other_total >= self_total) ? other_total : self_total;
     unsigned int index = 0;
 
+	// For all words in wordBasedDictionary, check if there is a match
+	// between the 'other' words and the current license spectrum
     for (index = 0; index < wordBasedDictionary.size(); index++)
     {
         if(find_if(other->wordBasedDictionary.begin() , other->wordBasedDictionary.end() ,isEqual(wordBasedDictionary[index].first)) != other->wordBasedDictionary.end())
@@ -988,8 +1044,7 @@ uint8_t Spectrum::compareWithSpectrum(LicenseSpectrum *other)
             matchedItemNb += wordBasedDictionary[index].second;
         }
     }
-
-    percentageResult = (matchedItemNb * 100) / other->getTotalWordsNb();
+    percentageResult = (matchedItemNb * 100) / total_words;
     return percentageResult;
 }
 
@@ -1006,11 +1061,10 @@ void Spectrum::compareWithSpectrumList(vector<LicenseSpectrum* > *other, License
     uint8_t maxMatch = 0;
     uint8_t currentMatch = 0;
     for (unsigned int sp = 0; sp < other->size(); sp++)
-    {
+	{
         currentMatch = compareWithSpectrum((*other)[sp]);
         if (currentMatch >= maxMatch)
         {
-
             maxMatch = currentMatch;
             match->degreeOfConfidence = maxMatch;
             match->licenseName = (*other)[sp]->licenseName;
