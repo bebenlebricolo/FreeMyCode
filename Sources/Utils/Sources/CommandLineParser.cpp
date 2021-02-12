@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -164,7 +164,7 @@ errorType CommandLineParser::check_args()
                 if(fs::exists(current_file) == false)
                 {
                     logger->logError("Cannot find " + current_file + ". No such file or directory here." );
-                    _rc = NO_SUCH_FILE_OR_DIRECTORY;            
+                    _rc = NO_SUCH_FILE_OR_DIRECTORY;
                 }
                 else
                 {
@@ -179,10 +179,10 @@ errorType CommandLineParser::check_args()
                 break;
             default:
                 // Regular use cases ; do not raise errors
-                break;                
+                break;
         }
     }
-    return _rc;   
+    return _rc;
 }
 
 // Singleton implementation destroying feature
@@ -206,7 +206,7 @@ CommandLineParser::~CommandLineParser() {
 // Parser results containers with them.
 bool CommandLineParser::parse_arguments(int argc, char * argv[]) {
     logger::Logger *logsys = logger::getLogger();
-    
+
     // Input checking section
     // If anything goes wrong here, stop execution of program and exit.
     if(argc < 2 )
@@ -350,7 +350,7 @@ void CommandLineParser::push_flag(ParserResult** target, string flag) {
     all_flags += flag + " ";
 }
 
-// Checks if targeted string matches our registered flags structure 
+// Checks if targeted string matches our registered flags structure
 bool CommandLineParser::is_a_flag(string _parsed_arg) {
     if (_parsed_arg[0] == '-') return true;
     else return false;
@@ -367,7 +367,7 @@ bool CommandLineParser::is_flag_valid(string _parsed_arg, ParserResult** _temp_P
 
 // Find targeted flag owner (Parser Result)
 // We do this to retrieve which Parser Result we are currently filling
- 
+
 ParserResult* CommandLineParser::find_owner(string flag) {
     for (unsigned int index = 0; index < Result.size(); index++) {
         if (Result[index]->contain_flag(flag)) return Result[index];
@@ -375,7 +375,7 @@ ParserResult* CommandLineParser::find_owner(string flag) {
     return NULL;
 }
 
-// Find next parser result to be filled 
+// Find next parser result to be filled
 // Note: if the current Parser Result is full (arg section is filled), then we need to move on to the next Parser Result of the list
 // Note2: if we get a flag related to another ParserResult than the current one, this is an indicator to start filling the next one
 int CommandLineParser::find_next_PR_index(int _target_id) {
@@ -399,7 +399,7 @@ void CommandLineParser::show_results() {
     }
 }
 
-// Returns requested flag state 
+// Returns requested flag state
 bool CommandLineParser::get_flag(string flag) {
     for (unsigned int R = 0; R < Result.size(); R++) {
         if (Result[R]->contain_flag(flag)) {
@@ -417,7 +417,7 @@ void CommandLineParser::print_all_registered_args()
     for(unsigned int i = 0 ; Result.size() ; i++)
     {
         _tmpResult = Result[i];
-        cout << "Slot " <<  _tmpResult->get_name() 
+        cout << "Slot " <<  _tmpResult->get_name()
              << " args : " << _tmpResult->get_arg() << endl;
     }
 }

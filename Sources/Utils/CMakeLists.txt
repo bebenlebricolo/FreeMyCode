@@ -34,7 +34,7 @@ target_include_directories( libCmdLineParser PRIVATE
 add_library(libConfigTools STATIC
     ${SRC}/ConfigTools.cpp
 )
-target_link_libraries(libConfigTools 
+target_link_libraries(libConfigTools
     libRapidjson
     libLogTools
     libFormatUtils
@@ -47,20 +47,20 @@ target_include_directories( libConfigTools PUBLIC
 add_library(libDirectoryAnalyser STATIC
     ${SRC}/DirectoryAnalyser.cpp
 )
-target_link_libraries(libDirectoryAnalyser 
+target_link_libraries(libDirectoryAnalyser
     libRapidjson
     libPathUtils
     libLogTools
 )
 target_include_directories( libDirectoryAnalyser PUBLIC
-    ${GeneralInclusions}  
+    ${GeneralInclusions}
 )
 
 ## libFormatUtils ----------
 add_library(libFormatUtils STATIC
     ${SRC}/FormattingUtils.cpp
 )
-target_link_libraries(libFormatUtils 
+target_link_libraries(libFormatUtils
     libRapidjson
     libCmdLineParser
     libLogTools
@@ -75,7 +75,7 @@ add_library(libLogTools STATIC
     ${SRC}/LoggingTools.cpp
 )
 target_include_directories( libLogTools PUBLIC
-    ${GeneralInclusions}    
+    ${GeneralInclusions}
 )
 
 
@@ -85,14 +85,14 @@ add_library(libPathUtils STATIC
 )
 target_link_libraries(libPathUtils libRapidjson)
 target_include_directories( libPathUtils PUBLIC
-    ${GeneralInclusions}    
+    ${GeneralInclusions}
 )
 
 ## libLicenseWriter ----------
 add_library(libLicenseWriter STATIC
     ${SRC}/LicenseWriter.cpp
 )
-target_link_libraries(libLicenseWriter 
+target_link_libraries(libLicenseWriter
     libRapidjson
     libLogTools
     libFormatUtils
@@ -100,7 +100,7 @@ target_link_libraries(libLicenseWriter
     libConfigTools
 )
 target_include_directories( libPathUtils PUBLIC
-    ${GeneralInclusions}    
+    ${GeneralInclusions}
 )
 
 ## libParsingUtils ----------
@@ -114,17 +114,17 @@ target_include_directories( libParsingUtils PRIVATE
 
 ## libLicenseChecker
 add_library(libLicenseChecker STATIC
-	${SRC}/LicenseChecker.cpp
+    ${SRC}/LicenseChecker.cpp
 )
 
 target_link_libraries(libLicenseChecker
-	libLogTools
-	libPathUtils
-	libParsingUtils
-	libConfigTools
+    libLogTools
+    libPathUtils
+    libParsingUtils
+    libConfigTools
 )
 
 target_include_directories(libLicenseChecker PUBLIC
-	${GeneralInclusions}
+    ${GeneralInclusions}
 )
 

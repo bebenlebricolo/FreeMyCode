@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -52,7 +52,7 @@ struct Spectrum;
 struct LicenseSpectrum;
 struct LicenseInFileMatchResult;
 
-// Exchange class 
+// Exchange class
 struct InOut_CheckLicenses
 {
     std::vector<std::string> fileList;
@@ -65,16 +65,16 @@ struct InOut_CheckLicenses
 class LicenseChecker
 {
 public:
-	//LicenseChecker();
-	~LicenseChecker();
+    //LicenseChecker();
+    ~LicenseChecker();
 
     // ################
     // License checking related stuff
     // ################
 
-	// returns a pointer to a list of already licenses files
-	// Removes already licenses files in input file list
-	bool checkForLicenses(InOut_CheckLicenses* list);
+    // returns a pointer to a list of already licenses files
+    // Removes already licenses files in input file list
+    bool checkForLicenses(InOut_CheckLicenses* list);
     void findInRegularFile(LicenseInFileMatchResult* match);
     void findInPlainTextFile(LicenseInFileMatchResult* match);
 
@@ -83,19 +83,19 @@ public:
     // ################
 
     // Parses spectrum files (.spec) and register them in recordedLicenses list
-	void parseSpectrums(std::vector<std::string> &fileList);
+    void parseSpectrums(std::vector<std::string> &fileList);
     // Overloading with a directory structure
     void parseSpectrums(std::string);
     // Build License Sectrum from text license (e.g. GPLV3.txt) and adds it to recordedLicenses list
-	void buildLicensesSpectrum(std::vector < std::string > &filesList);
+    void buildLicensesSpectrum(std::vector < std::string > &filesList);
     // Builds a Spectrum from a word based vector (containing every word of a given text section) and outputs a spectrum object.
     void buildBasicSpectrum(vector<string> &wordsList, Spectrum *spec);
-    // Overloading wrapper to buildBasicSpectum ... 
+    // Overloading wrapper to buildBasicSpectum ...
     void buildBasicSpectrum(stringstream *stream, Spectrum *spec);
 
     // Writes all previously recorded Licenses Spectrum on disk into the targeted directory (outputPath)
-	void writeSpectrumsOnDisk(std::string outputPath);
-	// Builds a generic License Spectrum from all previously recorded Licenses.
+    void writeSpectrumsOnDisk(std::string outputPath);
+    // Builds a generic License Spectrum from all previously recorded Licenses.
     // TODO : to be implemented
     // void buildGenericLicenseSpectrum();
 
@@ -103,11 +103,11 @@ public:
 
 
     // Utils / debug / test functionalities
-	void printLicenses();
-	void printSpectrums();
+    void printLicenses();
+    void printSpectrums();
 private:
     // Vector of recorded Licenses (like GPL V2 / V3 , etc.)
-	std::vector<LicenseSpectrum*> recordedLicenses;
+    std::vector<LicenseSpectrum*> recordedLicenses;
     // Vector of files which does not contain any license (not found any in them)
     std::vector<std::string> unlicensedFiles;
     // List of pair of <file / Potential License name>
@@ -116,8 +116,8 @@ private:
 
 // Spectrum base class : any text spectrum.
 // A file spectrum (text) represents all words that could be found in a targeted file and
-// list their frequency throughout the file. It used to compare comment blocks in input file with known licenses, 
-// thus allowing our program to determine whether the file already contains a license or not. 
+// list their frequency throughout the file. It used to compare comment blocks in input file with known licenses,
+// thus allowing our program to determine whether the file already contains a license or not.
 struct Spectrum
 {
     std::vector<std::pair<std::string, unsigned short int>> wordBasedDictionary;
@@ -130,8 +130,8 @@ struct Spectrum
 // Same as parent class , but dedicated to one targeted license (embeds License name along with its spectrum)
 struct LicenseSpectrum : public Spectrum
 {
-	std::string licenseName;
-	void printContent();
+    std::string licenseName;
+    void printContent();
 };
 
 // Used to exchange result data
@@ -176,7 +176,7 @@ struct markersNumbers {
     }
 
     // Extract informations about the currently parsed markers
-    // So that we could know if we are facing an opening block comment, closing, or single line comment section 
+    // So that we could know if we are facing an opening block comment, closing, or single line comment section
     markerType getMarkerType()
     {
         if (sLine_count != 0 ||

@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -94,21 +94,6 @@ void printUsage()
 
 }
 
-
-/*vector<string> filterInput(int argc, char** argv)
-{
-    vector<string> fileList;
-    for (int i = 2; i < argc; i++)
-    {
-        string arg = argv[i];
-        if (!fs::exists(arg))
-        {
-            continue;
-        }
-        fileList.push_back(arg);
-    }
-    return fileList;
-}*/
 
 void joinPaths(int argc, char** argv)
 {

@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -58,7 +58,7 @@ Version	|	 Date	 |	Comments
 #include "PathUtils.h"
 
 // Filesystem C++ standard library inclusion depends on which version of compiler is actually running on your machine
-// this is why we need to abstract inclusion mechanism. Could either be std::experiment::filesystem or std::filesystem (C++17 native feature ) 
+// this is why we need to abstract inclusion mechanism. Could either be std::experiment::filesystem or std::filesystem (C++17 native feature )
 #include FS_INCLUDE
 
 // Used for debugging purposes : will log some more informations such as complete input command
@@ -84,7 +84,7 @@ int main(int argc , char* argv[])
     // Parsers and results
     CommandLineParser *parser = CommandLineParser::getParser();
     ConfObject *config = ConfObject::getConfig();
-    
+
     mylog->add_handler(new logger::ConsoleHandler(logger::ConsoleHandler::Severity::Log_Info));
     init_parser(parser);
     printArgs(argc, argv);
@@ -120,7 +120,7 @@ int main(int argc , char* argv[])
     // ------------------- Start working -------------------
 
     // Make sure passed arguments are reliable, otherwise it could do harm to our files
-    // Otherwise, close program immediately 
+    // Otherwise, close program immediately
     if( parser->check_args() != NO_ERROR )
     {
         mylog->logFatal("At least one of the input is wrong. Please check your inputs ; aborting execution.");
@@ -133,16 +133,16 @@ int main(int argc , char* argv[])
     vector<string>* files_in_dir = DirectoryAnalyser::get_files_in_dir(parser->get_arg(PROJECT_DIRECTORY), config->get_supported_ext_list());
     LicenseWriter writer(parser,config);
     LicenseChecker checker;
-    
+
     // Parse spectrums from files given as input
     checker.parseSpectrums(parser->get_arg(SPECTRUMS_DIRECTORY));
     InOut_CheckLicenses list;
     list.fileList = *files_in_dir;
     checker.checkForLicenses(&list);
-    
+
     // TODO / NOTE : this should be obsolete as list->unlicensedFiles should contain only wanted files
     checker.removeWrongFiles(files_in_dir, &list);
-    
+
     // Build licenses texts in RAM for each file type
     writer.build_formatted_license_list(files_in_dir);
     vector<string> wrongFiles = writer.write_license(files_in_dir);
@@ -163,7 +163,7 @@ int main(int argc , char* argv[])
 }
 
 
-// Initialises our command line parser with its parser results 
+// Initialises our command line parser with its parser results
 // -> simply add one PR with its description, parser will take care of filling them at run time.
 static errorType init_parser(CommandLineParser *parser) {
     logger::Logger *logger = logger::Logger::get_logger();
@@ -177,19 +177,19 @@ static errorType init_parser(CommandLineParser *parser) {
 
     // Project directory to be analysed
     try
-    {    
+    {
         directory = new ParserResult( PROJECT_DIRECTORY,
                                                     convert_ParserResultElement_to_string(PROJECT_DIRECTORY),
                                                     ParserResult::ContentType::EXISTING_FILE_OR_DIRECTORY,
                                                     "Directory container : catches the Directory path to be analysed", "<Directory>[Flags...] ");
-    } 
+    }
     catch (string e)
     {
         logger->logError(e);
         return FATAL;
     }
 
-    // Targeted license which will be used to write to files    
+    // Targeted license which will be used to write to files
     try
     {
         license = new ParserResult(   TARGETED_LICENSE,
@@ -203,7 +203,7 @@ static errorType init_parser(CommandLineParser *parser) {
         logger->logError(e);
         return FATAL;
     }
-    
+
     // Configuration file used to tell FreeMyCode how to write to files
     try
     {
@@ -268,7 +268,7 @@ static errorType init_parser(CommandLineParser *parser) {
     // Directory container
     directory->available_flags.push_back(ParserFlags(vector<string>({ "-A" , "--Analyse" }),
         "Analyse flag : Tells the application to first analyse the directory and build a map of the directory for a faster run", ""));
-    
+
     // License container
     license->available_flags.push_back(ParserFlags(vector<string>({ "-p", "--prepend" }),
         "Prepend flag : write the passed text on top of the targeted file", "<License> --prepend"));
@@ -278,21 +278,21 @@ static errorType init_parser(CommandLineParser *parser) {
         "Log formatted license flag : logs the content of each pre-formatted license","<License> -lf"));
     license->available_flags.push_back(ParserFlags(vector<string>({ "-fsl","--force-single-line" }),
         "Force single line flag : Forces the usage of single line comments if possible","<License> -fsl"));
-    
+
     // Config container
     config->available_flags.push_back(ParserFlags(vector<string>({ "-c", "--config" }),
         "Config flag : allows the parser to know we are targeting a config flag (foreflag)", "-c <ConfigFile>"));
-   
+
     // Log option container
     logoption->available_flags.push_back(ParserFlags(vector<string>({ "-L" , "--Log" }),
         "Log flag : Tells the application to use a log file (foreflag)", "-L <LogFile>"));
     logoption->available_flags.push_back(ParserFlags(vector<string>({ "-v" , "--verbose" }),
         "Verbose flag : Tells the application to set the logger to verbose (info, warning and error logs will be written)", "<LogFile> -v"));
-   
+
     // Secondary Input container
     secondary_input->available_flags.push_back(ParserFlags(vector<string>({ "-Si","--Secondary-Input" }),
         "Secondary Input flag : Adds a container for secondary input filepath","-Si <SecondaryInputFile>"));
-    
+
     // Spectrums directory container
     spectrums_dir->available_flags.push_back(ParserFlags(vector<string>({ "-Sd","--Spectrums-dir" }),
         "Spectrums Directory flag : Adds a container for spectrums directory path", "-Sd <SpectrumsDir>"));

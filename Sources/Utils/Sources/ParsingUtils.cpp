@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -42,7 +42,7 @@ using namespace std;
 static const unsigned int maxIllegalChar = 50;
 static bool wayToSort(const string &a, const string &b) { return a < b; }
 
-// Extract words from a line 
+// Extract words from a line
 void tokenizeWords(std::string &line, std::vector<std::string> &outputVector)
 {
     string word;

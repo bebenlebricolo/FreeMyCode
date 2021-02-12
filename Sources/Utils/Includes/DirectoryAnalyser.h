@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -40,18 +40,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include "LoggingTools.h"
 
-// Directory analyser class whose role is to list all files in the targeted directory, and 
+// Directory analyser class whose role is to list all files in the targeted directory, and
 // to store each file's extension.
 // Files extensions are stored to target only supported files types (by comparing both lists)
 class DirectoryAnalyser {
-	static std::vector<std::string> isolate_file_ext(std::string extension_string);
-	static std::vector<std::string> split(const char * str, char c = ' ');
-	static bool found_ext(std::string extension, std::vector < std::string> extension_vect);
-	static bool character_in_list(char c, std::string c_list);
+    static std::vector<std::string> isolate_file_ext(std::string extension_string);
+    static std::vector<std::string> split(const char * str, char c = ' ');
+    static bool found_ext(std::string extension, std::vector < std::string> extension_vect);
+    static bool character_in_list(char c, std::string c_list);
 
 public:
-	static std::vector<std::string>* get_files_in_dir( const std::string &path, std::string targeted_extensions = "" );
-	static std::string convert_string(std::string path);
+    static std::vector<std::string>* get_files_in_dir( const std::string &path, std::string targeted_extensions = "" );
+    static std::string convert_string(std::string path);
 };
 
 #endif // !DIRECTORYANALYSER_HEADER

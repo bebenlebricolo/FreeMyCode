@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -91,24 +91,24 @@ static const uint8_t minimumSeparatorCount = 10;
 //    left member, alias "token" (word)
 void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
 {
-	logger::Logger* log = logger::Logger::get_logger();
+    logger::Logger* log = logger::Logger::get_logger();
     if (fileList.size() == 0)
     {
         log->logWarning("Nothing to parse : input vector is empty. Aborting parsing session.", __LINE__, __FILE__, __func__, "LicenseChecker");
         return;
     }
-	// first check file exists
-	for (unsigned int f = 0; f < fileList.size(); f++)
-	{
-		string currentPath = fileList[f];
-		string filename = pu::get_filename(currentPath);
-		if (fs::exists(currentPath) == false)
-		{
-			log->logWarning("File " + filename + " does not exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
-		}
-		else
-		{
-            // If we found a directory, parse all spectrums inside it! 
+    // first check file exists
+    for (unsigned int f = 0; f < fileList.size(); f++)
+    {
+        string currentPath = fileList[f];
+        string filename = pu::get_filename(currentPath);
+        if (fs::exists(currentPath) == false)
+        {
+            log->logWarning("File " + filename + " does not exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
+        }
+        else
+        {
+            // If we found a directory, parse all spectrums inside it!
             if (fs::is_directory(currentPath))
             {
                 vector<string> filesInDir;
@@ -228,8 +228,8 @@ void LicenseChecker::parseSpectrums(std::vector<std::string> &fileList)
                     }
                 }
             }
-		}
-	}
+        }
+    }
 }
 
 // Wrapper to parseSpectrums, capable of handling full directory
@@ -246,118 +246,118 @@ void LicenseChecker::parseSpectrums(string dir)
 // TODO Put all that stuff in ParsingUtils lib
 void trimWhiteSpaces(string &word)
 {
-	string buffer;
-	bool detectedWord = false;
-	unsigned int wordStartBoundary = 0;
-	unsigned int wordEndBoundary = 0;
+    string buffer;
+    bool detectedWord = false;
+    unsigned int wordStartBoundary = 0;
+    unsigned int wordEndBoundary = 0;
 
-	for (unsigned int i = 0; i < word.size(); i++)
-	{
-		char curLetter = word[i];
-		if(curLetter != ' ')
-		{
-			// found word boundary
-			wordStartBoundary = i;
-			detectedWord = true;
-			break;
-		}
-	}
+    for (unsigned int i = 0; i < word.size(); i++)
+    {
+        char curLetter = word[i];
+        if(curLetter != ' ')
+        {
+            // found word boundary
+            wordStartBoundary = i;
+            detectedWord = true;
+            break;
+        }
+    }
 
-	if (detectedWord == true)
-	{
-		// Same algorithm running from the end of the word to the beginning
-		for (unsigned int i = word.size() - 1; i != 0 ; i --)
-		{
-			char curLetter = word[i];
-			if(curLetter != ' ')
-			{
-				// found word boundary
-				wordEndBoundary = i;
-				break;
-			}
-		}
-		// Copy cleaned result to input word
-		for (unsigned int i = wordStartBoundary; i < wordEndBoundary + 1; i++)
-		{
-			buffer += word[i];
-		}
-	}
+    if (detectedWord == true)
+    {
+        // Same algorithm running from the end of the word to the beginning
+        for (unsigned int i = word.size() - 1; i != 0 ; i --)
+        {
+            char curLetter = word[i];
+            if(curLetter != ' ')
+            {
+                // found word boundary
+                wordEndBoundary = i;
+                break;
+            }
+        }
+        // Copy cleaned result to input word
+        for (unsigned int i = wordStartBoundary; i < wordEndBoundary + 1; i++)
+        {
+            buffer += word[i];
+        }
+    }
 
-	word = buffer;
+    word = buffer;
 }
 
 
 
 LicenseChecker::~LicenseChecker()
 {
-	for (unsigned int i = 0; i < recordedLicenses.size(); i++)
-	{
-		delete(recordedLicenses[i]);
-	}
+    for (unsigned int i = 0; i < recordedLicenses.size(); i++)
+    {
+        delete(recordedLicenses[i]);
+    }
 }
 
 // TODO put all of this in ParsingUtils
 bool hasOneCharacter(char letter, const char* testChars)
 {
-	bool out = false;
-	unsigned int size = strnlen(testChars, spectrumMaxSpecificCharsCount);
-	for (unsigned int i = 0; i < size; i++)
-	{
-		if (letter == testChars[i])
-		{
-			out = true;
-			break;
-		}
-	}
-	return out;
+    bool out = false;
+    unsigned int size = strnlen(testChars, spectrumMaxSpecificCharsCount);
+    for (unsigned int i = 0; i < size; i++)
+    {
+        if (letter == testChars[i])
+        {
+            out = true;
+            break;
+        }
+    }
+    return out;
 }
 
 void LicenseChecker::printLicenses()
 {
-	logger::Logger *log = logger::Logger::get_logger();
-	log->logDebug("Starting recorded licenses printing.", __LINE__, __FILE__, __func__, "LicenseChecker");
-	if (recordedLicenses.size() == 0)
-	{
-		log->logWarning("No licenses found in memory. Try to parse one before attempting to print it.", __LINE__, __FILE__, __func__, "LicenseChecker");
-	}
-	else
-	{
-		for (unsigned int i = 0; i < recordedLicenses.size(); i++)
-		{
-			recordedLicenses[i]->printContent();
-		}
-	}
+    logger::Logger *log = logger::Logger::get_logger();
+    log->logDebug("Starting recorded licenses printing.", __LINE__, __FILE__, __func__, "LicenseChecker");
+    if (recordedLicenses.size() == 0)
+    {
+        log->logWarning("No licenses found in memory. Try to parse one before attempting to print it.", __LINE__, __FILE__, __func__, "LicenseChecker");
+    }
+    else
+    {
+        for (unsigned int i = 0; i < recordedLicenses.size(); i++)
+        {
+            recordedLicenses[i]->printContent();
+        }
+    }
 }
 
 // Sorting functor
 struct isEqual
 {
-	isEqual(string _s) : s(_s){}
-	bool operator()(const pair <string, unsigned short int> &element)
-	{
-		return element.first == s;
-	}
-	string s;
+    isEqual(string _s) : s(_s){}
+    bool operator()(const pair <string, unsigned short int> &element)
+    {
+        return element.first == s;
+    }
+    string s;
 };
 
 bool sortAlpha (const pair <string, unsigned short int> &a, const pair <string, unsigned short int> &b)
 {
-	return a.first < b.first;
+    return a.first < b.first;
 }
 
 
 void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesList)
 {
-	logger::Logger *log = logger::Logger::get_logger();
+    logger::Logger *log = logger::Logger::get_logger();
 
     // list words which are bigger than letters count trigger (e.g. 3)
-	for (unsigned int i = 0; i < filesList.size(); i++)
-	{
-		// opens the file
-		string path = filesList[i];
-		ifstream file;
-		if (fs::exists(path))
-		{
+    for (unsigned int i = 0; i < filesList.size(); i++)
+    {
+        // opens the file
+        string path = filesList[i];
+        ifstream file;
+        if (fs::exists(path))
+        {
             // Process all files in pointed directory first
             if (fs::is_directory(path))
             {
@@ -368,17 +368,17 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
             else
             {
                 // This should be a file, then
-			    file.open(filesList[i]);
+                file.open(filesList[i]);
             }
-		}
-		else
-		{
-			log->logWarning("file " + path + " doesn't exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
-			// Loop until next file in list
-			continue;
-		}
-		// If we get here, process file.
-		string licenseName = pu::remove_extension(pu::get_filename(path));
+        }
+        else
+        {
+            log->logWarning("file " + path + " doesn't exist.", __LINE__, __FILE__, __func__, "LicenseChecker");
+            // Loop until next file in list
+            continue;
+        }
+        // If we get here, process file.
+        string licenseName = pu::remove_extension(pu::get_filename(path));
         LicenseSpectrum *lic = new LicenseSpectrum;
         lic->licenseName = licenseName;
 
@@ -406,9 +406,9 @@ void LicenseChecker::buildLicensesSpectrum(std::vector < std::string > &filesLis
 
         buildBasicSpectrum(wordsList, lic);
 
-		recordedLicenses.push_back(lic);
-		file.close();
-	}
+        recordedLicenses.push_back(lic);
+        file.close();
+    }
 }
 
 // Builds a Spectrum from a words based vector (containing every word of a given text section) and outputs a spectrum object.
@@ -496,10 +496,10 @@ void LicenseChecker::writeSpectrumsOnDisk(std::string outputPath)
 
 void LicenseChecker::printSpectrums()
 {
-	for (unsigned int i = 0; i < recordedLicenses.size(); i++)
-	{
-		recordedLicenses[i]->printContent();
-	}
+    for (unsigned int i = 0; i < recordedLicenses.size(); i++)
+    {
+        recordedLicenses[i]->printContent();
+    }
 }
 
 
@@ -702,7 +702,7 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
                     break;
                 default:
                     input->activeCommentBlockType = CommentTag::commentType::single_line;
-					input->pushNewData = true;
+                    input->pushNewData = true;
                     break;
                 }
                 break;
@@ -730,10 +730,10 @@ static void handleCommentType(CommentTypeHandlingStruct* input)
                     }
                     else
                     {
-						// Maybe we had a single line comment just before,
-						// which could be merged with a block comment
-						input->activeCommentBlockType = CommentTag::commentType::block;
-						input->pushNewData = true;
+                        // Maybe we had a single line comment just before,
+                        // which could be merged with a block comment
+                        input->activeCommentBlockType = CommentTag::commentType::block;
+                        input->pushNewData = true;
                     }
                 }
                 break;
@@ -794,8 +794,8 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
 
     stringstream* commentBlock = new stringstream;
     vector<stringstream*> commentBlockCollection;
-	uint8_t blank_lines_counter = 0;
-	CommentTag::commentType previous_comment_type = CommentTag::commentType::unknown;
+    uint8_t blank_lines_counter = 0;
+    CommentTag::commentType previous_comment_type = CommentTag::commentType::unknown;
 
 
     for (uint8_t lineCounter = 0; (getline(currentFile, buffer) && lineCounter <= lineCounterLimit ); lineCounter++)
@@ -822,21 +822,21 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
             if (handStr.commentBlockLineNb < minimumCommentBlockLineSize)
             {
                 log->logInfo("Dropping current comment block : block size is too small.", __LINE__, __FILE__, __func__, "LicenseChecker");
-				delete commentBlock;
-			}
+                delete commentBlock;
+            }
             else
             {
-				// Store the last line before switching to another comment block
+                // Store the last line before switching to another comment block
                 if (handStr.commentBlockLineNb != 0)
                 {
-					handStr.commentBlockLineNb++;
+                    handStr.commentBlockLineNb++;
                     *commentBlock << buffer << endl;
                 }
                 commentBlockCollection.push_back(commentBlock);
             }
             commentBlock = new stringstream;
             handStr.commentBlockLineNb = 0;
-			blank_lines_counter = 0;
+            blank_lines_counter = 0;
         }
         else if (handStr.pushNewData == true)
         {
@@ -844,48 +844,48 @@ void LicenseChecker::findInRegularFile(LicenseInFileMatchResult* match)
             {
                 handStr.commentBlockLineNb++;
                 *commentBlock << buffer << endl;
-				blank_lines_counter = 0;
+                blank_lines_counter = 0;
             }
         }
-		else if(handStr.commentBlockLineNb > 0)
-		{
-			// Discard blank lines 
-			blank_lines_counter++;
-			if (blank_lines_counter >= 3) 
-			{
-				if (handStr.commentBlockLineNb >= minimumCommentBlockLineSize) 
-				{
-					commentBlockCollection.push_back(commentBlock);
-				}
-				else 
-				{
-					delete commentBlock;
-				}
-				commentBlock = new stringstream;
-				handStr.commentBlockLineNb = 0;
-				blank_lines_counter = 0;
-			}
-		}
-		// If the currently parser comment type is something different than before
-		else if (   handStr.commentBlockLineNb != 0
-				&&  (	(handStr.activeCommentBlockType != CommentTag::commentType::unknown) 
-					||  (previous_comment_type != CommentTag::commentType::unknown) )
-				&& (previous_comment_type != handStr.activeCommentBlockType))
-		{
-			if (handStr.commentBlockLineNb >= minimumCommentBlockLineSize) 
-			{
-				commentBlockCollection.push_back(commentBlock);
-			}
-			else 
-			{
-				delete commentBlock;
-				commentBlock = new stringstream;
-			}
-			handStr.commentBlockLineNb = 0;
-			blank_lines_counter = 0;
+        else if(handStr.commentBlockLineNb > 0)
+        {
+            // Discard blank lines
+            blank_lines_counter++;
+            if (blank_lines_counter >= 3)
+            {
+                if (handStr.commentBlockLineNb >= minimumCommentBlockLineSize)
+                {
+                    commentBlockCollection.push_back(commentBlock);
+                }
+                else
+                {
+                    delete commentBlock;
+                }
+                commentBlock = new stringstream;
+                handStr.commentBlockLineNb = 0;
+                blank_lines_counter = 0;
+            }
+        }
+        // If the currently parser comment type is something different than before
+        else if (   handStr.commentBlockLineNb != 0
+                &&  (	(handStr.activeCommentBlockType != CommentTag::commentType::unknown)
+                    ||  (previous_comment_type != CommentTag::commentType::unknown) )
+                && (previous_comment_type != handStr.activeCommentBlockType))
+        {
+            if (handStr.commentBlockLineNb >= minimumCommentBlockLineSize)
+            {
+                commentBlockCollection.push_back(commentBlock);
+            }
+            else
+            {
+                delete commentBlock;
+                commentBlock = new stringstream;
+            }
+            handStr.commentBlockLineNb = 0;
+            blank_lines_counter = 0;
 
-		}
-		previous_comment_type = handStr.activeCommentBlockType;
+        }
+        previous_comment_type = handStr.activeCommentBlockType;
 
     } // End of for loop
     currentFile.close();
@@ -1029,13 +1029,13 @@ uint8_t Spectrum::compareWithSpectrum(LicenseSpectrum *other)
 
     uint8_t percentageResult = 0;
     unsigned int matchedItemNb = 0;
-	unsigned int other_total = other->getTotalWordsNb();
-	unsigned int self_total = getTotalWordsNb();
-	unsigned int total_words = (other_total >= self_total) ? other_total : self_total;
+    unsigned int other_total = other->getTotalWordsNb();
+    unsigned int self_total = getTotalWordsNb();
+    unsigned int total_words = (other_total >= self_total) ? other_total : self_total;
     unsigned int index = 0;
 
-	// For all words in wordBasedDictionary, check if there is a match
-	// between the 'other' words and the current license spectrum
+    // For all words in wordBasedDictionary, check if there is a match
+    // between the 'other' words and the current license spectrum
     for (index = 0; index < wordBasedDictionary.size(); index++)
     {
         if(find_if(other->wordBasedDictionary.begin() , other->wordBasedDictionary.end() ,isEqual(wordBasedDictionary[index].first)) != other->wordBasedDictionary.end())
@@ -1061,7 +1061,7 @@ void Spectrum::compareWithSpectrumList(vector<LicenseSpectrum* > *other, License
     uint8_t maxMatch = 0;
     uint8_t currentMatch = 0;
     for (unsigned int sp = 0; sp < other->size(); sp++)
-	{
+    {
         currentMatch = compareWithSpectrum((*other)[sp]);
         if (currentMatch >= maxMatch)
         {
@@ -1102,6 +1102,6 @@ unsigned int Spectrum::getTotalWordsNb()
 
 void LicenseSpectrum::printContent()
 {
-	cout << "License name = " << licenseName << endl;
+    cout << "License name = " << licenseName << endl;
     Spectrum::printContent();
 }

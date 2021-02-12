@@ -4,12 +4,12 @@
 @<FreeMyCode>
 FreeMyCode version : 1.0 RC alpha
     Author : bebenlebricolo
-    Contributors : 
+    Contributors :
         FoxP
-    License : 
+    License :
         name : GPL V3
         url : https://www.gnu.org/licenses/quick-guide-gplv3.html
-    About the author : 
+    About the author :
         url : https://github.com/bebenlebricolo
     Date : 16/10/2018 (16th of October 2018)
     Motivations : This is part of a Hobby ; I wanted a tool to help open-source developers to keep their hard work traceable and protected.
@@ -197,13 +197,13 @@ static void checkLicenseInFile(int argc, char** argv)
     else
     {
         InOut_CheckLicenses list;
-        
+
 
         vector<string> fileList = filterInput(argc, argv);
         ConfObject* config = ConfObject::getConfig();
         config->parse_conf_file(fileList[0]);
         LicenseChecker licenseChecker;
-        
+
         // Remove config.json file from input list
         fileList.erase(fileList.begin());
 		list.fileList.push_back(fileList[0]);
@@ -231,7 +231,7 @@ void writeSpectrumsOnDisk(int argc, char **argv)
         vector<string> fileList = filterInput(argc - 1, argv);
         LicenseChecker licenseChecker;
         licenseChecker.buildLicensesSpectrum(fileList);
-        
+
         // Write to the output directory (last argument in list)
         licenseChecker.writeSpectrumsOnDisk(argv[argc - 1]);
 
